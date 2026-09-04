@@ -1,0 +1,45 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "IM Review",
+  "version": "0.1.0",
+  "identifier": "com.ikhsanmahendri.im-review",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "IM Review",
+        "width": 1100,
+        "height": 800
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app", "dmg"],
+    "category": "DeveloperTool",
+    "shortDescription": "GitHub PR triage and AI-assisted review for desktop.",
+    "longDescription": "IM Review lists your GitHub pull requests, filters favorites, drafts AI reviews you confirm before submit, and shows an engineering metrics scorecard.",
+    "copyright": "Copyright © 2026 Ikhsan Mahendri. MIT License.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "macOS": {
+      "minimumSystemVersion": "12.0",
+      "entitlements": "Entitlements.plist",
+      "exceptionDomain": "",
+      "signingIdentity": "-"
+    }
+  }
+}

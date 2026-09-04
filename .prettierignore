@@ -1,0 +1,12 @@
+coverage
+dist
+src-tauri/target
+node_modules
+.pnpm-store
+.cursor
+.impeccable
+pnpm-lock.yaml
+*.min.js
+DESIGN.md
+PRODUCT.md
+design-system
