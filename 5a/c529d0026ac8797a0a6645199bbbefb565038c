@@ -1,0 +1,21 @@
+README.md
+  s_991bb8a3f3118a::t_c4bd4da00a38fd 1
+.gitignore
+  s_991bb8a3f3118a::t_3562a4ed29e12f 31-33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "5ac529d0026ac8797a0a6645199bbbefb565038c",
+  "prompts": {},
+  "sessions": {
+    "s_991bb8a3f3118a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5097d690-ce6c-4c93-8cc8-ede6a8db484d",
+        "model": "default"
+      },
+      "human_author": "ggican <ikhsan.mahendri@gmail.com>"
+    }
+  }
+}
