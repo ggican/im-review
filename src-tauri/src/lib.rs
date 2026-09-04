@@ -1,6 +1,6 @@
 mod commands;
 
-use tauri::{Manager, RunEvent, WindowEvent};
+use tauri::{Manager, WindowEvent};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -46,8 +46,9 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
         .run(|app_handle, event| {
-            // macOS: click Dock icon while hidden → show again.
-            if let RunEvent::Reopen {
+            // macOS only: click Dock icon while hidden → show again.
+            #[cfg(target_os = "macos")]
+            if let tauri::RunEvent::Reopen {
                 has_visible_windows,
                 ..
             } = event
@@ -58,6 +59,11 @@ pub fn run() {
                         let _ = window.set_focus();
                     }
                 }
+            }
+
+            #[cfg(not(target_os = "macos"))]
+            {
+                let _ = (app_handle, event);
             }
         });
 }

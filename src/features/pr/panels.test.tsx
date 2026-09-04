@@ -773,7 +773,6 @@ describe("PRDetailDrawer", () => {
   });
 
   it("handles fetch failure, comment submit, and close-on-AI-link", async () => {
-    const user = userEvent.setup();
     mockFetchPrDetail.mockRejectedValueOnce(new Error("detail boom"));
     render(
       <MemoryRouter>
