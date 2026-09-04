@@ -109,7 +109,13 @@ writeJsonVersion(tauriPath, next);
 writeCargoVersion(cargoPath, next);
 
 // Keep JSON files Prettier-clean (JSON.stringify expands arrays differently).
-run("pnpm", ["exec", "prettier", "--write", "package.json", "src-tauri/tauri.conf.json"]);
+run("pnpm", [
+  "exec",
+  "prettier",
+  "--write",
+  "package.json",
+  "src-tauri/tauri.conf.json",
+]);
 
 // Cargo.lock package version entry for this crate
 const lockPath = path.join(root, "src-tauri/Cargo.lock");
