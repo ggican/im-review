@@ -1,0 +1,73 @@
+docs/METRICS.md
+  s_991bb8a3f3118a::t_f49979519f2af8 1-173
+src/features/metrics/CiHealthPanel.tsx
+  s_991bb8a3f3118a::t_6aeac50250f892 1-168
+src/features/metrics/DeltaBadge.tsx
+  s_991bb8a3f3118a::t_5ed7b2aabaec5b 1-43
+src/features/metrics/MetricBreakdownPanel.tsx
+  s_b41b8845a3dc71::t_28cfbaf3337427 1-59
+src/features/metrics/MetricCard.tsx
+  s_991bb8a3f3118a::t_d544581811acb4 1-63
+src/features/metrics/MetricSuggestionsPanel.tsx
+  s_991bb8a3f3118a::t_862da2a3ee0b2b 1-148
+src/features/metrics/MetricSummaryBanner.tsx
+  s_991bb8a3f3118a::t_33d3c3609c9c3b 1-67
+src/features/metrics/MetricsCharts.tsx
+  s_991bb8a3f3118a::t_ffbebcc641ed3f 1-200
+src/features/metrics/MetricsPage.tsx
+  s_991bb8a3f3118a::t_314b4bd2dab2f1 1-285
+src/features/metrics/fetch.ts
+  s_991bb8a3f3118a::t_1e31e2c8209780 1-276
+src/features/metrics/hooks.ts
+  s_991bb8a3f3118a::t_c011b272037b62 1-118
+src/features/metrics/panels.test.tsx
+  s_991bb8a3f3118a::t_57350c7f43550a 1-325
+src/features/metrics/score.test.ts
+  s_b41b8845a3dc71::t_cb97811a9aaba9 1-273
+src/features/metrics/score.ts
+  s_991bb8a3f3118a::t_fb277c301aecd7 1-501
+src/features/metrics/stats.test.ts
+  s_b41b8845a3dc71::t_ce27915e6dde7a 1-91
+src/features/metrics/stats.ts
+  s_b41b8845a3dc71::t_e22dc70eda0074 1-73
+src/features/metrics/suggestions.test.ts
+  s_991bb8a3f3118a::t_87e663017f4bfc 1-243
+src/features/metrics/suggestions.ts
+  s_991bb8a3f3118a::t_1072de9eae6882 1-256
+src/features/metrics/types.ts
+  s_991bb8a3f3118a::t_79ebca7503b44f 1-178
+src/routes/metrics.tsx
+  s_b41b8845a3dc71::t_dac3ae55c77639 1
+src/features/metrics/DeltaBadge.test.tsx
+  s_991bb8a3f3118a::t_a1ee20591485a3 1-48
+src/features/metrics/MetricsPage.test.tsx
+  s_991bb8a3f3118a::t_ea22437a0baf13 1-208
+src/features/metrics/fetch.test.ts
+  s_991bb8a3f3118a::t_66ed74062576f3 1-537
+src/features/metrics/hooks.test.tsx
+  s_991bb8a3f3118a::t_d30187633626f2 1-155
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "3ad09d10e0e4e206724c9326928f9ecbbd316ed0",
+  "prompts": {},
+  "sessions": {
+    "s_991bb8a3f3118a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5097d690-ce6c-4c93-8cc8-ede6a8db484d",
+        "model": "default"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    },
+    "s_b41b8845a3dc71": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a06531-37f4-75b3-b666-dce1f96a7e61",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    }
+  }
+}
