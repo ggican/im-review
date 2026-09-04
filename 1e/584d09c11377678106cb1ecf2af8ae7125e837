@@ -1,0 +1,61 @@
+src/features/pr/ChangedFilesPanel.tsx
+  s_991bb8a3f3118a::t_4e98fa4cdac389 1-249
+src/features/pr/CiChecksPanel.tsx
+  s_991bb8a3f3118a::t_d3b69d92ddbafc 1-206
+src/features/pr/CurrentReviewsPanel.tsx
+  s_991bb8a3f3118a::t_962b1508d33c5b 1-232
+src/features/pr/PRDetailDrawer.tsx
+  s_991bb8a3f3118a::t_79b914e3e72f01 1-340
+src/features/pr/PRList.tsx
+  s_991bb8a3f3118a::t_506a4ef6788882 1-247
+src/features/pr/PRRow.tsx
+  s_991bb8a3f3118a::t_ed1e9da6b27acc 1-225
+src/features/pr/api.test.ts
+  s_b41b8845a3dc71::t_5bb8640d8f0dc9 1-299
+src/features/pr/api.ts
+  s_991bb8a3f3118a::t_7747a2a185c199 1-571
+src/features/pr/ci-watch.ts
+  s_991bb8a3f3118a::t_0ebfbea1a00912 1-73
+src/features/pr/hooks.ts
+  s_b41b8845a3dc71::t_a6ef58967b0e0a 1-59
+src/features/pr/pr-cache.test.ts
+  s_b41b8845a3dc71::t_333f83bea2d523 1-92
+src/features/pr/pr-cache.ts
+  s_b41b8845a3dc71::t_96d7e33751d53b 1-40
+src/features/pr/types.ts
+  s_991bb8a3f3118a::t_d22abe0b63c92f 1-160
+src/routes/dashboard.tsx
+  s_991bb8a3f3118a::t_c29d2dfd850c00 1-275
+src/routes/onboarding.tsx
+  s_991bb8a3f3118a::t_52a894a43aadbc 1-95
+src/features/pr/ci-watch.test.ts
+  s_991bb8a3f3118a::t_a641ca22ea92b2 1-55
+src/features/pr/hooks.test.tsx
+  s_991bb8a3f3118a::t_508d6b74c18315 1-139
+src/features/pr/panels.test.tsx
+  s_991bb8a3f3118a::t_db9b41a2cf8619 1-510
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "1e584d09c11377678106cb1ecf2af8ae7125e837",
+  "prompts": {},
+  "sessions": {
+    "s_991bb8a3f3118a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5097d690-ce6c-4c93-8cc8-ede6a8db484d",
+        "model": "default"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    },
+    "s_b41b8845a3dc71": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a06531-37f4-75b3-b666-dce1f96a7e61",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    }
+  }
+}
