@@ -193,7 +193,10 @@ describe("UNIT-SETTINGS store", () => {
       JSON.stringify([{ nope: true }]),
     );
     localStorage.setItem("im-review:templates", "{bad");
-    localStorage.setItem("pr-helper:settings", JSON.stringify({ theme: "light" }));
+    localStorage.setItem(
+      "pr-helper:settings",
+      JSON.stringify({ theme: "light" }),
+    );
     vi.resetModules();
     const mod = await import("@/lib/settings");
     expect(mod.getSettings().aiProvider).toBe("cursor");

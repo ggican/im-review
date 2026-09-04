@@ -278,17 +278,22 @@ describe("UNIT-DESKTOP desktop-alerts", () => {
     });
 
     let menuAction: (() => void) | undefined;
-    let trayAction: ((event: { type: string; button: string }) => void) | undefined;
-    mocks.MenuItem.new.mockImplementation(async (opts: { action?: () => void }) => {
-      menuAction = opts.action;
-      return { id: "show" };
-    });
-    mocks.TrayIcon.new.mockImplementation(async (opts: {
-      action?: (event: { type: string; button: string }) => void;
-    }) => {
-      trayAction = opts.action;
-      return {};
-    });
+    let trayAction:
+      ((event: { type: string; button: string }) => void) | undefined;
+    mocks.MenuItem.new.mockImplementation(
+      async (opts: { action?: () => void }) => {
+        menuAction = opts.action;
+        return { id: "show" };
+      },
+    );
+    mocks.TrayIcon.new.mockImplementation(
+      async (opts: {
+        action?: (event: { type: string; button: string }) => void;
+      }) => {
+        trayAction = opts.action;
+        return {};
+      },
+    );
 
     const { ensureDesktopTray } = await loadDesktopAlerts();
     await ensureDesktopTray();

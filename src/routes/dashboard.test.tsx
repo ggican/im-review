@@ -152,9 +152,8 @@ describe("DashboardPage", () => {
   });
 
   it("keeps locally reviewed PRs and redirects when token invalid", async () => {
-    const { saveReviewLocally, getSettings, saveSettings } = await import(
-      "@/lib/settings"
-    );
+    const { saveReviewLocally, getSettings, saveSettings } =
+      await import("@/lib/settings");
     saveSettings({ ...getSettings(), favoritesOnly: false });
     saveReviewLocally({
       repo: "acme/ghost",
