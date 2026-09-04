@@ -1,0 +1,43 @@
+src/features/ai-review/AiReviewPanel.tsx
+  s_b41b8845a3dc71::t_a663c7214619ae 1-212
+src/features/ai-review/diff-lines.test.ts
+  s_b41b8845a3dc71::t_3b20b14efa4c9b 1-57
+src/features/ai-review/diff-lines.ts
+  s_b41b8845a3dc71::t_33fe7658097fe8 1-43
+src/features/ai-review/generate.ts
+  s_991bb8a3f3118a::t_651cc8e1de3f3d 1-304
+src/features/ai-review/providers.ts
+  s_991bb8a3f3118a::t_5165a61cdb373b 1-54
+src/features/ai-review/types.ts
+  s_b41b8845a3dc71::t_407a99df3ef432 1-22
+src/routes/ai-review.tsx
+  s_991bb8a3f3118a::t_7aa7cc2e3480d5 1-1397
+src/features/ai-review/AiReviewPanel.test.tsx
+  s_991bb8a3f3118a::t_f979d249e923f2 1-156
+src/features/ai-review/generate.test.ts
+  s_991bb8a3f3118a::t_3dba3e9dddc29a 1-261
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "c45106f11e260e1bd1383c0e82420cb8d170c94c",
+  "prompts": {},
+  "sessions": {
+    "s_991bb8a3f3118a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5097d690-ce6c-4c93-8cc8-ede6a8db484d",
+        "model": "default"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    },
+    "s_b41b8845a3dc71": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a06531-37f4-75b3-b666-dce1f96a7e61",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    }
+  }
+}
