@@ -1,0 +1,51 @@
+docs/testing/features/ai-review/unit.md
+  s_991bb8a3f3118a::t_32d5fd08f3c893 1-31
+docs/testing/features/api/unit.md
+  s_991bb8a3f3118a::t_8c5a60c2983f66 1-22
+docs/testing/features/desktop/unit.md
+  s_991bb8a3f3118a::t_716c02464b3033 1-9
+docs/testing/features/hooks/unit.md
+  s_991bb8a3f3118a::t_8f722052fefa77 1-10
+docs/testing/features/lib/unit.md
+  s_991bb8a3f3118a::t_81e41bc305b4ba 1-26
+docs/testing/features/metrics/unit.md
+  s_991bb8a3f3118a::t_7f3148278d549c 1-36
+docs/testing/features/pr/unit.md
+  s_991bb8a3f3118a::t_0d29b08faa659f 1-20
+docs/testing/features/settings/unit.md
+  s_991bb8a3f3118a::t_4ddd6a1d2403c2 1-23
+docs/testing/features/ui/unit.md
+  s_991bb8a3f3118a::t_5bc638fab6580e 1-18
+src/test/fixtures.ts
+  s_991bb8a3f3118a::t_0e1f49e8fb113b 1-69
+src/test/setup.ts
+  s_b41b8845a3dc71::t_bcd0587f745627 1-10
+docs/testing/README.md
+  s_991bb8a3f3118a::t_1d9594da15bae9 1-46
+docs/testing/features/README.md
+  s_991bb8a3f3118a::t_6b5f767abd8948 1-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "f7ee32ae8330cb9e753575c422f5bac705af7b70",
+  "prompts": {},
+  "sessions": {
+    "s_991bb8a3f3118a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5097d690-ce6c-4c93-8cc8-ede6a8db484d",
+        "model": "default"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    },
+    "s_b41b8845a3dc71": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a06531-37f4-75b3-b666-dce1f96a7e61",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    }
+  }
+}
