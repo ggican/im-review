@@ -1,0 +1,21 @@
+.github/workflows/release.yml
+  s_991bb8a3f3118a::t_835d95c7bcb4b9 1-71
+.github/workflows/ci.yml
+  s_991bb8a3f3118a::t_5ad641f01f024d 1-102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "6d1ce32ec196f63870657014860c358a69e56ffb",
+  "prompts": {},
+  "sessions": {
+    "s_991bb8a3f3118a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5097d690-ce6c-4c93-8cc8-ede6a8db484d",
+        "model": "default"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    }
+  }
+}
