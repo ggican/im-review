@@ -1,0 +1,35 @@
+src/lib/core.test.ts
+  s_991bb8a3f3118a::t_8c07a44ffb2b5e 144-145
+src/features/ai-review/AiReviewPanel.test.tsx
+  s_991bb8a3f3118a::t_af4cf3cf0a6f2a 6
+src/features/ai-review/generate.test.ts
+  s_991bb8a3f3118a::t_f49ba2b0ec4b3b 16,23
+src/features/metrics/hooks.test.tsx
+  s_991bb8a3f3118a::t_d6de603a43ba40 72
+src/features/metrics/panels.test.tsx
+  s_991bb8a3f3118a::t_b4d3978de83aca 11,18
+src/features/pr/panels.test.tsx
+  s_991bb8a3f3118a::t_8c0297e2f828f6 37-38
+src/features/pr/pr-cache.test.ts
+  s_991bb8a3f3118a::t_5ad4f1a99479f2 15
+src/features/repos/ReposPage.test.tsx
+  s_991bb8a3f3118a::t_5bb10cf0ab8a1d 24
+src/routes/onboarding.test.tsx
+  s_991bb8a3f3118a::t_3b99a496666221 32-33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "cf0bc61171f387f2ebb89aeae7ea0dad1e662f59",
+  "prompts": {},
+  "sessions": {
+    "s_991bb8a3f3118a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5097d690-ce6c-4c93-8cc8-ede6a8db484d",
+        "model": "default"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    }
+  }
+}
