@@ -23,10 +23,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": [
-      "app",
-      "dmg"
-    ],
+    "targets": ["app", "dmg"],
     "category": "DeveloperTool",
     "shortDescription": "GitHub PR triage and AI-assisted review for desktop.",
     "longDescription": "IM Review lists your GitHub pull requests, filters favorites, drafts AI reviews you confirm before submit, and shows an engineering metrics scorecard.",
