@@ -1,0 +1,93 @@
+.husky/commit-msg
+  s_991bb8a3f3118a::t_1f917686c6cfbb 1
+.husky/pre-commit
+  s_991bb8a3f3118a::t_f7c978580207ee 1
+.prettierrc.json
+  s_991bb8a3f3118a::t_16cffa0e5e920e 1-8
+LICENSE
+  s_b41b8845a3dc71::t_236d6d269058f4 1-21
+commitlint.config.js
+  s_991bb8a3f3118a::t_5df194d081a08c 1-11
+index.html
+  s_991bb8a3f3118a::t_4ab8aded9e2274 1-14
+package.json
+  s_991bb8a3f3118a::t_9b524a2d08b1ad 1-84
+pnpm-lock.yaml
+  s_991bb8a3f3118a::t_3b96899d743418 1-5667
+scripts/cursor-local-prompt.mjs
+  s_b41b8845a3dc71::t_b5573f268d997d 1-105
+src-tauri/Cargo.lock
+  s_991bb8a3f3118a::t_5d28717f251fa1 1-5339
+src-tauri/Cargo.toml
+  s_991bb8a3f3118a::t_2f95c77e9aa59e 1-22
+src-tauri/capabilities/default.json
+  s_b41b8845a3dc71::t_8ed5a414cbd33f 1-17
+src-tauri/icons/android/mipmap-anydpi-v26/ic_launcher.xml
+  s_991bb8a3f3118a::t_8a761434e0fe84 1-5
+src-tauri/icons/android/values/ic_launcher_background.xml
+  s_991bb8a3f3118a::t_2bd09b03f01813 1-4
+src-tauri/src/main.rs
+  s_991bb8a3f3118a::t_6ba15a821f1f75 1-6
+src-tauri/tauri.conf.json
+  s_991bb8a3f3118a::t_0e7f25c978677e 1-45
+src/main.tsx
+  s_991bb8a3f3118a::t_67ffa00916fae5 1-32
+src/styles/globals.css
+  s_b41b8845a3dc71::t_0f96c1a2ec87bf 1-95
+.editorconfig
+  s_991bb8a3f3118a::t_b8e78f04c323c5 1-15
+.gitignore
+  s_991bb8a3f3118a::t_5e05eddde422f1 1-34
+.prettierignore
+  s_991bb8a3f3118a::t_410d416f1353e1 1-12
+.vscode/extensions.json
+  s_991bb8a3f3118a::t_ad2f1749b4fe29 1-9
+eslint.config.js
+  s_991bb8a3f3118a::t_8d8e8c936d726e 1-70
+public/tauri.svg
+  s_991bb8a3f3118a::t_deb31134b9c1c0 1-6
+public/vite.svg
+  s_991bb8a3f3118a::t_0d9a864ae9c30c 1
+src-tauri/.gitignore
+  s_991bb8a3f3118a::t_688ebe0725afdf 1-7
+src-tauri/Entitlements.plist
+  s_991bb8a3f3118a::t_f1e9eccf6e2781 1-15
+src-tauri/build.rs
+  s_991bb8a3f3118a::t_e55647bc2d9293 1-7
+src-tauri/src/commands.rs
+  s_991bb8a3f3118a::t_65fe7519f4d984 1-987
+src-tauri/src/lib.rs
+  s_991bb8a3f3118a::t_d079fc0df42a34 1-31
+src/vite-env.d.ts
+  s_991bb8a3f3118a::t_a98a0c2993ddce 1
+tsconfig.json
+  s_991bb8a3f3118a::t_f05be2e453800e 1-32
+tsconfig.node.json
+  s_991bb8a3f3118a::t_2586df2be7a3c4 1-10
+vite.config.ts
+  s_991bb8a3f3118a::t_7d05963bfb372f 1-63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "b854dd58c78b73702c0d2260dfd435fd6a1ff231",
+  "prompts": {},
+  "sessions": {
+    "s_991bb8a3f3118a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5097d690-ce6c-4c93-8cc8-ede6a8db484d",
+        "model": "default"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    },
+    "s_b41b8845a3dc71": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a06531-37f4-75b3-b666-dce1f96a7e61",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    }
+  }
+}
