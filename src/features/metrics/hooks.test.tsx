@@ -104,7 +104,11 @@ describe("useMetrics", () => {
   });
 
   it("sets login and raw on success", async () => {
-    mockValidateToken.mockResolvedValue({ login: "alice" });
+    mockValidateToken.mockResolvedValue({
+      login: "alice",
+      name: "Alice",
+      avatar_url: "",
+    });
     mockFetchMetrics.mockResolvedValue({ current, previous });
     mockReviewRequested.mockResolvedValue([makePr({ repo: "acme/r", number: 1 })]);
     mockMyOpenPrs.mockResolvedValue([makePr({ repo: "acme/m", number: 2 })]);

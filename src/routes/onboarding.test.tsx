@@ -67,7 +67,11 @@ describe("OnboardingPage", () => {
 
   it("validates token, saves, toasts, and navigates on success", async () => {
     const user = userEvent.setup();
-    mockValidateToken.mockResolvedValue({ login: "alice", name: "Alice" });
+    mockValidateToken.mockResolvedValue({
+      login: "alice",
+      name: "Alice",
+      avatar_url: "",
+    });
     mockSaveToken.mockResolvedValue(undefined);
     renderOnboarding();
 

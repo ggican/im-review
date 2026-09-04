@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { makeWindow } from "@/test/fixtures";
 
-import type { MetricsScorecard, ScoreTrend } from "./types";
+import type { MetricCategory, MetricsScorecard, MetricsSubscore, ScoreTrend } from "./types";
 
 const mockRefresh = vi.fn();
 const mockUseMetrics = vi.fn();
@@ -17,10 +17,10 @@ vi.mock("./hooks", () => ({
 import { MetricsPage } from "./MetricsPage";
 
 function makeSubscore(
-  category: "speed" | "quality" | "throughput" | "collaboration",
+  category: MetricCategory,
   label: string,
   score: number,
-) {
+): MetricsSubscore {
   return {
     category,
     label,

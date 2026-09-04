@@ -252,6 +252,7 @@ describe("ChangedFilesPanel", () => {
             status: "modified",
             additions: 3,
             deletions: 1,
+            changes: 4,
             patch: "@@ -1,1 +1,2 @@\n-old\n+new\n context",
           },
         ]}

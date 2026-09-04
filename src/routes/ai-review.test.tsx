@@ -192,7 +192,11 @@ describe("AiReviewPage", () => {
       favoritesOnly: false,
       aiProvider: "cursor",
     });
-    mockValidateToken.mockResolvedValue({ login: "alice", avatar_url: "" });
+    mockValidateToken.mockResolvedValue({
+      login: "alice",
+      name: null,
+      avatar_url: "",
+    });
     mockHasAiKey.mockResolvedValue(true);
     mockFetchPrDetail.mockResolvedValue(baseDetail());
     mockFetchChangedFiles.mockResolvedValue([
@@ -201,6 +205,7 @@ describe("AiReviewPage", () => {
         status: "modified",
         additions: 10,
         deletions: 2,
+        changes: 12,
         patch: "@@ -1 +1,2 @@\n-old\n+new\n",
       },
     ]);
