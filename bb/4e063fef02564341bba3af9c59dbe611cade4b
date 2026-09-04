@@ -1,0 +1,33 @@
+src/routes/settings.test.tsx
+  s_daa15297be71b5::t_364b2f7bf1b862 1-263
+src/routes/ai-review.test.tsx
+  s_991bb8a3f3118a::t_8d89f7b273be42 1-533
+src/routes/dashboard.test.tsx
+  s_991bb8a3f3118a::t_2d4cdc21a27a50 1-147
+src/routes/onboarding.test.tsx
+  s_991bb8a3f3118a::t_355753029ef7d0 1-104
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "bb4e063fef02564341bba3af9c59dbe611cade4b",
+  "prompts": {},
+  "sessions": {
+    "s_991bb8a3f3118a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5097d690-ce6c-4c93-8cc8-ede6a8db484d",
+        "model": "unknown"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    },
+    "s_daa15297be71b5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "384a6842-f126-4d1b-ad04-644cf5a3c4d5",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    }
+  }
+}
