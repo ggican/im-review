@@ -67,10 +67,7 @@ function writeJsonVersion(filePath, next) {
 
 function writeCargoVersion(filePath, next) {
   const raw = readFileSync(filePath, "utf8");
-  const updated = raw.replace(
-    /^version\s*=\s*"[^"]+"/m,
-    `version = "${next}"`,
-  );
+  const updated = raw.replace(/^version\s*=\s*"[^"]+"/m, `version = "${next}"`);
   if (updated === raw) {
     throw new Error(`Could not find version in ${filePath}`);
   }
@@ -88,9 +85,7 @@ if (status && !dryRun) {
 
 const branch = runCapture("git", ["rev-parse", "--abbrev-ref", "HEAD"]);
 if (branch !== "main" && branch !== "master" && !dryRun) {
-  console.error(
-    `Release from main/master only (current branch: ${branch}).`,
-  );
+  console.error(`Release from main/master only (current branch: ${branch}).`);
   process.exit(1);
 }
 
