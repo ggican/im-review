@@ -1,0 +1,35 @@
+scripts/release.mjs
+  s_991bb8a3f3118a::t_b2fce4015575b6 1-80,82-89,91-161
+  s_991bb8a3f3118a::t_9c6bacb2390842 81,90
+docs/RELEASE.md
+  s_991bb8a3f3118a::t_be79ea728c34d8 73-98,101
+package.json
+  s_991bb8a3f3118a::t_e27dfc5939947b 23-25
+  s_daa15297be71b5::t_d5e512e6089cff 26
+README.md
+  s_991bb8a3f3118a::t_c39d6e473175f6 74-82,86,115-124
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "61fb311c26f8c9077e4c0aa720dcf18aed6d2cf1",
+  "prompts": {},
+  "sessions": {
+    "s_991bb8a3f3118a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5097d690-ce6c-4c93-8cc8-ede6a8db484d",
+        "model": "default"
+      },
+      "human_author": "ggican <ikhsan.mahendri@gmail.com>"
+    },
+    "s_daa15297be71b5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "384a6842-f126-4d1b-ad04-644cf5a3c4d5",
+        "model": "unknown"
+      },
+      "human_author": "ggican <ikhsan.mahendri@gmail.com>"
+    }
+  }
+}
