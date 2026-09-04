@@ -176,4 +176,30 @@ describe("UNIT-SETTINGS store", () => {
     });
     expect(getSavedReviews()[0]?.id).toBe("fixed-id");
   });
+
+  it("UNIT-SETTINGS-012 recovers corrupt storage and invalid provider on load", async () => {
+    localStorage.clear();
+    localStorage.setItem(
+      "im-review:settings",
+      JSON.stringify({ aiProvider: "not-a-provider", theme: "dark" }),
+    );
+    localStorage.setItem("im-review:favorites", "{not-json");
+    localStorage.setItem(
+      "im-review:favorite-branches",
+      JSON.stringify([{ nope: true }, null]),
+    );
+    localStorage.setItem(
+      "im-review:saved-reviews",
+      JSON.stringify([{ nope: true }]),
+    );
+    localStorage.setItem("im-review:templates", "{bad");
+    localStorage.setItem("pr-helper:settings", JSON.stringify({ theme: "light" }));
+    vi.resetModules();
+    const mod = await import("@/lib/settings");
+    expect(mod.getSettings().aiProvider).toBe("cursor");
+    expect(mod.getFavorites().length).toBeGreaterThan(0);
+    expect(mod.getFavoriteBranches()).toEqual([]);
+    expect(mod.getSavedReviews()).toEqual([]);
+    expect(mod.getTemplates().length).toBeGreaterThan(0);
+  });
 });

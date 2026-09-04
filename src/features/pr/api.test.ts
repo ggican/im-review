@@ -127,6 +127,231 @@ describe("UNIT-API pr/api", () => {
     expect(detail.ciDescription).toContain("ci");
   });
 
+  it("UNIT-API-008b fetchPrDetail CI description variants and mapCi branches", async () => {
+    githubGet
+      .mockResolvedValueOnce({
+        id: 2,
+        node_id: "PR_2",
+        number: 11,
+        title: "T2",
+        html_url: "https://github.com/acme/web/pull/11",
+        state: "open",
+        draft: false,
+        body: null,
+        created_at: "2026-09-01T00:00:00Z",
+        updated_at: "2026-09-02T00:00:00Z",
+        additions: 1,
+        deletions: 0,
+        changed_files: 1,
+        merged_at: null,
+        user: { login: "alice", avatar_url: "" },
+        head: { sha: "sha2", ref: "feat/y" },
+        requested_reviewers: [],
+      })
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce({
+        state: "success",
+        statuses: [
+          {
+            context: "lint",
+            state: "success",
+            description: "ok",
+            target_url: null,
+          },
+        ],
+      });
+    let detail = await fetchPrDetail(makePr({ repo: "acme/web", number: 11 }));
+    expect(detail.ciStatus).toBe("success");
+    expect(detail.ciDescription).toMatch(/check\(s\)/);
+
+    githubGet
+      .mockResolvedValueOnce({
+        id: 3,
+        node_id: "PR_3",
+        number: 12,
+        title: "T3",
+        html_url: "https://github.com/acme/web/pull/12",
+        state: "open",
+        draft: false,
+        body: null,
+        created_at: "2026-09-01T00:00:00Z",
+        updated_at: "2026-09-02T00:00:00Z",
+        additions: 1,
+        deletions: 0,
+        changed_files: 1,
+        merged_at: null,
+        user: { login: "alice", avatar_url: "" },
+        head: { sha: "sha3", ref: "feat/z" },
+        requested_reviewers: [],
+      })
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce({ state: "error", statuses: [] });
+    detail = await fetchPrDetail(makePr({ repo: "acme/web", number: 12 }));
+    expect(detail.ciStatus).toBe("failure");
+    expect(detail.ciDescription).toBe("error");
+
+    githubGet
+      .mockResolvedValueOnce({
+        id: 4,
+        node_id: "PR_4",
+        number: 13,
+        title: "T4",
+        html_url: "https://github.com/acme/web/pull/13",
+        state: "open",
+        draft: false,
+        body: null,
+        created_at: "2026-09-01T00:00:00Z",
+        updated_at: "2026-09-02T00:00:00Z",
+        additions: 1,
+        deletions: 0,
+        changed_files: 1,
+        merged_at: null,
+        user: { login: "alice", avatar_url: "" },
+        head: { sha: "sha4", ref: "feat/w" },
+        requested_reviewers: [],
+      })
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce({ state: "pending", statuses: [] });
+    detail = await fetchPrDetail(makePr({ repo: "acme/web", number: 13 }));
+    expect(detail.ciStatus).toBe("pending");
+  });
+
+  it("UNIT-API-009b fetchPrCiChecks maps check conclusions and empty overall", async () => {
+    githubGet
+      .mockResolvedValueOnce({ state: "success", statuses: [] })
+      .mockResolvedValueOnce({
+        total_count: 4,
+        check_runs: [
+          {
+            id: 10,
+            name: "a",
+            status: "completed",
+            conclusion: "neutral",
+            html_url: null,
+            details_url: null,
+            output: { title: null, summary: null },
+            completed_at: null,
+            started_at: null,
+          },
+          {
+            id: 11,
+            name: "b",
+            status: "completed",
+            conclusion: "timed_out",
+            html_url: "h",
+            details_url: null,
+            output: { title: "t", summary: "s" },
+            completed_at: "2026-09-01T01:00:00Z",
+            started_at: null,
+          },
+          {
+            id: 12,
+            name: "c",
+            status: "completed",
+            conclusion: "weird",
+            html_url: null,
+            details_url: "d",
+            output: null,
+            completed_at: null,
+            started_at: null,
+          },
+          {
+            id: 13,
+            name: "d",
+            status: "completed",
+            conclusion: null,
+            html_url: null,
+            details_url: null,
+            output: null,
+            completed_at: null,
+            started_at: null,
+          },
+        ],
+      });
+    const snap = await fetchPrCiChecks(
+      makePr({ repo: "acme/web", number: 1 }),
+      "sha",
+    );
+    expect(snap.items.some((i) => i.state === "success")).toBe(true);
+    expect(snap.items.some((i) => i.state === "failure")).toBe(true);
+    expect(snap.overall).toBe("failure");
+
+    githubGet
+      .mockResolvedValueOnce({ state: "pending", statuses: [] })
+      .mockResolvedValueOnce({ total_count: 0, check_runs: [] });
+    const empty = await fetchPrCiChecks(
+      makePr({ repo: "acme/web", number: 2 }),
+      "sha2",
+    );
+    expect(empty.overall).toBe("none");
+    expect(empty.items).toHaveLength(0);
+  });
+
+  it("UNIT-API-009c maps unknown status and all-success / pending overall", async () => {
+    githubGet
+      .mockResolvedValueOnce({
+        state: "mystery",
+        statuses: [
+          {
+            id: 1,
+            context: "x",
+            state: "mystery",
+            description: null,
+            target_url: null,
+            updated_at: null,
+          },
+        ],
+      })
+      .mockResolvedValueOnce({ total_count: 0, check_runs: [] });
+    const unknown = await fetchPrCiChecks(
+      makePr({ repo: "acme/web", number: 3 }),
+      "sha3",
+    );
+    expect(unknown.items[0]?.state).toBe("none");
+
+    githubGet
+      .mockResolvedValueOnce({
+        state: "success",
+        statuses: [
+          {
+            id: 1,
+            context: "ok",
+            state: "success",
+            description: "green",
+            target_url: null,
+            updated_at: null,
+          },
+        ],
+      })
+      .mockResolvedValueOnce({ total_count: 0, check_runs: [] });
+    const ok = await fetchPrCiChecks(
+      makePr({ repo: "acme/web", number: 4 }),
+      "sha4",
+    );
+    expect(ok.overall).toBe("success");
+
+    githubGet
+      .mockResolvedValueOnce({
+        state: "pending",
+        statuses: [
+          {
+            id: 1,
+            context: "wait",
+            state: "pending",
+            description: "…",
+            target_url: null,
+            updated_at: null,
+          },
+        ],
+      })
+      .mockResolvedValueOnce({ total_count: 0, check_runs: [] });
+    const pending = await fetchPrCiChecks(
+      makePr({ repo: "acme/web", number: 5 }),
+      "sha5",
+    );
+    expect(pending.overall).toBe("pending");
+  });
+
   it("UNIT-API-009 fetchPrCiChecks", async () => {
     githubGet
       .mockResolvedValueOnce({

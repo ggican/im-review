@@ -2,7 +2,7 @@
 
 ## Goal
 
-Hermetic **unit** coverage ≥ **90% lines / statements** across the app TypeScript surface (`src/**/*.{ts,tsx}`), with network/Tauri mocked. No real credentials.
+Hermetic **unit** coverage ≥ **95% lines** (statements ≥94%) across the app TypeScript surface (`src/**/*.{ts,tsx}`), with network/Tauri mocked. No real credentials.
 
 ## In scope
 
@@ -36,8 +36,8 @@ pnpm check
 
 ## Latest verification (2026-09-04)
 
-- `pnpm test:coverage` → **232 passed** / 32 files (+ `lcov` for Coveralls)
-- Coverage (full `src` include): **~91% lines** (statements threshold ≥89%)
+- `pnpm test:coverage` → **255 passed** / 32 files (+ `lcov` for Coveralls)
+- Coverage (full `src` include): **95.25% lines** / **94.07% statements** (thresholds in `vite.config.ts`: lines ≥95, statements ≥94)
 - CI uploads `coverage/lcov.info` to Coveralls; Rust job runs `cargo check` / `clippy` / `cargo test` (no Rust Coveralls yet)
 
 ## Feature matrices

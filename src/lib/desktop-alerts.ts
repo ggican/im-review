@@ -2,6 +2,11 @@ import { defaultWindowIcon } from "@tauri-apps/api/app";
 import { Menu, MenuItem, PredefinedMenuItem } from "@tauri-apps/api/menu";
 import { TrayIcon } from "@tauri-apps/api/tray";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import {
+  isPermissionGranted,
+  requestPermission,
+  sendNotification,
+} from "@tauri-apps/plugin-notification";
 
 const TRAY_ID = "im-review-tray";
 
@@ -9,6 +14,10 @@ const TRAY_ID = "im-review-tray";
 let trayInit: Promise<void> | null = null;
 let lastBadge: number | null = null;
 let lastTooltip = "";
+/** `null` until first alert update — avoid notify on cold start. */
+let lastNotifiedNew: number | null = null;
+let lastNotifiedCi: number | null = null;
+let permissionWarmup: Promise<boolean> | null = null;
 
 function isTauri(): boolean {
   return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
@@ -19,6 +28,63 @@ async function showMainWindow() {
   await win.show();
   await win.setFocus();
   await win.unminimize();
+}
+
+async function ensureNotificationPermission(): Promise<boolean> {
+  if (!permissionWarmup) {
+    permissionWarmup = (async () => {
+      try {
+        let granted = await isPermissionGranted();
+        if (!granted) {
+          const permission = await requestPermission();
+          granted = permission === "granted";
+        }
+        return granted;
+      } catch (err) {
+        console.warn("Notification permission unavailable", err);
+        return false;
+      }
+    })();
+  }
+  return permissionWarmup;
+}
+
+async function notifyIfIncreased(input: {
+  newCount: number;
+  ciFailCount: number;
+}): Promise<void> {
+  const { newCount, ciFailCount } = input;
+
+  if (lastNotifiedNew === null || lastNotifiedCi === null) {
+    lastNotifiedNew = newCount;
+    lastNotifiedCi = ciFailCount;
+    return;
+  }
+
+  const newDelta = newCount - lastNotifiedNew;
+  const ciDelta = ciFailCount - lastNotifiedCi;
+  lastNotifiedNew = newCount;
+  lastNotifiedCi = ciFailCount;
+
+  if (newDelta <= 0 && ciDelta <= 0) return;
+  if (!(await ensureNotificationPermission())) return;
+
+  const parts: string[] = [];
+  if (newDelta > 0) {
+    parts.push(`${newDelta} new PR${newDelta === 1 ? "" : "s"} need attention`);
+  }
+  if (ciDelta > 0) {
+    parts.push(`${ciDelta} CI fail${ciDelta === 1 ? "" : "s"} on your PRs`);
+  }
+
+  try {
+    sendNotification({
+      title: "IM Review",
+      body: parts.join(" · "),
+    });
+  } catch (err) {
+    console.warn("Notification unavailable", err);
+  }
 }
 
 async function createTrayOnce(): Promise<void> {
@@ -56,6 +122,9 @@ async function createTrayOnce(): Promise<void> {
         }
       },
     });
+
+    // Warm permission early so first background alert can notify.
+    void ensureNotificationPermission();
   } catch (err) {
     console.warn("Tray unavailable", err);
   }
@@ -101,13 +170,15 @@ export async function updateDesktopAlerts(input: {
     );
   }
   const tooltip = parts.join(" · ");
-  if (tooltip === lastTooltip) return;
-  lastTooltip = tooltip;
-
-  try {
-    const tray = await TrayIcon.getById(TRAY_ID);
-    await tray?.setTooltip(tooltip);
-  } catch {
-    // tray may not exist yet
+  if (tooltip !== lastTooltip) {
+    lastTooltip = tooltip;
+    try {
+      const tray = await TrayIcon.getById(TRAY_ID);
+      await tray?.setTooltip(tooltip);
+    } catch {
+      // tray may not exist yet
+    }
   }
+
+  await notifyIfIncreased(input);
 }

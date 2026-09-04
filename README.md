@@ -53,7 +53,8 @@ IM Review helps you:
 - Quick approve (LGTM) and full AI draft review with refine chips
 - Submit APPROVE / COMMENT / REQUEST_CHANGES with optional inline comments
 - ⌘K / Ctrl+K command palette to jump to PRs, repos, and pages
-- “New” badges for PRs updated since you last marked seen (+ dock badge)
+- “New” badges for PRs updated since you last marked seen (+ dock badge, tray tooltip, macOS notification when counts rise)
+- Close window hides to the menu bar tray (Quit from tray exits); auto-refresh keeps running
 - Tray icon + CI failure banner for your authored open PRs
 - Metrics scorecard (Today / 7 / 14 / 30 days) with aggregation (Average, P50–P99)
 - Suggestions tab to raise scores (review / merge / fix CI / split)

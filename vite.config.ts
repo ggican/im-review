@@ -24,10 +24,10 @@ export default defineConfig(async () => ({
       provider: "v8",
       reporter: ["text", "html", "lcov"],
       thresholds: {
-        lines: 90,
-        statements: 89,
-        functions: 85,
-        branches: 70,
+        lines: 95,
+        statements: 94,
+        functions: 90,
+        branches: 80,
       },
       include: ["src/**/*.{ts,tsx}"],
       exclude: [

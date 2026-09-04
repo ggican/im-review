@@ -150,4 +150,42 @@ describe("DashboardPage", () => {
     });
     expect(mockNavigate).toHaveBeenCalledWith("/onboarding", { replace: true });
   });
+
+  it("keeps locally reviewed PRs and redirects when token invalid", async () => {
+    const { saveReviewLocally, getSettings, saveSettings } = await import(
+      "@/lib/settings"
+    );
+    saveSettings({ ...getSettings(), favoritesOnly: false });
+    saveReviewLocally({
+      repo: "acme/ghost",
+      prNumber: 77,
+      prTitle: "Ghost reviewed",
+      prUrl: "https://github.com/acme/ghost/pull/77",
+      event: "APPROVE",
+      summary: "ok",
+      body: "ok",
+      comments: [],
+      branch: "feat/ghost",
+    });
+    mockUseMyPRs.mockReturnValue({
+      lists: { assigned: [], review: [], mine: [] },
+      loading: false,
+      error: null,
+      updatedAt: new Date("2026-09-04T12:00:00.000Z"),
+      refresh: vi.fn(),
+    });
+    mockScanMineCiFailures.mockResolvedValue([]);
+    renderDashboard();
+    await waitFor(() => {
+      expect(screen.getByText("Ghost reviewed")).toBeInTheDocument();
+    });
+
+    mockValidateToken.mockRejectedValueOnce(new Error("bad token"));
+    renderDashboard();
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith("/onboarding", {
+        replace: true,
+      });
+    });
+  });
 });

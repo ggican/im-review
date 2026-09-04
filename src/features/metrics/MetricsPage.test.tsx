@@ -126,6 +126,12 @@ describe("MetricsPage", () => {
 
     await user.click(screen.getByRole("button", { name: /Quality/ }));
     expect(screen.getByText("Quality breakdown")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Throughput/ }));
+    expect(screen.getByText("Throughput breakdown")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Collaboration/ }));
+    expect(screen.getByText("Collaboration breakdown")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Speed/ }));
+    expect(screen.getByText("Speed breakdown")).toBeInTheDocument();
   });
 
   it("switches to suggestions and CI tabs and refreshes", async () => {

@@ -180,6 +180,35 @@ describe("PRRow", () => {
     expect(screen.getByText("draft")).toBeInTheDocument();
   });
 
+  it("shows commented review label and handles copy/favorite failures", async () => {
+    const user = userEvent.setup();
+    render(
+      <PRRow
+        pr={makePr({
+          repo: "acme/app",
+          number: 15,
+          title: "Comment only",
+          localReviewEvent: "COMMENT",
+          headBranch: "feat/c",
+        })}
+        onSelect={vi.fn()}
+      />,
+    );
+    expect(screen.getByText(/Reviewed · Commented/)).toBeInTheDocument();
+
+    vi.spyOn(navigator.clipboard, "writeText").mockRejectedValueOnce(
+      new Error("denied"),
+    );
+    await user.click(screen.getByRole("button", { name: "Copy link" }));
+    expect(vi.mocked(toast.error)).toHaveBeenCalledWith("Could not copy link");
+
+    mockFetchHeadBranch.mockRejectedValueOnce(new Error("network"));
+    await user.click(screen.getByRole("button", { name: "Favorite branch" }));
+    await waitFor(() => {
+      expect(vi.mocked(toast.error)).toHaveBeenCalledWith("Error: network");
+    });
+  });
+
   it("handles open in browser failure", async () => {
     const user = userEvent.setup();
     mockOpenUrl.mockRejectedValueOnce(new Error("blocked"));
@@ -243,6 +272,43 @@ describe("PRList", () => {
       screen.getByRole("link", { name: "Manage favorites" }),
     ).toHaveAttribute("href", "/repos");
   });
+
+  it("marks seen and shows already-reviewed section", async () => {
+    const user = userEvent.setup();
+    const { markAllSeen } = await import("@/lib/seen");
+    markAllSeen("2020-01-01T00:00:00.000Z");
+    render(
+      <MemoryRouter>
+        <PRList
+          lists={{
+            assigned: [],
+            review: [
+              makePr({
+                repo: "acme/app",
+                number: 13,
+                title: "Needs review",
+                updatedAt: "2026-09-04T12:00:00.000Z",
+              }),
+              pr,
+            ],
+            mine: [],
+          }}
+          active="review"
+          onTabChange={vi.fn()}
+          loading={false}
+          error={null}
+          onRefresh={vi.fn()}
+          updatedAt={new Date("2026-09-04T12:00:00.000Z")}
+          onSelect={vi.fn()}
+          favoritesOnly={false}
+          onFavoritesOnlyChange={vi.fn()}
+          favoriteCount={0}
+        />
+      </MemoryRouter>,
+    );
+    expect(screen.getByText(/Already reviewed/)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Mark seen/ }));
+  });
 });
 
 describe("ChangedFilesPanel", () => {
@@ -270,6 +336,57 @@ describe("ChangedFilesPanel", () => {
     expect(screen.queryByText("new")).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Expand all" }));
     expect(screen.getByText("new")).toBeInTheDocument();
+  });
+
+  it("covers status labels, meta patch lines, and missing patch", async () => {
+    const user = userEvent.setup();
+    render(
+      <ChangedFilesPanel
+        totals={{ add: 1, del: 0 }}
+        files={[
+          {
+            filename: "new.ts",
+            status: "added",
+            additions: 1,
+            deletions: 0,
+            changes: 1,
+            patch: "@@ -0,0 +1,1 @@\n+hi\n\\ No newline at end of file",
+          },
+          {
+            filename: "gone.ts",
+            status: "removed",
+            additions: 0,
+            deletions: 1,
+            changes: 1,
+            patch: "@@ -1,1 +0,0 @@\n-bye",
+          },
+          {
+            filename: "renamed.ts",
+            status: "renamed",
+            additions: 0,
+            deletions: 0,
+            changes: 0,
+            patch: "@@ junk hunk without nums",
+          },
+          {
+            filename: "weird.ts",
+            status: "copied",
+            additions: 0,
+            deletions: 0,
+            changes: 0,
+            patch: undefined,
+          },
+        ]}
+      />,
+    );
+    expect(screen.getByText("Added")).toBeInTheDocument();
+    expect(screen.getByText("Removed")).toBeInTheDocument();
+    expect(screen.getByText("Renamed")).toBeInTheDocument();
+    expect(screen.getByText(/copied/)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /new\.ts/ }));
+    expect(screen.getByText(/No newline at end of file/)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /weird\.ts/ }));
+    expect(screen.getByText(/No patch available/)).toBeInTheDocument();
   });
 });
 
@@ -301,6 +418,77 @@ describe("CiChecksPanel", () => {
       />,
     );
     expect(screen.getByText("Checks in progress")).toBeInTheDocument();
+  });
+
+  it("covers success/none overall, empty items, and open URL errors", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <CiChecksPanel
+        snapshot={{
+          overall: "success",
+          sha: "deadbeef",
+          failedCount: 0,
+          pendingCount: 0,
+          successCount: 1,
+          items: [
+            {
+              id: "ok",
+              name: "tests",
+              state: "success",
+              description: "green",
+              targetUrl: "https://ci.example/ok",
+              source: "check_run",
+              updatedAt: "2026-09-04T12:00:00.000Z",
+            },
+            {
+              id: "none",
+              name: "unknown",
+              state: "none",
+              description: "n/a",
+              targetUrl: null,
+              source: "status",
+              updatedAt: null,
+            },
+          ],
+        }}
+        loading={false}
+        error={null}
+        onRefresh={vi.fn()}
+      />,
+    );
+    expect(screen.getByText("All checks passed")).toBeInTheDocument();
+
+    rerender(
+      <CiChecksPanel
+        snapshot={{
+          overall: "none",
+          sha: "abc",
+          failedCount: 0,
+          pendingCount: 0,
+          successCount: 0,
+          items: [],
+        }}
+        loading={false}
+        error={null}
+        onRefresh={vi.fn()}
+      />,
+    );
+    expect(screen.getByText("No CI checks reported")).toBeInTheDocument();
+    expect(
+      screen.getByText("No CI statuses or check runs on this commit yet."),
+    ).toBeInTheDocument();
+
+    mockOpenUrl.mockRejectedValueOnce(new Error("opener down"));
+    rerender(
+      <CiChecksPanel
+        snapshot={ciSnapshot}
+        loading={false}
+        error={null}
+        onRefresh={vi.fn()}
+      />,
+    );
+    await user.click(screen.getAllByRole("button", { name: "Open" })[0]!);
+    expect(vi.mocked(toast.error)).toHaveBeenCalledWith("Error: opener down");
   });
 
   it("opens check URL from snapshot row", async () => {
@@ -420,6 +608,86 @@ describe("CurrentReviewsPanel", () => {
     await user.click(screen.getByRole("button", { name: "Refresh" }));
     expect(onRefresh).toHaveBeenCalledOnce();
   });
+
+  it("covers changes-requested, commented, unknown state, and empty list", () => {
+    const { rerender } = render(
+      <CurrentReviewsPanel
+        snapshot={{
+          reviews: [
+            {
+              id: 3,
+              user: "dave",
+              avatarUrl: "https://avatar.example/dave.png",
+              state: "CHANGES_REQUESTED",
+              body: "Please fix",
+              submittedAt: "2026-09-04T10:00:00.000Z",
+              htmlUrl: "https://github.com/review/3",
+              comments: [
+                {
+                  id: 1,
+                  path: "x.ts",
+                  line: null,
+                  body: "",
+                  user: "dave",
+                  avatarUrl: "",
+                  createdAt: "2026-09-04T10:00:00.000Z",
+                  htmlUrl: "https://github.com/c/1",
+                  reviewId: 3,
+                },
+              ],
+            },
+            {
+              id: 4,
+              user: "erin",
+              avatarUrl: "",
+              state: "COMMENTED",
+              body: "note",
+              submittedAt: "2026-09-04T11:00:00.000Z",
+              htmlUrl: "https://github.com/review/4",
+              comments: [],
+            },
+            {
+              id: 5,
+              user: "frank",
+              avatarUrl: "",
+              state: "PENDING",
+              body: "",
+              submittedAt: null,
+              htmlUrl: "https://github.com/review/5",
+              comments: [],
+            },
+          ],
+          latestByUser: [
+            {
+              user: "dave",
+              avatarUrl: "https://avatar.example/dave.png",
+              state: "CHANGES_REQUESTED",
+            },
+            { user: "erin", avatarUrl: "", state: "COMMENTED" },
+            { user: "frank", avatarUrl: "", state: "PENDING" },
+          ],
+          inlineCount: 1,
+        }}
+        loading={false}
+        error={null}
+        onRefresh={vi.fn()}
+      />,
+    );
+    expect(screen.getAllByText("Changes requested").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Commented").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("PENDING").length).toBeGreaterThan(0);
+    expect(screen.getByText("(empty comment)")).toBeInTheDocument();
+
+    rerender(
+      <CurrentReviewsPanel
+        snapshot={{ reviews: [], latestByUser: [], inlineCount: 0 }}
+        loading={false}
+        error={null}
+        onRefresh={vi.fn()}
+      />,
+    );
+    expect(screen.getByText("No reviews yet on this PR.")).toBeInTheDocument();
+  });
 });
 
 describe("PRDetailDrawer", () => {
@@ -502,5 +770,111 @@ describe("PRDetailDrawer", () => {
     await user.click(screen.getByRole("button", { name: "Copy link" }));
     await user.click(screen.getByRole("button", { name: "Open in browser" }));
     expect(openUrl).toHaveBeenCalledWith(pendingPr.url);
+  });
+
+  it("handles fetch failure, comment submit, and close-on-AI-link", async () => {
+    const user = userEvent.setup();
+    mockFetchPrDetail.mockRejectedValueOnce(new Error("detail boom"));
+    render(
+      <MemoryRouter>
+        <PRDetailDrawer pr={pendingPr} open onOpenChange={vi.fn()} />
+      </MemoryRouter>,
+    );
+    await waitFor(() => {
+      expect(vi.mocked(toast.error)).toHaveBeenCalledWith("Error: detail boom");
+    });
+  });
+
+  it("submits comment review and closes via AI review link", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(
+      <MemoryRouter>
+        <PRDetailDrawer pr={pendingPr} open onOpenChange={onOpenChange} />
+      </MemoryRouter>,
+    );
+    await waitFor(() => {
+      expect(screen.getByText("PR description")).toBeInTheDocument();
+    });
+    await user.type(screen.getByRole("textbox"), "nit");
+    await user.click(screen.getByRole("button", { name: "Comment" }));
+    await waitFor(() => {
+      expect(mockSubmitReview).toHaveBeenCalledWith(
+        pendingPr,
+        "COMMENT",
+        "nit",
+      );
+    });
+    expect(vi.mocked(toast.success)).toHaveBeenCalledWith("Commented");
+
+    // Re-open path for AI link close
+    mockFetchPrDetail.mockResolvedValueOnce({
+      ...pendingPr,
+      body: "again",
+      headSha: "abc",
+      nodeId: "PR_3",
+      mergedAt: null,
+      additions: 1,
+      deletions: 0,
+      changedFiles: 1,
+      reviewers: [],
+      ciStatus: "pending",
+      ciDescription: "running",
+    });
+    render(
+      <MemoryRouter>
+        <PRDetailDrawer pr={pendingPr} open onOpenChange={onOpenChange} />
+      </MemoryRouter>,
+    );
+    await waitFor(() => {
+      expect(screen.getByText("again")).toBeInTheDocument();
+    });
+    await user.click(
+      screen.getByRole("link", { name: /Open AI review screen/ }),
+    );
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("handles copy and open failures in drawer", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <PRDetailDrawer pr={pendingPr} open onOpenChange={vi.fn()} />
+      </MemoryRouter>,
+    );
+    await waitFor(() => {
+      expect(screen.getByText("PR description")).toBeInTheDocument();
+    });
+    vi.spyOn(navigator.clipboard, "writeText").mockRejectedValueOnce(
+      new Error("nope"),
+    );
+    mockOpenUrl.mockRejectedValueOnce(new Error("blocked"));
+    await user.click(screen.getByRole("button", { name: "Copy link" }));
+    expect(vi.mocked(toast.error)).toHaveBeenCalledWith("Could not copy link");
+    await user.click(screen.getByRole("button", { name: "Open in browser" }));
+    expect(vi.mocked(toast.error)).toHaveBeenCalledWith("Error: blocked");
+
+    render(
+      <MemoryRouter>
+        <PRDetailDrawer pr={null} open={false} onOpenChange={vi.fn()} />
+      </MemoryRouter>,
+    );
+  });
+
+  it("surfaces submit review errors", async () => {
+    const user = userEvent.setup();
+    mockSubmitReview.mockRejectedValueOnce(new Error("submit fail"));
+    render(
+      <MemoryRouter>
+        <PRDetailDrawer pr={pendingPr} open onOpenChange={vi.fn()} />
+      </MemoryRouter>,
+    );
+    await waitFor(() => {
+      expect(screen.getByText("PR description")).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole("button", { name: "Approve" }));
+    await waitFor(() => {
+      expect(vi.mocked(toast.error)).toHaveBeenCalledWith("Error: submit fail");
+    });
   });
 });

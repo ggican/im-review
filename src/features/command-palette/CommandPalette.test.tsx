@@ -91,4 +91,42 @@ describe("CommandPalette", () => {
     await user.click(screen.getByRole("option", { name: /Cached PR/ }));
     expect(mockNavigate).toHaveBeenCalledWith("/review/acme/app/5");
   });
+
+  it("supports arrow keys and favorite/settings navigation", async () => {
+    const user = userEvent.setup();
+    renderPalette();
+    await user.keyboard("{Meta>}k{/Meta}");
+
+    const input = screen.getByRole("textbox", { name: "Search commands" });
+    await user.type(input, "repos");
+    expect(screen.getByText("Repos")).toBeInTheDocument();
+    await user.keyboard("{ArrowDown}");
+    await user.keyboard("{ArrowUp}");
+    await user.keyboard("{Enter}");
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith("/repos");
+    });
+
+    mockNavigate.mockClear();
+    await user.keyboard("{Meta>}k{/Meta}");
+    await user.clear(screen.getByRole("textbox", { name: "Search commands" }));
+    await user.type(
+      screen.getByRole("textbox", { name: "Search commands" }),
+      "settings",
+    );
+    await user.keyboard("{Enter}");
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith("/settings");
+    });
+
+    mockNavigate.mockClear();
+    await user.keyboard("{Meta>}k{/Meta}");
+    await user.clear(screen.getByRole("textbox", { name: "Search commands" }));
+    await user.type(
+      screen.getByRole("textbox", { name: "Search commands" }),
+      "acme/fav",
+    );
+    await user.click(screen.getByRole("option", { name: /acme\/fav/ }));
+    expect(mockNavigate).toHaveBeenCalledWith("/repos");
+  });
 });

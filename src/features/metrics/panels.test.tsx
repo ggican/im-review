@@ -229,6 +229,48 @@ describe("metrics panels", () => {
               action: "review",
               actionLabel: "Go to dashboard",
             },
+            {
+              id: "s4",
+              category: "throughput",
+              priority: "low",
+              title: "Merge ready",
+              reason: "Approved",
+              impact: "+1",
+              action: "merge",
+              actionLabel: "Open merge",
+              pr: {
+                repo: "acme/app",
+                number: 9,
+                title: "Ready",
+                url: "https://github.com/acme/app/pull/9",
+              },
+            },
+            {
+              id: "s5",
+              category: "speed",
+              priority: "high",
+              title: "Split PR",
+              reason: "Too large",
+              impact: "+3",
+              action: "split",
+              actionLabel: "Open",
+              pr: {
+                repo: "acme/app",
+                number: 10,
+                title: "Huge",
+                url: "https://github.com/acme/app/pull/10",
+              },
+            },
+            {
+              id: "s6",
+              category: "quality",
+              priority: "low",
+              title: "Generic tip",
+              reason: "Misc",
+              impact: "+1",
+              action: "follow_up",
+              actionLabel: "Learn more",
+            },
           ]}
         />
       </MemoryRouter>,
@@ -238,6 +280,14 @@ describe("metrics panels", () => {
     expect(
       screen.getByRole("link", { name: "Go to dashboard" }),
     ).toHaveAttribute("href", "/");
+    expect(screen.getByText("Merge ready")).toBeInTheDocument();
+    expect(screen.getByText("Split PR")).toBeInTheDocument();
+    expect(screen.getByText("Generic tip")).toBeInTheDocument();
+
+    vi.mocked(openUrl).mockRejectedValueOnce(new Error("blocked"));
+    await user.click(screen.getByRole("button", { name: "Open merge" }));
+    const { toast } = await import("sonner");
+    expect(vi.mocked(toast.error)).toHaveBeenCalledWith("Error: blocked");
   });
 
   it("CiHealthPanel opens failing PR links", async () => {

@@ -266,7 +266,7 @@ export function SettingsPage() {
           <Panel>
             <PanelIntro
               title="Auto refresh"
-              description="How often to reload PR lists in the background."
+              description="How often to reload PR lists while the app is open or running in the menu bar (closing the window hides to tray; Quit exits)."
             />
             <div className="flex flex-wrap gap-2">
               {INTERVALS.map((opt) => (
