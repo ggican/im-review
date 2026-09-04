@@ -1,7 +1,8 @@
 # <img src="public/im-review-logo.png" alt="" width="36" height="36" /> IM Review
 
 [![CI](https://github.com/ggican/im-review/actions/workflows/ci.yml/badge.svg)](https://github.com/ggican/im-review/actions/workflows/ci.yml)
-[![Release](https://github.com/ggican/im-review/actions/workflows/release.yml/badge.svg)](https://github.com/ggican/im-review/actions/workflows/release.yml)
+[![Release](https://github.com/ggican/im-review/actions/workflows/release.yml/badge.svg?branch=v0.1.5)](https://github.com/ggican/im-review/actions/workflows/release.yml)
+[![Latest](https://img.shields.io/github/v/release/ggican/im-review?label=download)](https://github.com/ggican/im-review/releases/latest)
 [![Coverage Status](https://coveralls.io/repos/github/ggican/im-review/badge.svg?branch=main)](https://coveralls.io/github/ggican/im-review?branch=main)
 [![Vitest](https://img.shields.io/badge/tested_with-Vitest-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
 [![ESLint](https://img.shields.io/badge/code_style-ESLint-4B32C3?logo=eslint&logoColor=white)](https://eslint.org/)

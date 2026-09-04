@@ -132,12 +132,29 @@ try {
   // optional
 }
 
+// Workflow badge defaults to `main`; Release only runs on tags, so pin the badge
+// to this release tag so README shows the latest successful build.
+const readmePath = path.join(root, "README.md");
+try {
+  const readme = readFileSync(readmePath, "utf8");
+  const readmeUpdated = readme.replace(
+    /actions\/workflows\/release\.yml\/badge\.svg(?:\?branch=v[\w.-]+)?/g,
+    `actions/workflows/release.yml/badge.svg?branch=${tag}`,
+  );
+  if (readmeUpdated !== readme) {
+    writeFileSync(readmePath, readmeUpdated);
+  }
+} catch {
+  // optional
+}
+
 run("git", [
   "add",
   "package.json",
   "src-tauri/tauri.conf.json",
   "src-tauri/Cargo.toml",
   "src-tauri/Cargo.lock",
+  "README.md",
 ]);
 
 run("git", [
