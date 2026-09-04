@@ -1,6 +1,6 @@
 [package]
 name = "im-review"
-version = "0.1.3"
+version = "0.1.4"
 description = "IM Review desktop helper for reviewing GitHub Pull Requests"
 authors = ["Ikhsan Mahendri"]
 edition = "2021"

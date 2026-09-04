@@ -1745,7 +1745,7 @@ dependencies = [
 
 [[package]]
 name = "im-review"
-version = "0.1.3"
+version = "0.1.4"
 dependencies = [
  "reqwest 0.12.28",
  "serde",
