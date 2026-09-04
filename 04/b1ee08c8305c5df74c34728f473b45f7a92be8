@@ -1,0 +1,43 @@
+.impeccable/config.json
+  s_991bb8a3f3118a::t_ed1b61b5de9a0f 1-9
+.impeccable/design.json
+  s_991bb8a3f3118a::t_061b584141c7e7 1-191
+.impeccable/hook.cache.json
+  s_991bb8a3f3118a::t_b0be7879501a5c 1-44
+.impeccable/live/config.json
+  s_991bb8a3f3118a::t_6c5abda42fa060 1-6
+CONTRIBUTING.md
+  s_991bb8a3f3118a::t_58c71256c0ef4b 1-99
+DESIGN.md
+  s_991bb8a3f3118a::t_3b7af2ea09ac32 1-201
+design-system/pr-helper/MASTER.md
+  s_991bb8a3f3118a::t_4d8573d12b13a8 1-219
+docs/AI_PROVIDERS.md
+  s_991bb8a3f3118a::t_ed8825d1b6674a 1-92
+docs/ARCHITECTURE.md
+  s_991bb8a3f3118a::t_f4f4b8be4351e1 1-69
+PRODUCT.md
+  s_991bb8a3f3118a::t_167b8ee196d6a0 1-75
+README.md
+  s_991bb8a3f3118a::t_09d16f02b7ac92 1-202
+docs/PRD.md
+  s_991bb8a3f3118a::t_8c7a16877d5faa 1-351
+docs/RELEASE.md
+  s_991bb8a3f3118a::t_03e026528cbc60 1-99
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "04b1ee08c8305c5df74c34728f473b45f7a92be8",
+  "prompts": {},
+  "sessions": {
+    "s_991bb8a3f3118a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5097d690-ce6c-4c93-8cc8-ede6a8db484d",
+        "model": "default"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    }
+  }
+}
