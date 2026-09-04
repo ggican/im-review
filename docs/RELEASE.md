@@ -102,7 +102,7 @@ git tag -a v0.1.0 -m "Release v0.1.0"
 git push origin v0.1.0
 ```
 
-GitHub Actions → **Release** builds macOS `.app` + `.dmg` and attaches them to a draft GitHub Release.
+GitHub Actions → **Release** builds macOS `.app` + `.dmg` and attaches them to a published GitHub Release.
 
 Without Apple secrets, the workflow still builds an **ad-hoc** macOS artifact (useful for smoke tests).
 
