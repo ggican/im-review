@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-03T10:15:00.000Z",
+  "title": "Design System: IM Review",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "primary",
+        "displayName": "Graphite Ink",
+        "tonalRamp": [
+          "#0a0a0a",
+          "#171717",
+          "#262626",
+          "#404040",
+          "#737373",
+          "#a3a3a3",
+          "#e5e5e5",
+          "#fafafa"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Cool Paper",
+        "tonalRamp": [
+          "#0a0a0a",
+          "#171717",
+          "#262626",
+          "#404040",
+          "#737373",
+          "#a3a3a3",
+          "#e5e5e5",
+          "#fafafa"
+        ]
+      },
+      "danger": {
+        "role": "destructive",
+        "displayName": "Alert Red",
+        "tonalRamp": [
+          "#7f1d1d",
+          "#991b1b",
+          "#b91c1c",
+          "#dc2626",
+          "#ef4444",
+          "#f87171",
+          "#fecaca",
+          "#fef2f2"
+        ]
+      },
+      "success": {
+        "role": "success",
+        "displayName": "Signal Emerald",
+        "tonalRamp": [
+          "#064e3b",
+          "#065f46",
+          "#047857",
+          "#059669",
+          "#10b981",
+          "#34d399",
+          "#a7f3d0",
+          "#ecfdf5"
+        ]
+      },
+      "favorite": {
+        "role": "accent",
+        "displayName": "Favorite Amber",
+        "tonalRamp": [
+          "#78350f",
+          "#92400e",
+          "#b45309",
+          "#d97706",
+          "#f59e0b",
+          "#fbbf24",
+          "#fde68a",
+          "#fffbeb"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "title": { "displayName": "Title", "purpose": "Page and PR titles." },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Primary readable content at text-sm."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Section labels and meta."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Repo, branch, and path metadata."
+      }
+    },
+    "shadows": [
+      {
+        "name": "input-rest",
+        "value": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        "purpose": "Optional input rest shadow only."
+      }
+    ],
+    "motion": [
+      {
+        "name": "color-shift",
+        "value": "150ms ease",
+        "purpose": "Button and hover color transitions."
+      }
+    ],
+    "breakpoints": [{ "name": "desktop", "value": "1024px" }]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Default solid action for primary workflows.",
+      "html": "<button class=\"ds-btn-primary\">Submit review</button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:36px;padding:8px 16px;border:0;border-radius:6px;background:#171717;color:#fafafa;font:500 14px Inter,ui-sans-serif,system-ui,sans-serif;transition:background 150ms ease}.ds-btn-primary:hover{background:#262626}.ds-btn-primary:focus-visible{outline:2px solid #a3a3a3;outline-offset:2px}"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary bordered action.",
+      "html": "<button class=\"ds-btn-outline\">Cancel</button>",
+      "css": ".ds-btn-outline{display:inline-flex;align-items:center;justify-content:center;height:36px;padding:8px 16px;border:1px solid #d4d4d4;border-radius:6px;background:transparent;color:#171717;font:500 14px Inter,ui-sans-serif,system-ui,sans-serif}.ds-btn-outline:hover{background:#f5f5f5}.ds-btn-outline:focus-visible{outline:2px solid #a3a3a3;outline-offset:2px}"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Standard single-line field.",
+      "html": "<input class=\"ds-input\" placeholder=\"Search PRs\" />",
+      "css": ".ds-input{height:36px;width:100%;padding:4px 12px;border:1px solid #d4d4d4;border-radius:6px;background:#fff;color:#171717;font:400 14px Inter,ui-sans-serif,system-ui,sans-serif;box-shadow:0 1px 2px rgb(0 0 0 / 0.05)}.ds-input::placeholder{color:#a3a3a3}.ds-input:focus-visible{outline:2px solid #a3a3a3;outline-offset:2px}"
+    },
+    {
+      "name": "Surface Card",
+      "kind": "card",
+      "refersTo": "surface-card",
+      "description": "Bordered list/panel shell.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-row\">tiket/TIX-TTD-B2C-WEB #2706</div></div>",
+      "css": ".ds-card{overflow:hidden;border:1px solid #e5e5e5;border-radius:8px;background:#fff}.ds-card-row{padding:12px 16px;font:400 14px Inter,ui-sans-serif,system-ui,sans-serif;color:#171717;border-bottom:1px solid #e5e5e5}.ds-card-row:last-child{border-bottom:0}"
+    },
+    {
+      "name": "Favorite Star",
+      "kind": "chip",
+      "refersTo": "favorite",
+      "description": "Amber filled star for favorite repo/branch.",
+      "html": "<span class=\"ds-fav\" aria-label=\"Favorited\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"#fbbf24\" stroke=\"#fbbf24\" stroke-width=\"2\"><polygon points=\"12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9\"/></svg></span>",
+      "css": ".ds-fav{display:inline-flex;align-items:center;justify-content:center}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Review Desk",
+    "overview": "IM Review's shipped UI is a quiet, dense desktop tool surface: Inter + Tailwind neutrals, light paper backgrounds, flat bordered lists, and sparse amber/emerald/red status accents. It prioritizes scanability of PR queues and review workflows over brand theater. Depth comes from borders and tonal surfaces, not shadows or gradients.",
+    "keyCharacteristics": [
+      "Flat Operate density",
+      "Neutral ink/paper with light + dark",
+      "Inter + mono metadata",
+      "Lucide icons",
+      "Borders over shadows"
+    ],
+    "rules": [
+      {
+        "name": "The Quiet Accent Rule",
+        "body": "Amber, emerald, and red appear only for status or favorite semantics — never as large brand washes or hero gradients.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Family Rule",
+        "body": "Do not introduce a second UI sans into shipped screens unless PRODUCT/DESIGN are intentionally redesigned together.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-By-Default Rule",
+        "body": "Prefer border + background shift over shadow for grouping.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep list density high and meta in text-xs / mono where appropriate.",
+      "Do support light and dark via html.dark + neutral pairs.",
+      "Do use Lucide icons at ~14–16px beside labels.",
+      "Do treat design-system/pr-helper/MASTER.md as a proposal unless a redesign is explicitly approved."
+    ],
+    "donts": [
+      "Don't ship purple-gradient SaaS chrome, glow shadows, or emoji icon rows on Operate screens.",
+      "Don't replace Inter globally without an explicit redesign pass.",
+      "Don't invent marketing hero layouts inside the authenticated app shell.",
+      "Don't treat Pro Max dark slate/gold tokens as incumbent until DESIGN.md is rewritten for that world."
+    ]
+  }
+}

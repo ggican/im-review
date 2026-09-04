@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "sessions": {
+    "5097d690-ce6c-4c93-8cc8-ede6a8db484d": {
+      "updatedAt": 1788460423030,
+      "files": {
+        "/Users/ikhsan.mahendri/develop/pr-helper/src/components/layout/PageShell.tsx": {
+          "editCount": 0,
+          "findings": [],
+          "cursorDenials": { "design-system-font-size:79": 1 }
+        },
+        "/Users/ikhsan.mahendri/develop/pr-helper/src/styles/globals.css": {
+          "editCount": 0,
+          "findings": [],
+          "cursorDenials": { "design-system-radius:73": 1 }
+        },
+        "/Users/ikhsan.mahendri/develop/pr-helper/src/features/pr/PRList.tsx": {
+          "editCount": 0,
+          "findings": [],
+          "cursorDenials": {
+            "design-system-font-size:167": 1,
+            "design-system-font-size:99": 1
+          }
+        },
+        "/Users/ikhsan.mahendri/develop/pr-helper/src/routes/ai-review.tsx": {
+          "editCount": 0,
+          "findings": [],
+          "cursorDenials": {
+            "design-system-font-size:516|design-system-font-size:531|design-system-font-size:539|design-system-font-size:551|design-system-font-size:559|design-system-font-size:599|design-system-font-size:685|design-system-font-size:706|design-system-font-size:720|design-system-font-size:747|design-system-font-size:926|design-system-font-size:935": 1,
+            "design-system-font-size:12|design-system-font-size:12": 1
+          }
+        },
+        "/Users/ikhsan.mahendri/develop/pr-helper/src/features/command-palette/CommandPalette.tsx": {
+          "editCount": 0,
+          "findings": [],
+          "cursorDenials": {
+            "design-system-font-size:191|design-system-font-size:215|design-system-font-size:262": 1
+          }
+        }
+      },
+      "footerShown": true
+    }
+  }
+}
