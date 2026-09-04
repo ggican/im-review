@@ -1,0 +1,43 @@
+src/features/repos/RepoRow.tsx
+  s_991bb8a3f3118a::t_a7c60705fe77fe 1-74
+src/features/repos/ReposPage.tsx
+  s_991bb8a3f3118a::t_6c62f245c0e958 1-196
+src/features/repos/api.test.ts
+  s_b41b8845a3dc71::t_b944ffaec6c339 1-43
+src/features/repos/api.ts
+  s_b41b8845a3dc71::t_499a4b4d3061d6 1-42
+src/features/repos/hooks.ts
+  s_b41b8845a3dc71::t_aee47a96700dc2 1-41
+src/features/repos/types.ts
+  s_b41b8845a3dc71::t_ab0da97be52d0a 1-9
+src/routes/repos.tsx
+  s_b41b8845a3dc71::t_3637370b214c83 1
+src/features/repos/ReposPage.test.tsx
+  s_991bb8a3f3118a::t_d5256131114fed 1-160
+src/features/repos/hooks.test.tsx
+  s_991bb8a3f3118a::t_f006d22cb7b7e5 1-110
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "f1fb35be0ed466d97367a73a6eca9f7b5da9c542",
+  "prompts": {},
+  "sessions": {
+    "s_991bb8a3f3118a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5097d690-ce6c-4c93-8cc8-ede6a8db484d",
+        "model": "default"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    },
+    "s_b41b8845a3dc71": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a06531-37f4-75b3-b666-dce1f96a7e61",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    }
+  }
+}
