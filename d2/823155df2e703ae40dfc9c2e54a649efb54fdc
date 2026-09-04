@@ -1,0 +1,81 @@
+src/features/metrics/hooks.test.tsx
+  s_991bb8a3f3118a::t_26d089e757389a 35-41,63-69,80,122-124
+src/features/metrics/score.test.ts
+  s_991bb8a3f3118a::t_26d089e757389a 5
+src/routes/ai-review.test.tsx
+  s_991bb8a3f3118a::t_26d089e757389a 65,159,235-237,329-331,421-424,496-498
+docs/testing/features/api/unit.md
+  s_991bb8a3f3118a::t_26d089e757389a 3-22
+src/features/pr/hooks.test.tsx
+  s_991bb8a3f3118a::t_26d089e757389a 85-89,103-107
+src/lib/settings.ts
+  s_991bb8a3f3118a::t_26d089e757389a 54-55
+docs/testing/features/metrics/unit.md
+  s_991bb8a3f3118a::t_26d089e757389a 7-32
+docs/testing/features/pr/unit.md
+  s_991bb8a3f3118a::t_26d089e757389a 7-16
+docs/testing/features/settings/unit.md
+  s_991bb8a3f3118a::t_26d089e757389a 7-19
+src/features/ai-review/AiReviewPanel.test.tsx
+  s_991bb8a3f3118a::t_26d089e757389a 126-128,134-136,157-159
+src/lib/use-settings.test.tsx
+  s_991bb8a3f3118a::t_26d089e757389a 78-80
+docs/testing/features/desktop/unit.md
+  s_991bb8a3f3118a::t_26d089e757389a 3-9
+src/lib/core.test.ts
+  s_991bb8a3f3118a::t_26d089e757389a 68-71,77-80
+src/components/layout/PageShell.test.tsx
+  s_991bb8a3f3118a::t_26d089e757389a 39-41
+docs/testing/README.md
+  s_991bb8a3f3118a::t_26d089e757389a 9-15
+src/components/ui/ui.test.tsx
+  s_991bb8a3f3118a::t_26d089e757389a 99-101,104-106
+src/routes/dashboard.test.tsx
+  s_991bb8a3f3118a::t_26d089e757389a 72-76,106-108
+src/features/metrics/panels.test.tsx
+  s_991bb8a3f3118a::t_26d089e757389a 148-150,247-251,254,259,291-295,323
+src/features/metrics/fetch.test.ts
+  s_991bb8a3f3118a::t_26d089e757389a 281-283,297,352,516-520
+docs/PRD.md
+  s_991bb8a3f3118a::t_26d089e757389a 268-277,279-284
+src/features/pr/panels.test.tsx
+  s_991bb8a3f3118a::t_26d089e757389a 37-41,177-179,214-216,242-244,361-363,448,454-456,469,477,494
+docs/RELEASE.md
+  s_991bb8a3f3118a::t_26d089e757389a 16-17,19
+docs/testing/features/ai-review/unit.md
+  s_991bb8a3f3118a::t_26d089e757389a 7-27
+src/features/pr/api.test.ts
+  s_991bb8a3f3118a::t_26d089e757389a 121-123
+src/features/metrics/MetricsPage.test.tsx
+  s_991bb8a3f3118a::t_26d089e757389a 8-13,121-123,171-173
+src/features/ai-review/generate.test.ts
+  s_991bb8a3f3118a::t_26d089e757389a 82
+docs/testing/features/hooks/unit.md
+  s_991bb8a3f3118a::t_26d089e757389a 3-10
+docs/testing/features/ui/unit.md
+  s_991bb8a3f3118a::t_26d089e757389a 5-18
+src/features/repos/ReposPage.test.tsx
+  s_991bb8a3f3118a::t_26d089e757389a 127,152
+docs/METRICS.md
+  s_991bb8a3f3118a::t_26d089e757389a 132
+docs/testing/features/lib/unit.md
+  s_991bb8a3f3118a::t_26d089e757389a 7-22
+src/routes/settings.test.tsx
+  s_991bb8a3f3118a::t_26d089e757389a 87-89,190,210
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "d2823155df2e703ae40dfc9c2e54a649efb54fdc",
+  "prompts": {},
+  "sessions": {
+    "s_991bb8a3f3118a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5097d690-ce6c-4c93-8cc8-ede6a8db484d",
+        "model": "default"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    }
+  }
+}
