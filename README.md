@@ -1,4 +1,4 @@
-# IM Review
+# <img src="public/im-review-logo.png" alt="" width="36" height="36" /> IM Review
 
 [![CI](https://github.com/ggican/im-review/actions/workflows/ci.yml/badge.svg)](https://github.com/ggican/im-review/actions/workflows/ci.yml)
 [![Release](https://github.com/ggican/im-review/actions/workflows/release.yml/badge.svg)](https://github.com/ggican/im-review/actions/workflows/release.yml)

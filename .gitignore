@@ -28,6 +28,9 @@ coverage
 *.sln
 *.sw?
 
+# Cursor IDE local agent config (keep private unless you want to share)
+.cursor/
+
 # Impeccable local overrides / live runtime
 .impeccable/config.local.json
 .impeccable/live/inject-journal.json
