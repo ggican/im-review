@@ -70,9 +70,35 @@ Required repository secrets for macOS signing/notarization:
 
 Trigger: push a tag `v*` (e.g. `v0.1.0`) or run the workflow manually.
 
+### Recommended: one command from local
+
+Working tree must be clean and you must be on `main`/`master`.
+
+```bash
+pnpm release:patch   # 0.1.0 → 0.1.1
+pnpm release:minor   # 0.1.0 → 0.2.0
+pnpm release:major   # 0.1.0 → 1.0.0
+
+# preview only
+pnpm release:patch -- --dry-run
+
+# bump + tag locally, do not push
+pnpm release:patch -- --no-push
+```
+
+The script updates:
+
+- `package.json`
+- `src-tauri/tauri.conf.json`
+- `src-tauri/Cargo.toml` (+ `Cargo.lock` when present)
+
+Then commits `chore(release): vX.Y.Z`, creates annotated tag `vX.Y.Z`, and pushes branch + tag.
+
+### Manual tag
+
 ```bash
 # after pushing main/master
-git tag v0.1.0
+git tag -a v0.1.0 -m "Release v0.1.0"
 git push origin v0.1.0
 ```
 

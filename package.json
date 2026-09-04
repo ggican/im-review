@@ -20,7 +20,10 @@
     "test:coverage": "vitest run --coverage",
     "commitlint": "commitlint --edit",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test",
-    "prepare": "husky || true"
+    "prepare": "husky || true",
+    "release:patch": "node scripts/release.mjs patch",
+    "release:minor": "node scripts/release.mjs minor",
+    "release:major": "node scripts/release.mjs major"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs,cjs}": [

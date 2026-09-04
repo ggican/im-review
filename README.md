@@ -71,10 +71,19 @@ IM Review helps you:
 
 ---
 
+## Install (end users)
+
+1. Open [Releases](https://github.com/ggican/im-review/releases)
+2. Download the latest **`.dmg`**
+3. Open the DMG → drag **IM Review** to Applications
+4. First launch may need **Right-click → Open** (ad-hoc/unsigned builds until Apple notarization is configured)
+
+---
+
 ## Install & run (development)
 
 ```bash
-git clone https://github.com/ikhsanmahendri/im-review.git
+git clone https://github.com/ggican/im-review.git
 cd im-review
 pnpm install
 pnpm tauri:dev
@@ -103,7 +112,16 @@ IM Review uses **PAT paste** so anyone can install the open-source app without y
 pnpm tauri:dev         # desktop app (dev)
 pnpm tauri:build       # production .app + .dmg
 pnpm build             # frontend typecheck + Vite build
-pnpm exec tsc --noEmit # TypeScript only
+pnpm check             # typecheck + lint + prettier + tests
+pnpm release:patch     # bump x.y.Z, commit, tag, push (triggers Release CI)
+pnpm release:minor     # bump x.Y.0
+pnpm release:major     # bump X.0.0
+```
+
+Dry-run a bump without writing files:
+
+```bash
+pnpm release:patch -- --dry-run
 ```
 
 ### Production build (macOS)
