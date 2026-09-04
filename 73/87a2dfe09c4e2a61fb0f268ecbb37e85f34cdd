@@ -1,0 +1,29 @@
+src/features/command-palette/CommandPalette.test.tsx
+  s_daa15297be71b5::t_19e07b10b36919 1-94
+src/features/command-palette/CommandPalette.tsx
+  s_991bb8a3f3118a::t_56f8fade155e7c 1-275
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "7387a2dfe09c4e2a61fb0f268ecbb37e85f34cdd",
+  "prompts": {},
+  "sessions": {
+    "s_991bb8a3f3118a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5097d690-ce6c-4c93-8cc8-ede6a8db484d",
+        "model": "default"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    },
+    "s_daa15297be71b5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "384a6842-f126-4d1b-ad04-644cf5a3c4d5",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    }
+  }
+}
