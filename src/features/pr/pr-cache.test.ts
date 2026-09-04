@@ -11,8 +11,8 @@ import {
 import {
   latestReviewsByPr,
   prKey,
-  savedReviewToPullRequest,
   type SavedReview,
+  savedReviewToPullRequest,
 } from "./types";
 
 describe("UNIT-PR-001..004 types helpers", () => {

@@ -20,8 +20,8 @@ vi.mock("@tauri-apps/plugin-opener", () => ({
   openUrl: vi.fn().mockResolvedValue(undefined),
 }));
 
-import { ReposPage } from "./ReposPage";
 import { RepoRow } from "./RepoRow";
+import { ReposPage } from "./ReposPage";
 
 function renderReposPage() {
   return render(

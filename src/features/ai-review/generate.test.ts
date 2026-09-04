@@ -10,17 +10,17 @@ vi.mock("@/lib/api", () => ({
 
 import { api } from "@/lib/api";
 
-import { AI_PROVIDERS, DEFAULT_AI_PROVIDER, isAiProviderId } from "./providers";
 import {
   buildGithubReviewPayload,
   buildPatchContext,
+  type ChangedFile,
   draftToRefineJson,
   draftToReviewBody,
   fetchChangedFiles,
   fetchPatchContext,
   parseAiReviewText,
-  type ChangedFile,
 } from "./generate";
+import { AI_PROVIDERS, DEFAULT_AI_PROVIDER, isAiProviderId } from "./providers";
 import type { AiReviewDraft } from "./types";
 
 const pr = makePr({ repo: "acme/web", number: 7 });

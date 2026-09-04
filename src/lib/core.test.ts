@@ -141,6 +141,7 @@ describe("UNIT-LIB-011/012 relativeTime", () => {
 
 describe("UNIT-LIB-013/014 cn", () => {
   it("merges and ignores falsy", () => {
-    expect(cn("px-2", false && "hidden", "px-4")).toBe("px-4");
+    const hidden = false;
+    expect(cn("px-2", hidden && "hidden", "px-4")).toBe("px-4");
   });
 });

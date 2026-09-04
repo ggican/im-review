@@ -8,14 +8,14 @@ import { makeWindow } from "@/test/fixtures";
 import { CiHealthPanel } from "./CiHealthPanel";
 import { MetricBreakdownPanel } from "./MetricBreakdownPanel";
 import { MetricCard } from "./MetricCard";
+import { MetricsCharts } from "./MetricsCharts";
 import { MetricSuggestionsPanel } from "./MetricSuggestionsPanel";
 import { MetricSummaryBanner } from "./MetricSummaryBanner";
-import { MetricsCharts } from "./MetricsCharts";
 import type {
   CiHealthSummary,
-  MetricSuggestion,
   MetricsScorecard,
   MetricsSubscore,
+  MetricSuggestion,
 } from "./types";
 
 vi.mock("@tauri-apps/plugin-opener", () => ({

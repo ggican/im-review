@@ -65,11 +65,11 @@ vi.mock("./suggestions", () => ({
   buildMetricSuggestions: vi.fn(() => []),
 }));
 
-import { api } from "@/lib/api";
 import {
   fetchMyOpenPrs,
   fetchReviewRequestedPrs,
 } from "@/features/pr/api";
+import { api } from "@/lib/api";
 
 import { fetchEngineerMetrics } from "./fetch";
 import { useMetrics } from "./hooks";

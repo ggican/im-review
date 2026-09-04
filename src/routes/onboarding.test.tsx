@@ -27,8 +27,9 @@ vi.mock("sonner", () => ({
   },
 }));
 
-import { api } from "@/lib/api";
 import { toast } from "sonner";
+
+import { api } from "@/lib/api";
 
 import { OnboardingPage } from "./onboarding";
 

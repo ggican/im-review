@@ -2,9 +2,8 @@ import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import type { AiReviewDraft } from "./types";
-
 import { AiReviewPanel } from "./AiReviewPanel";
+import type { AiReviewDraft } from "./types";
 
 const draft: AiReviewDraft = {
   prKey: "acme/app#42",

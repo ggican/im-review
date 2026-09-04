@@ -32,8 +32,9 @@ vi.mock("@/lib/use-settings", () => ({
   ]),
 }));
 
-import { fetchHeadBranch, fetchPrDetail, submitReview } from "@/features/pr/api";
 import { openUrl } from "@tauri-apps/plugin-opener";
+
+import { fetchHeadBranch, fetchPrDetail, submitReview } from "@/features/pr/api";
 
 import { ChangedFilesPanel } from "./ChangedFilesPanel";
 import { CiChecksPanel } from "./CiChecksPanel";
