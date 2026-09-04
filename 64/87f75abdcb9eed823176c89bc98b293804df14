@@ -1,0 +1,29 @@
+src/router.test.tsx
+  s_daa15297be71b5::t_cffc7eb9d1e205 1-47
+src/router.tsx
+  s_991bb8a3f3118a::t_459eb919199dd4 1-75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "6487f75abdcb9eed823176c89bc98b293804df14",
+  "prompts": {},
+  "sessions": {
+    "s_991bb8a3f3118a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5097d690-ce6c-4c93-8cc8-ede6a8db484d",
+        "model": "unknown"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    },
+    "s_daa15297be71b5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "384a6842-f126-4d1b-ad04-644cf5a3c4d5",
+        "model": "unknown"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    }
+  }
+}
