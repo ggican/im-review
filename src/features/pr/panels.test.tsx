@@ -34,7 +34,11 @@ vi.mock("@/lib/use-settings", () => ({
 
 import { openUrl } from "@tauri-apps/plugin-opener";
 
-import { fetchHeadBranch, fetchPrDetail, submitReview } from "@/features/pr/api";
+import {
+  fetchHeadBranch,
+  fetchPrDetail,
+  submitReview,
+} from "@/features/pr/api";
 
 import { ChangedFilesPanel } from "./ChangedFilesPanel";
 import { CiChecksPanel } from "./CiChecksPanel";
@@ -170,7 +174,9 @@ describe("PRRow", () => {
         onSelect={vi.fn()}
       />,
     );
-    expect(screen.getByText(/Reviewed · Changes requested/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Reviewed · Changes requested/),
+    ).toBeInTheDocument();
     expect(screen.getByText("draft")).toBeInTheDocument();
   });
 
@@ -205,10 +211,9 @@ describe("PRList", () => {
         />
       </MemoryRouter>,
     );
-    expect(screen.getByRole("tab", { name: /Review requested/ })).toHaveAttribute(
-      "aria-selected",
-      "true",
-    );
+    expect(
+      screen.getByRole("tab", { name: /Review requested/ }),
+    ).toHaveAttribute("aria-selected", "true");
     await user.click(screen.getByRole("tab", { name: /My open/ }));
     expect(onTabChange).toHaveBeenCalledWith("mine");
     await user.click(screen.getByRole("button", { name: /Needs review/ }));
@@ -234,10 +239,9 @@ describe("PRList", () => {
       </MemoryRouter>,
     );
     expect(screen.getByText("boom")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Manage favorites" })).toHaveAttribute(
-      "href",
-      "/repos",
-    );
+    expect(
+      screen.getByRole("link", { name: "Manage favorites" }),
+    ).toHaveAttribute("href", "/repos");
   });
 });
 
@@ -354,7 +358,9 @@ describe("CurrentReviewsPanel", () => {
         onRefresh={vi.fn()}
       />,
     );
-    expect(screen.getByText("Loading reviews from GitHub…")).toBeInTheDocument();
+    expect(
+      screen.getByText("Loading reviews from GitHub…"),
+    ).toBeInTheDocument();
     rerender(
       <CurrentReviewsPanel
         snapshot={null}
@@ -439,17 +445,15 @@ describe("PRDetailDrawer", () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter>
-        <PRDetailDrawer
-          pr={pendingPr}
-          open
-          onOpenChange={vi.fn()}
-        />
+        <PRDetailDrawer pr={pendingPr} open onOpenChange={vi.fn()} />
       </MemoryRouter>,
     );
     await waitFor(() => {
       expect(screen.getByText("PR description")).toBeInTheDocument();
     });
-    expect(screen.getByText("CI · success — All checks passed")).toBeInTheDocument();
+    expect(
+      screen.getByText("CI · success — All checks passed"),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: /Open AI review screen/ }),
     ).toHaveAttribute("href", "/review/acme/app/13");
@@ -462,11 +466,7 @@ describe("PRDetailDrawer", () => {
     const onOpenChange = vi.fn();
     render(
       <MemoryRouter>
-        <PRDetailDrawer
-          pr={pendingPr}
-          open
-          onOpenChange={onOpenChange}
-        />
+        <PRDetailDrawer pr={pendingPr} open onOpenChange={onOpenChange} />
       </MemoryRouter>,
     );
     await waitFor(() => {
@@ -474,11 +474,7 @@ describe("PRDetailDrawer", () => {
     });
     await user.click(screen.getByRole("button", { name: "Approve" }));
     await waitFor(() => {
-      expect(mockSubmitReview).toHaveBeenCalledWith(
-        pendingPr,
-        "APPROVE",
-        "",
-      );
+      expect(mockSubmitReview).toHaveBeenCalledWith(pendingPr, "APPROVE", "");
     });
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
@@ -495,9 +491,7 @@ describe("PRDetailDrawer", () => {
       expect(screen.getByText("PR description")).toBeInTheDocument();
     });
     await user.type(screen.getByRole("textbox"), "Please address");
-    await user.click(
-      screen.getByRole("button", { name: "Request changes" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Request changes" }));
     await waitFor(() => {
       expect(mockSubmitReview).toHaveBeenCalledWith(
         pendingPr,

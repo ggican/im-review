@@ -79,7 +79,7 @@ describe("UNIT-AIREVIEW-006..010 parseAiReviewText", () => {
 
   it("parses fenced json", () => {
     const result = parseAiReviewText(
-      "Here:\n```json\n{\"summary\":\"Ok\",\"findings\":[]}\n```",
+      'Here:\n```json\n{"summary":"Ok","findings":[]}\n```',
       pr,
     );
     expect(result.summary).toBe("Ok");

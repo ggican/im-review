@@ -145,7 +145,9 @@ describe("metrics panels", () => {
     ).toBeInTheDocument();
 
     rerender(
-      <MetricBreakdownPanel subscore={makeSubscore("quality", "Quality", 72)} />,
+      <MetricBreakdownPanel
+        subscore={makeSubscore("quality", "Quality", 72)}
+      />,
     );
     expect(screen.getByText("Quality breakdown")).toBeInTheDocument();
     expect(screen.getByText("Cycle time")).toBeInTheDocument();
@@ -242,19 +244,19 @@ describe("metrics panels", () => {
     const user = userEvent.setup();
     const { openUrl } = await import("@tauri-apps/plugin-opener");
     render(
-      <CiHealthPanel summary={ciSummary} loading={false} windowLabel="7 days" />,
+      <CiHealthPanel
+        summary={ciSummary}
+        loading={false}
+        windowLabel="7 days"
+      />,
     );
     await user.click(screen.getByRole("button", { name: "Open" }));
-    expect(openUrl).toHaveBeenCalledWith(
-      "https://github.com/acme/app/pull/42",
-    );
+    expect(openUrl).toHaveBeenCalledWith("https://github.com/acme/app/pull/42");
   });
 
   it("MetricSuggestionsPanel renders empty and populated states", () => {
     const { rerender } = render(<MetricSuggestionsPanel suggestions={[]} />);
-    expect(
-      screen.getByText(/No urgent actions right now/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/No urgent actions right now/)).toBeInTheDocument();
 
     rerender(
       <MemoryRouter>
@@ -286,7 +288,11 @@ describe("metrics panels", () => {
     ).toBeInTheDocument();
 
     rerender(
-      <CiHealthPanel summary={ciSummary} loading={false} windowLabel="7 days" />,
+      <CiHealthPanel
+        summary={ciSummary}
+        loading={false}
+        windowLabel="7 days"
+      />,
     );
     expect(screen.getByText("Passing")).toBeInTheDocument();
     expect(screen.getByText("build")).toBeInTheDocument();
@@ -314,11 +320,7 @@ describe("metrics panels", () => {
 
   it("MetricsCharts shows empty activity message", () => {
     render(
-      <MetricsCharts
-        current={makeScorecard()}
-        previous={null}
-        daily={[]}
-      />,
+      <MetricsCharts current={makeScorecard()} previous={null} daily={[]} />,
     );
     expect(screen.getByText("No activity in this window.")).toBeInTheDocument();
   });

@@ -96,13 +96,13 @@ describe("ui components", () => {
         </SelectContent>
       </Select>,
     );
-    expect(screen.getByRole("combobox", { name: "Pick one" })).toHaveTextContent(
-      "Alpha",
-    );
+    expect(
+      screen.getByRole("combobox", { name: "Pick one" }),
+    ).toHaveTextContent("Alpha");
     await user.click(screen.getByRole("combobox", { name: "Pick one" }));
     await user.click(screen.getByRole("option", { name: "Beta" }));
-    expect(screen.getByRole("combobox", { name: "Pick one" })).toHaveTextContent(
-      "Beta",
-    );
+    expect(
+      screen.getByRole("combobox", { name: "Pick one" }),
+    ).toHaveTextContent("Beta");
   });
 });

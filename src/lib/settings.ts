@@ -51,7 +51,8 @@ for (const [from, to] of [
   ["pr-helper:saved-reviews", SAVED_REVIEWS_KEY],
 ] as const) {
   migrateStorageKey(from, to);
-}const MAX_SAVED_REVIEWS = 50;
+}
+const MAX_SAVED_REVIEWS = 50;
 
 export const DEFAULT_SETTINGS: AppSettings = {
   refreshIntervalMin: 5,

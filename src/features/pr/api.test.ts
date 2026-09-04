@@ -118,7 +118,9 @@ describe("UNIT-API pr/api", () => {
         ],
       });
 
-    const detail = await fetchPrDetail(makePr({ repo: "acme/web", number: 10 }));
+    const detail = await fetchPrDetail(
+      makePr({ repo: "acme/web", number: 10 }),
+    );
     expect(detail.headBranch).toBe("feat/x");
     expect(detail.reviewers).toEqual(expect.arrayContaining(["bob", "carol"]));
     expect(detail.ciStatus).toBe("failure");

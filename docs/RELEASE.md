@@ -13,10 +13,10 @@ pnpm tauri build
 
 Artifacts:
 
-| Path                                                | Contents             |
-| --------------------------------------------------- | -------------------- |
+| Path                                                  | Contents             |
+| ----------------------------------------------------- | -------------------- |
 | `src-tauri/target/release/bundle/macos/IM Review.app` | App bundle           |
-| `src-tauri/target/release/bundle/dmg/*.dmg`         | Disk image installer |
+| `src-tauri/target/release/bundle/dmg/*.dmg`           | Disk image installer |
 
 `tauri.conf.json` sets `bundle.macOS.signingIdentity` to `"-"` (ad-hoc). Override with a real identity via env (see below).
 

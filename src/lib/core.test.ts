@@ -65,13 +65,19 @@ describe("UNIT-LIB-001..006 seen", () => {
     ).toBe(false);
     expect(
       isPrNew(
-        { updatedAt: "2026-07-01T00:00:00.000Z", createdAt: "2026-07-01T00:00:00.000Z" },
+        {
+          updatedAt: "2026-07-01T00:00:00.000Z",
+          createdAt: "2026-07-01T00:00:00.000Z",
+        },
         "not-a-date",
       ),
     ).toBe(false);
     expect(
       isPrNew(
-        { updatedAt: "2026-07-01T00:00:00.000Z", createdAt: "2026-07-01T00:00:00.000Z" },
+        {
+          updatedAt: "2026-07-01T00:00:00.000Z",
+          createdAt: "2026-07-01T00:00:00.000Z",
+        },
         null,
       ),
     ).toBe(false);

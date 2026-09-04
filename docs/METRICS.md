@@ -129,7 +129,7 @@ Aggregated from commit statuses + check runs on authored PRs:
 
 ## Known gaps vs tools like Signals AI
 
-| Topic               | IM Review V1                | Typical Signals-style         |
+| Topic               | IM Review V1              | Typical Signals-style         |
 | ------------------- | ------------------------- | ----------------------------- |
 | Normalization       | Fixed heuristic bands     | Org / P75 benchmarks          |
 | Coding time         | PR created → first review | Often first commit → PR/merge |

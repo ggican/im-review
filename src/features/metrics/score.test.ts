@@ -2,11 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { makeAuthored, makePr, makeRaw, makeWindow } from "@/test/fixtures";
 
-import {
-  buildCiHealthSummary,
-  computeScorecard,
-  computeTrends,
-} from "./score";
+import { buildCiHealthSummary, computeScorecard, computeTrends } from "./score";
 
 function ciSnap(
   items: Array<{ name: string; state: "success" | "failure" | "pending" }>,

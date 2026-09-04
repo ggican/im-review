@@ -278,15 +278,9 @@ describe("UNIT-METRICS-022 buildDailyActivity", () => {
     expect(activity.reduce((sum, d) => sum + d.created, 0)).toBe(2);
     expect(activity.reduce((sum, d) => sum + d.merged, 0)).toBe(1);
     expect(activity.reduce((sum, d) => sum + d.reviewed, 0)).toBe(1);
-    expect(
-      activity.find((d) => d.date === "2026-09-01")?.created,
-    ).toBe(2);
-    expect(
-      activity.find((d) => d.date === "2026-09-02")?.merged,
-    ).toBe(1);
-    expect(
-      activity.find((d) => d.date === "2026-09-03")?.reviewed,
-    ).toBe(1);
+    expect(activity.find((d) => d.date === "2026-09-01")?.created).toBe(2);
+    expect(activity.find((d) => d.date === "2026-09-02")?.merged).toBe(1);
+    expect(activity.find((d) => d.date === "2026-09-03")?.reviewed).toBe(1);
   });
 
   it("returns zero-filled days when there is no activity", () => {
@@ -300,9 +294,7 @@ describe("UNIT-METRICS-022 buildDailyActivity", () => {
     const activity = buildDailyActivity(window, [], []);
 
     expect(activity).toHaveLength(4);
-    expect(activity.every((d) => d.created === 0 && d.merged === 0)).toBe(
-      true,
-    );
+    expect(activity.every((d) => d.created === 0 && d.merged === 0)).toBe(true);
   });
 });
 
@@ -357,9 +349,7 @@ describe("UNIT-METRICS-023 fetchEngineerMetrics", () => {
     mockFetchReviewed.mockResolvedValue([reviewedCurrent, reviewedPrevious]);
 
     const { current, previous } = await fetchEngineerMetrics("alice");
-    const expectedFetchFrom = buildPreviousWindow(
-      buildMetricsWindow("7"),
-    ).from;
+    const expectedFetchFrom = buildPreviousWindow(buildMetricsWindow("7")).from;
 
     expect(mockFetchAuthored).toHaveBeenCalledWith(expectedFetchFrom);
     expect(mockFetchReviewed).toHaveBeenCalledWith(expectedFetchFrom);
@@ -523,7 +513,11 @@ describe("UNIT-METRICS-023 fetchEngineerMetrics", () => {
       reviewsWith(
         [
           { user: "alice", submittedAt: "2026-09-02T09:00:00.000Z" },
-          { user: "carol", submittedAt: "2026-09-02T10:00:00.000Z", body: "ok" },
+          {
+            user: "carol",
+            submittedAt: "2026-09-02T10:00:00.000Z",
+            body: "ok",
+          },
         ],
         1,
       ),

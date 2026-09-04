@@ -265,23 +265,23 @@ type AiReviewDraft = {
 
 ## 12. Open questions
 
-| #   | Pertanyaan                                                           | Jawaban             |
-| --- | -------------------------------------------------------------------- | ------------------- |
-| Q1  | Target OS pertama: macOS only, atau macOS + Windows sekaligus?       | macOS (default)     |
-| Q2  | GitHub-only atau perlu GitLab/Bitbucket?                             | GitHub only         |
-| Q3  | Auth: PAT saja, atau nanti OAuth Device Flow?                        | PAT                 |
-| Q4  | API call di frontend langsung, atau di-proxy lewat Rust?             | Proxy Rust ✅       |
-| Q5  | Multi-akun GitHub di v0.1?                                           | Single              |
-| Q6  | Notifikasi native (tray/dock badge)?                                 | M5 / v0.2 later     |
-| Q7  | Comment templates — global atau per-repo?                            | Global              |
-| Q8  | Integrasi Jira?                                                      | Tidak               |
+| #   | Pertanyaan                                                           | Jawaban                     |
+| --- | -------------------------------------------------------------------- | --------------------------- |
+| Q1  | Target OS pertama: macOS only, atau macOS + Windows sekaligus?       | macOS (default)             |
+| Q2  | GitHub-only atau perlu GitLab/Bitbucket?                             | GitHub only                 |
+| Q3  | Auth: PAT saja, atau nanti OAuth Device Flow?                        | PAT                         |
+| Q4  | API call di frontend langsung, atau di-proxy lewat Rust?             | Proxy Rust ✅               |
+| Q5  | Multi-akun GitHub di v0.1?                                           | Single                      |
+| Q6  | Notifikasi native (tray/dock badge)?                                 | M5 / v0.2 later             |
+| Q7  | Comment templates — global atau per-repo?                            | Global                      |
+| Q8  | Integrasi Jira?                                                      | Tidak                       |
 | Q9  | Nama app final?                                                      | **IM Review** (`im-review`) |
-| Q10 | Design/mockup?                                                       | Improv              |
-| Q11 | Cursor AI: **cloud** agent vs **local** cwd?                         | TBC — default cloud |
-| Q12 | PR besar: kirim full diff, file list only, atau top-N changed files? | TBC — top-N + patch |
-| Q13 | Default post event AI: Comment vs Request changes?                   | TBC — Comment       |
-| Q14 | Simpan history AI drafts antar session?                              | TBC — tidak di M8   |
-| Q15 | Favorite sync antar mesin?                                           | TBC — lokal saja    |
+| Q10 | Design/mockup?                                                       | Improv                      |
+| Q11 | Cursor AI: **cloud** agent vs **local** cwd?                         | TBC — default cloud         |
+| Q12 | PR besar: kirim full diff, file list only, atau top-N changed files? | TBC — top-N + patch         |
+| Q13 | Default post event AI: Comment vs Request changes?                   | TBC — Comment               |
+| Q14 | Simpan history AI drafts antar session?                              | TBC — tidak di M8           |
+| Q15 | Favorite sync antar mesin?                                           | TBC — lokal saja            |
 
 > **Default sampai override:** Q11 cloud · Q12 top-N changed files + patch ringkas · Q13 Comment · Q14 no history · Q15 lokal.
 

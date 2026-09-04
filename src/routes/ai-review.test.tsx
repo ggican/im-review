@@ -62,8 +62,7 @@ vi.mock("@/features/ai-review/generate", async (importOriginal) => {
 });
 
 vi.mock("@/lib/use-settings", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("@/lib/use-settings")>();
+  const actual = await importOriginal<typeof import("@/lib/use-settings")>();
   return { ...actual };
 });
 
@@ -157,10 +156,7 @@ function renderAiReview(path = "/review/acme/app/42") {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <Routes>
-        <Route
-          path="/review/:owner/:repo/:number"
-          element={<AiReviewPage />}
-        />
+        <Route path="/review/:owner/:repo/:number" element={<AiReviewPage />} />
         <Route path="/" element={<div>Dashboard</div>} />
         <Route path="/settings" element={<div>Settings page</div>} />
       </Routes>
@@ -236,7 +232,9 @@ describe("AiReviewPage", () => {
     await waitForLoaded();
     expect(screen.getByText("Adds feature")).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "PR detail" })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /Files \(1\)/ })).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: /Files \(1\)/ }),
+    ).toBeInTheDocument();
   });
 
   it("shows load error when GitHub fetch fails", async () => {
@@ -328,7 +326,9 @@ describe("AiReviewPage", () => {
     renderAiReview();
     await waitForLoaded();
     await runAiToDraft(user);
-    expect(screen.getByDisplayValue("Found issues in patch")).toBeInTheDocument();
+    expect(
+      screen.getByDisplayValue("Found issues in patch"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Missing null check")).toBeInTheDocument();
     expect(vi.mocked(toast.success)).toHaveBeenCalledWith(
       "AI draft ready — review before submitting",
@@ -418,7 +418,10 @@ describe("AiReviewPage", () => {
   it("shows empty patch error when AI context is blank", async () => {
     const user = userEvent.setup();
     const { buildPatchContext } = await import("@/features/ai-review/generate");
-    vi.mocked(buildPatchContext).mockReturnValueOnce({ text: "  ", fileCount: 0 });
+    vi.mocked(buildPatchContext).mockReturnValueOnce({
+      text: "  ",
+      fileCount: 0,
+    });
     renderAiReview();
     await waitForLoaded();
     await user.click(screen.getByRole("tab", { name: /AI review/ }));
@@ -490,7 +493,9 @@ describe("AiReviewPage", () => {
       const user = userEvent.setup();
       renderAiReview();
       await waitForLoaded();
-      await user.click(screen.getByRole("button", { name: "Convert to draft" }));
+      await user.click(
+        screen.getByRole("button", { name: "Convert to draft" }),
+      );
       const dialog = screen.getByRole("dialog");
       await user.click(
         within(dialog).getByRole("button", { name: "Convert to draft" }),

@@ -124,9 +124,7 @@ describe("ReposPage", () => {
     });
     renderReposPage();
     await user.click(screen.getByRole("tab", { name: /All repos/ }));
-    await user.click(
-      screen.getByRole("button", { name: "Add to favorites" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Add to favorites" }));
     await user.click(screen.getByRole("button", { name: "Refresh" }));
     expect(refresh).toHaveBeenCalled();
   });
@@ -151,9 +149,7 @@ describe("ReposPage", () => {
     const user = userEvent.setup();
     const { openUrl } = await import("@tauri-apps/plugin-opener");
     render(<RepoRow repo={repos[1]!} favorited={false} />);
-    await user.click(
-      screen.getByRole("button", { name: "Add to favorites" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Add to favorites" }));
     await user.click(screen.getByRole("button", { name: "Open on GitHub" }));
     expect(vi.mocked(openUrl)).toHaveBeenCalledWith(repos[1]!.htmlUrl);
   });

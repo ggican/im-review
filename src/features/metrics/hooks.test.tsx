@@ -32,7 +32,13 @@ vi.mock("./score", () => ({
   })),
   computeScorecard: vi.fn(() => ({
     overall: 80,
-    speed: { category: "speed", label: "Speed", score: 80, weight: 1, metrics: [] },
+    speed: {
+      category: "speed",
+      label: "Speed",
+      score: 80,
+      weight: 1,
+      metrics: [],
+    },
     quality: {
       category: "quality",
       label: "Quality",
@@ -54,7 +60,13 @@ vi.mock("./score", () => ({
       weight: 1,
       metrics: [],
     },
-    window: { from: "2026-01-01", to: "2026-01-07", days: 7, preset: "7", label: "7 days" },
+    window: {
+      from: "2026-01-01",
+      to: "2026-01-07",
+      days: 7,
+      preset: "7",
+      label: "7 days",
+    },
     aggregation: "avg",
     generatedAt: "2026-01-07T00:00:00.000Z",
   })),
@@ -65,10 +77,7 @@ vi.mock("./suggestions", () => ({
   buildMetricSuggestions: vi.fn(() => []),
 }));
 
-import {
-  fetchMyOpenPrs,
-  fetchReviewRequestedPrs,
-} from "@/features/pr/api";
+import { fetchMyOpenPrs, fetchReviewRequestedPrs } from "@/features/pr/api";
 import { api } from "@/lib/api";
 
 import { fetchEngineerMetrics } from "./fetch";
@@ -110,7 +119,9 @@ describe("useMetrics", () => {
       avatar_url: "",
     });
     mockFetchMetrics.mockResolvedValue({ current, previous });
-    mockReviewRequested.mockResolvedValue([makePr({ repo: "acme/r", number: 1 })]);
+    mockReviewRequested.mockResolvedValue([
+      makePr({ repo: "acme/r", number: 1 }),
+    ]);
     mockMyOpenPrs.mockResolvedValue([makePr({ repo: "acme/m", number: 2 })]);
 
     const { result } = renderHook(() => useMetrics(true));

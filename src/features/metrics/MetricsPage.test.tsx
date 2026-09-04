@@ -5,7 +5,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { makeWindow } from "@/test/fixtures";
 
-import type { MetricCategory, MetricsScorecard, MetricsSubscore, ScoreTrend } from "./types";
+import type {
+  MetricCategory,
+  MetricsScorecard,
+  MetricsSubscore,
+  ScoreTrend,
+} from "./types";
 
 const mockRefresh = vi.fn();
 const mockUseMetrics = vi.fn();
@@ -113,7 +118,9 @@ describe("MetricsPage", () => {
     const user = userEvent.setup();
     renderMetricsPage();
 
-    expect(screen.getByRole("heading", { name: "Metrics" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Metrics" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("Overall score")).toBeInTheDocument();
     expect(screen.getByText("Speed breakdown")).toBeInTheDocument();
 
@@ -161,7 +168,9 @@ describe("MetricsPage", () => {
       refresh: mockRefresh,
     });
     const { rerender } = renderMetricsPage();
-    expect(screen.getByText(/Computing metrics from GitHub/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Computing metrics from GitHub/),
+    ).toBeInTheDocument();
 
     mockUseMetrics.mockReturnValue({
       scorecard: null,

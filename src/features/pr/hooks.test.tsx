@@ -82,7 +82,11 @@ describe("useMyPRs", () => {
     });
 
     expect(result.current.error).toBe("Error: network down");
-    expect(result.current.lists).toEqual({ assigned: [], review: [], mine: [] });
+    expect(result.current.lists).toEqual({
+      assigned: [],
+      review: [],
+      mine: [],
+    });
     expect(mockSetPrCache).not.toHaveBeenCalled();
   });
 
@@ -96,7 +100,11 @@ describe("useMyPRs", () => {
     expect(mockAssigned).not.toHaveBeenCalled();
     expect(mockReview).not.toHaveBeenCalled();
     expect(mockMine).not.toHaveBeenCalled();
-    expect(result.current.lists).toEqual({ assigned: [], review: [], mine: [] });
+    expect(result.current.lists).toEqual({
+      assigned: [],
+      review: [],
+      mine: [],
+    });
     expect(result.current.error).toBeNull();
   });
 

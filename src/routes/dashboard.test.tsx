@@ -69,7 +69,11 @@ function renderDashboard() {
 
 describe("DashboardPage", () => {
   beforeEach(() => {
-    saveSettings({ ...getSettings(), refreshIntervalMin: 0, favoritesOnly: false });
+    saveSettings({
+      ...getSettings(),
+      refreshIntervalMin: 0,
+      favoritesOnly: false,
+    });
     mockNavigate.mockReset();
     mockValidateToken.mockResolvedValue({
       login: "alice",
@@ -99,7 +103,9 @@ describe("DashboardPage", () => {
       expect(screen.getByText("Alice")).toBeInTheDocument();
     });
     expect(screen.getByText(/@alice/)).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /Review requested/ })).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: /Review requested/ }),
+    ).toBeInTheDocument();
     expect(screen.getByText("Review me")).toBeInTheDocument();
   });
 

@@ -75,9 +75,9 @@ describe("useSettings hooks", () => {
     act(() => {
       upsertTemplate({ id, name: "Ship it", body: "Ready to merge." });
     });
-    expect(result.current.some((t) => t.id === id && t.name === "Ship it")).toBe(
-      true,
-    );
+    expect(
+      result.current.some((t) => t.id === id && t.name === "Ship it"),
+    ).toBe(true);
 
     act(() => {
       deleteTemplate(id);

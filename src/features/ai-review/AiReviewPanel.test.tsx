@@ -123,13 +123,17 @@ describe("AiReviewPanel", () => {
     await user.type(screen.getByLabelText("Summary"), "Updated");
     expect(onSummaryChange).toHaveBeenCalled();
 
-    await user.click(screen.getByRole("checkbox", { name: /Include Missing test/ }));
+    await user.click(
+      screen.getByRole("checkbox", { name: /Include Missing test/ }),
+    );
     expect(onToggleFinding).toHaveBeenCalledWith("f1");
 
     await user.click(screen.getByRole("button", { name: "Approve" }));
     expect(onEventChange).toHaveBeenCalledWith("APPROVE");
 
-    await user.click(screen.getByRole("button", { name: "Post review to GitHub" }));
+    await user.click(
+      screen.getByRole("button", { name: "Post review to GitHub" }),
+    );
     expect(onPost).toHaveBeenCalledOnce();
 
     await user.click(screen.getByRole("button", { name: "Discard draft" }));
@@ -150,6 +154,8 @@ describe("AiReviewPanel", () => {
       />,
     );
     expect(screen.getByLabelText("Summary")).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Post review to GitHub" })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Post review to GitHub" }),
+    ).toBeDisabled();
   });
 });

@@ -84,7 +84,9 @@ describe("SettingsPage", () => {
 
   it("renders page header and general tab content", async () => {
     renderSettings();
-    expect(screen.getByRole("heading", { name: "Settings" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Settings" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "General" })).toHaveAttribute(
       "aria-selected",
       "true",
@@ -185,9 +187,7 @@ describe("SettingsPage", () => {
     await user.type(screen.getByPlaceholderText("Template name"), "Ship it v2");
     await user.click(screen.getByRole("button", { name: "Save template" }));
 
-    await user.click(
-      screen.getByRole("button", { name: "Delete Ship it v2" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Delete Ship it v2" }));
     expect(vi.mocked(toast.success)).toHaveBeenCalledWith("Template deleted");
   });
 
@@ -207,9 +207,7 @@ describe("SettingsPage", () => {
 
     expect(screen.getByText("acme/alpha")).toBeInTheDocument();
     expect(screen.getByText("Branch PR")).toBeInTheDocument();
-    await user.click(
-      screen.getByRole("button", { name: "Remove acme/alpha" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Remove acme/alpha" }));
     expect(vi.mocked(toast.success)).toHaveBeenCalledWith("Removed acme/alpha");
 
     await user.click(

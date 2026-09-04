@@ -6,13 +6,13 @@ Hermetic **unit** coverage ≥ **90% lines / statements** across the app TypeScr
 
 ## In scope
 
-| Area | Modules |
-| --- | --- |
-| Pure logic | metrics stats/score/suggestions, AI diff/parse, PR helpers, lib stores |
-| API / fetch | `lib/api`, `pr/api`, `repos/api`, `metrics/fetch`, `ci-watch` |
-| Hooks | `use-settings`, `pr/hooks`, `metrics/hooks`, `repos/hooks` |
-| Desktop | `desktop-alerts` (mocked Tauri) |
-| UI | components, panels, routes, router, command palette (RTL + mocks) |
+| Area        | Modules                                                                |
+| ----------- | ---------------------------------------------------------------------- |
+| Pure logic  | metrics stats/score/suggestions, AI diff/parse, PR helpers, lib stores |
+| API / fetch | `lib/api`, `pr/api`, `repos/api`, `metrics/fetch`, `ci-watch`          |
+| Hooks       | `use-settings`, `pr/hooks`, `metrics/hooks`, `repos/hooks`             |
+| Desktop     | `desktop-alerts` (mocked Tauri)                                        |
+| UI          | components, panels, routes, router, command palette (RTL + mocks)      |
 
 ## Excluded from coverage %
 

@@ -36,7 +36,9 @@ describe("PageHeader", () => {
         actions={<button type="button">Action</button>}
       />,
     );
-    expect(screen.getByRole("heading", { name: "Dashboard" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Dashboard" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("Your PRs")).toBeInTheDocument();
     expect(screen.getByTestId("leading")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Action" })).toBeInTheDocument();
