@@ -1,0 +1,30 @@
+src/routes/onboarding.test.tsx
+  s_991bb8a3f3118a::t_373fd78317c149 70-74
+src/features/pr/panels.test.tsx
+  s_991bb8a3f3118a::t_da155ae6493e77 255
+src/features/metrics/hooks.test.tsx
+  s_991bb8a3f3118a::t_cd15070e651461 107-111
+src/routes/ai-review.test.tsx
+  s_991bb8a3f3118a::t_c267ecf844e12f 195-199,208
+.github/workflows/ci.yml
+  s_991bb8a3f3118a::t_4de32213e72c4d 52-53
+  s_991bb8a3f3118a::t_c98c4accee8929 104
+src/features/metrics/MetricsPage.test.tsx
+  s_991bb8a3f3118a::t_f99a23bf50e38b 8,20,23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "1b2effa9da07dcf86f66ad5c261305fe9f38ea5a",
+  "prompts": {},
+  "sessions": {
+    "s_991bb8a3f3118a": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5097d690-ce6c-4c93-8cc8-ede6a8db484d",
+        "model": "default"
+      },
+      "human_author": "im-tiket <ikhsan.mahendri@tiket.com>"
+    }
+  }
+}
