@@ -64,50 +64,58 @@ export function PRList({
 
   return (
     <section className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div
-          role="tablist"
-          aria-label="Pull request lists"
-          className="inline-flex rounded-lg border border-neutral-200 bg-neutral-100 p-0.5 dark:border-neutral-800 dark:bg-neutral-900"
-        >
-          {TABS.map((tab) => {
-            const selected = tab.id === active;
-            const newCount = countNewPrs(lists[tab.id], lastSeen);
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                aria-selected={selected}
-                onClick={() => onTabChange(tab.id)}
-                className={cn(
-                  "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                  selected
-                    ? "bg-white text-neutral-900 shadow-sm dark:bg-neutral-800 dark:text-neutral-50"
-                    : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200",
-                )}
-              >
-                {tab.label}
-                <span className="ml-1.5 text-neutral-400 tabular-nums">
-                  {lists[tab.id].length}
-                </span>
-                {newCount > 0 ? (
-                  <span
-                    className={cn(
-                      "ml-1.5 rounded-sm px-1 py-0.5 text-xs font-semibold tabular-nums",
-                      selected
-                        ? "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300"
-                        : "bg-sky-100/80 text-sky-700 dark:bg-sky-950/60 dark:text-sky-400",
-                    )}
-                  >
-                    {newCount} new
+      <div
+        data-testid="pr-list-toolbar"
+        className="flex flex-nowrap items-center gap-2"
+      >
+        <div className="min-w-0 flex-1 overflow-x-auto">
+          <div
+            role="tablist"
+            aria-label="Pull request lists"
+            className="inline-flex rounded-lg border border-neutral-200 bg-neutral-100 p-0.5 whitespace-nowrap dark:border-neutral-800 dark:bg-neutral-900"
+          >
+            {TABS.map((tab) => {
+              const selected = tab.id === active;
+              const newCount = countNewPrs(lists[tab.id], lastSeen);
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={selected}
+                  onClick={() => onTabChange(tab.id)}
+                  className={cn(
+                    "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                    selected
+                      ? "bg-white text-neutral-900 shadow-sm dark:bg-neutral-800 dark:text-neutral-50"
+                      : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200",
+                  )}
+                >
+                  {tab.label}
+                  <span className="ml-1.5 text-neutral-400 tabular-nums">
+                    {lists[tab.id].length}
                   </span>
-                ) : null}
-              </button>
-            );
-          })}
+                  {newCount > 0 ? (
+                    <span
+                      className={cn(
+                        "ml-1.5 rounded-sm px-1 py-0.5 text-xs font-semibold tabular-nums",
+                        selected
+                          ? "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300"
+                          : "bg-sky-100/80 text-sky-700 dark:bg-sky-950/60 dark:text-sky-400",
+                      )}
+                    >
+                      {newCount} new
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div
+          data-testid="pr-list-actions"
+          className="flex shrink-0 flex-nowrap items-center gap-2"
+        >
           {newTotal > 0 ? (
             <Button
               type="button"
@@ -145,7 +153,7 @@ export function PRList({
             ) : null}
           </Button>
           {updatedAt ? (
-            <span className="text-xs text-neutral-400">
+            <span className="hidden text-xs whitespace-nowrap text-neutral-400 sm:inline">
               Updated {updatedAt.toLocaleTimeString()}
             </span>
           ) : null}

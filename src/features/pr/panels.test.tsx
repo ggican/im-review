@@ -309,6 +309,56 @@ describe("PRList", () => {
     expect(screen.getByText(/Already reviewed/)).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /Mark seen/ }));
   });
+
+  it("UNIT-PRLIST-001 keeps Mark seen and Favorites on one non-wrapping toolbar row", async () => {
+    const { markAllSeen } = await import("@/lib/seen");
+    markAllSeen("2020-01-01T00:00:00.000Z");
+    render(
+      <MemoryRouter>
+        <PRList
+          lists={{
+            assigned: [],
+            review: [
+              makePr({
+                repo: "acme/app",
+                number: 99,
+                title: "New PR",
+                updatedAt: "2026-09-07T12:00:00.000Z",
+              }),
+            ],
+            mine: [],
+          }}
+          active="review"
+          onTabChange={vi.fn()}
+          loading={false}
+          error={null}
+          onRefresh={vi.fn()}
+          updatedAt={new Date("2026-09-07T12:00:00.000Z")}
+          onSelect={vi.fn()}
+          favoritesOnly={false}
+          onFavoritesOnlyChange={vi.fn()}
+          favoriteCount={10}
+        />
+      </MemoryRouter>,
+    );
+
+    const toolbar = screen.getByTestId("pr-list-toolbar");
+    const actions = screen.getByTestId("pr-list-actions");
+    expect(toolbar).toHaveClass("flex-nowrap");
+    expect(actions).toHaveClass("flex-nowrap", "shrink-0");
+    expect(actions).not.toHaveClass("flex-wrap");
+
+    const markSeen = screen.getByRole("button", { name: /Mark seen/ });
+    const favorites = screen.getByRole("button", { name: /Favorites/ });
+    const refresh = screen.getByRole("button", { name: /Refresh/ });
+    expect(actions).toContainElement(markSeen);
+    expect(actions).toContainElement(favorites);
+    expect(actions).toContainElement(refresh);
+    expect(toolbar).toContainElement(
+      screen.getByRole("tablist", { name: "Pull request lists" }),
+    );
+    expect(toolbar).toContainElement(actions);
+  });
 });
 
 describe("ChangedFilesPanel", () => {
