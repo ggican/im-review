@@ -29,16 +29,16 @@ Hermetic **unit** coverage ≥ **95% lines** (statements ≥94%) across the app 
 ## Commands
 
 ```bash
-pnpm test
+pnpm test              # vitest + scripts/*.test.mjs (Cursor runtime prepare)
 pnpm test:coverage
 pnpm check
 ```
 
-## Latest verification (2026-09-04)
+## Latest verification (2026-09-07)
 
-- `pnpm test:coverage` → **255 passed** / 32 files (+ `lcov` for Coveralls)
-- Coverage (full `src` include): **95.25% lines** / **94.07% statements** (thresholds in `vite.config.ts`: lines ≥95, statements ≥94)
-- CI uploads `coverage/lcov.info` to Coveralls; Rust job runs `cargo check` / `clippy` / `cargo test` (no Rust Coveralls yet)
+- `pnpm test` → vitest + `scripts/prepare-cursor-runtime.test.mjs`
+- `pnpm test:coverage` → lines/statements thresholds in `vite.config.ts`
+- CI uploads `coverage/lcov.info` to Coveralls; Rust job runs `cargo check` / `clippy` / `cargo test` (includes Cursor runtime path resolver tests)
 
 ## Feature matrices
 

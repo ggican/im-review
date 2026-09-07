@@ -144,7 +144,7 @@ IM Review supports multiple AI backends for **draft** review (still human-confir
 
 | Provider               | Typical key prefix / source       | Notes                                                    |
 | ---------------------- | --------------------------------- | -------------------------------------------------------- |
-| **Cursor**             | Cursor Dashboard → Integrations   | Local Cursor SDK path                                    |
+| **Cursor**             | Cursor Dashboard → Integrations   | Bundled Cursor SDK (needs Node.js 22.13+ on PATH)        |
 | **OpenAI**             | `sk-...` from platform.openai.com | Chat Completions API                                     |
 | **Codex**              | OpenAI key (Codex / GPT models)   | Same OpenAI-compatible HTTP path; pick Codex in Settings |
 | **Anthropic (Claude)** | `sk-ant-...`                      | Messages API                                             |

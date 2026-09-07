@@ -8,8 +8,10 @@ No Apple Developer certificate required. Gatekeeper will warn on other machines 
 
 ```bash
 pnpm install
-pnpm tauri build
+pnpm tauri build   # runs prepare-cursor-runtime + frontend build first
 ```
+
+`beforeBuildCommand` packs `scripts/cursor-local-prompt.mjs` and `@cursor/sdk` into `src-tauri/resources/cursor-runtime` so Cursor AI works in the installed app (not only in `tauri dev`).
 
 Artifacts:
 

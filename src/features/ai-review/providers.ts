@@ -15,7 +15,7 @@ export const AI_PROVIDERS: AiProviderMeta[] = [
     label: "Cursor",
     placeholder: "cursor_... or key from Integrations",
     docsUrl: "https://cursor.com/dashboard/integrations",
-    hint: "Local Cursor SDK review from GitHub patches.",
+    hint: "Bundled Cursor SDK from GitHub patches (needs Node.js 22.13+ on PATH).",
   },
   {
     id: "openai",

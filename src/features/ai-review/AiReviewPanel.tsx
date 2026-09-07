@@ -69,7 +69,7 @@ export function AiReviewPanel({
           Cursor AI is reviewing… {clock}
         </div>
         <p className="text-xs text-violet-800/80 dark:text-violet-300/80">
-          Local Cursor SDK reviews pasted GitHub patches — no cloud VM clone.
+          Cursor SDK reviews pasted GitHub patches — no cloud VM clone (needs Node.js 22.13+).
           Usually much faster than Cloud Agents. Nothing is posted until you
           confirm.
         </p>

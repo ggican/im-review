@@ -258,4 +258,9 @@ describe("UNIT-AIREVIEW-018/019 providers", () => {
     const ids = AI_PROVIDERS.map((p) => p.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
+
+  it("UNIT-AIREVIEW-020 documents Cursor Node requirement for installed builds", () => {
+    const cursor = AI_PROVIDERS.find((p) => p.id === "cursor");
+    expect(cursor?.hint).toMatch(/Node\.js 22\.13\+/);
+  });
 });

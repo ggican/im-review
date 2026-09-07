@@ -25,7 +25,7 @@ Patch-only, chat-like review path: GitHub diffs + local Cursor Agent — no Clou
 ## Operating Context
 
 - Desktop Tauri shell; Vite React UI; GitHub REST via personal access token stored in OS keychain.
-- Local Cursor SDK (`@cursor/sdk` / `scripts/cursor-local-prompt.mjs`) for AI drafts.
+- Bundled Cursor SDK (`@cursor/sdk` / `resources/cursor-runtime`) for AI drafts on installed builds.
 - LocalStorage for settings, favorite repos/branches, comment templates, saved review history.
 - Default favorite repos are tiket frontend repos; `favoritesOnly` defaults on.
 - Main surfaces: Onboarding (token), Dashboard (PR lists), Repos, Settings, PR detail / AI review (`/review/:owner/:repo/:number`) with tabs for detail, files, reviews, AI.

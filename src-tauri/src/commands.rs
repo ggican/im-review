@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::process::Stdio;
 use std::sync::{Mutex, OnceLock};
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Manager};
 use tokio::io::AsyncWriteExt;
 use tokio::process::Command;
 
@@ -636,15 +636,77 @@ CRITICAL — patch-only mode (intentional, not a failure):
 - Do NOT edit files, push commits, open PRs, or post to GitHub."#
 }
 
-fn project_root() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("..")
-        .canonicalize()
-        .unwrap_or_else(|_| PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(".."))
+const CURSOR_RUNTIME_DIR: &str = "cursor-runtime";
+const CURSOR_RUNTIME_SCRIPT: &str = "cursor-local-prompt.mjs";
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct CursorRuntimePaths {
+    script: PathBuf,
+    cwd: PathBuf,
 }
 
-fn local_prompt_script() -> PathBuf {
-    project_root().join("scripts/cursor-local-prompt.mjs")
+fn dev_project_root(manifest_dir: &Path) -> PathBuf {
+    manifest_dir
+        .join("..")
+        .canonicalize()
+        .unwrap_or_else(|_| manifest_dir.join(".."))
+}
+
+/// Resolve Cursor SDK script for packaged apps (Tauri resources) or `tauri dev`.
+/// Never rely on compile-time `CARGO_MANIFEST_DIR` alone for release binaries —
+/// that path points at the CI machine (e.g. `/Users/runner/work/...`).
+fn resolve_cursor_runtime(
+    resource_dir: Option<&Path>,
+    manifest_dir: &Path,
+) -> std::result::Result<CursorRuntimePaths, String> {
+    let mut looked = Vec::new();
+
+    if let Some(resource_dir) = resource_dir {
+        let packaged = [
+            resource_dir.join(CURSOR_RUNTIME_DIR).join(CURSOR_RUNTIME_SCRIPT),
+            resource_dir
+                .join("resources")
+                .join(CURSOR_RUNTIME_DIR)
+                .join(CURSOR_RUNTIME_SCRIPT),
+        ];
+        for script in packaged {
+            looked.push(script.display().to_string());
+            if script.is_file() {
+                let cwd = script
+                    .parent()
+                    .map(Path::to_path_buf)
+                    .unwrap_or_else(|| resource_dir.to_path_buf());
+                return Ok(CursorRuntimePaths { script, cwd });
+            }
+        }
+    }
+
+    let project_root = dev_project_root(manifest_dir);
+    let dev_script = project_root.join("scripts").join(CURSOR_RUNTIME_SCRIPT);
+    looked.push(dev_script.display().to_string());
+    if dev_script.is_file() {
+        return Ok(CursorRuntimePaths {
+            script: dev_script,
+            cwd: project_root,
+        });
+    }
+
+    Err(format!(
+        "missing local Cursor script (looked in: {}). Reinstall the latest IM Review release, or switch AI provider in Settings. Cursor also needs Node.js 22.13+ on PATH.",
+        looked.join(", ")
+    ))
+}
+
+fn cursor_runtime_for_app(app: &AppHandle) -> Result<CursorRuntimePaths> {
+    let resource_dir = app.path().resource_dir().ok();
+    resolve_cursor_runtime(
+        resource_dir.as_deref(),
+        Path::new(env!("CARGO_MANIFEST_DIR")),
+    )
+    .map_err(|message| Error::Cursor {
+        status: 500,
+        message,
+    })
 }
 
 fn candidate_node_bins() -> Vec<PathBuf> {
@@ -686,11 +748,11 @@ fn resolve_node_bin() -> Result<PathBuf> {
     }
     Err(Error::Cursor {
         status: 500,
-        message: "node binary not found — install Node.js or ensure it is on PATH".into(),
+        message: "node binary not found — install Node.js 22.13+ (required by @cursor/sdk) or ensure it is on PATH".into(),
     })
 }
 
-/// Run local `@cursor/sdk` Agent.prompt via scripts/cursor-local-prompt.mjs.
+/// Run local `@cursor/sdk` Agent.prompt via bundled cursor-runtime (or repo scripts in dev).
 async fn run_local_cursor_prompt(
     app: &AppHandle,
     api_key: &str,
@@ -698,21 +760,14 @@ async fn run_local_cursor_prompt(
     waiting_label: &str,
     finished_label: &str,
 ) -> Result<String> {
-    let script = local_prompt_script();
-    if !script.is_file() {
-        return Err(Error::Cursor {
-            status: 500,
-            message: format!("missing local Cursor script at {}", script.display()),
-        });
-    }
+    let runtime = cursor_runtime_for_app(app)?;
     let node = resolve_node_bin()?;
-    let root = project_root();
 
     emit_progress(
         app,
         "start_agent",
         "Starting local Cursor SDK (fast, no cloud VM)",
-        Some(format!("node {}", script.display())),
+        Some(format!("node {}", runtime.script.display())),
     );
 
     let payload = json!({
@@ -723,8 +778,8 @@ async fn run_local_cursor_prompt(
     });
 
     let mut child = Command::new(&node)
-        .arg(&script)
-        .current_dir(&root)
+        .arg(&runtime.script)
+        .current_dir(&runtime.cwd)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -983,5 +1038,63 @@ mod tests {
         let token = load_token().unwrap();
         assert_eq!(token, "  ghp_test  ");
         *github_token_store().lock().unwrap() = None;
+    }
+
+    #[test]
+    fn resolve_cursor_runtime_prefers_packaged_resource() {
+        let tmp = std::env::temp_dir().join(format!(
+            "im-review-cursor-res-{}",
+            std::process::id()
+        ));
+        let runtime = tmp.join(CURSOR_RUNTIME_DIR);
+        std::fs::create_dir_all(&runtime).unwrap();
+        let script = runtime.join(CURSOR_RUNTIME_SCRIPT);
+        std::fs::write(&script, "// test").unwrap();
+
+        let resolved = resolve_cursor_runtime(Some(&tmp), Path::new("/missing-manifest")).unwrap();
+        assert_eq!(resolved.script, script);
+        assert_eq!(resolved.cwd, runtime);
+
+        let _ = std::fs::remove_dir_all(&tmp);
+    }
+
+    #[test]
+    fn resolve_cursor_runtime_accepts_nested_resources_layout() {
+        let tmp = std::env::temp_dir().join(format!(
+            "im-review-cursor-nested-{}",
+            std::process::id()
+        ));
+        let runtime = tmp.join("resources").join(CURSOR_RUNTIME_DIR);
+        std::fs::create_dir_all(&runtime).unwrap();
+        let script = runtime.join(CURSOR_RUNTIME_SCRIPT);
+        std::fs::write(&script, "// test").unwrap();
+
+        let resolved = resolve_cursor_runtime(Some(&tmp), Path::new("/missing-manifest")).unwrap();
+        assert_eq!(resolved.script, script);
+        assert_eq!(resolved.cwd, runtime);
+
+        let _ = std::fs::remove_dir_all(&tmp);
+    }
+
+    #[test]
+    fn resolve_cursor_runtime_falls_back_to_dev_scripts() {
+        let manifest = Path::new(env!("CARGO_MANIFEST_DIR"));
+        let resolved = resolve_cursor_runtime(None, manifest).unwrap();
+        assert!(resolved.script.ends_with("scripts/cursor-local-prompt.mjs"));
+        assert!(resolved.script.is_file());
+        assert!(resolved.cwd.join("package.json").is_file());
+    }
+
+    #[test]
+    fn resolve_cursor_runtime_errors_with_helpful_message() {
+        let tmp = std::env::temp_dir().join(format!(
+            "im-review-cursor-missing-{}",
+            std::process::id()
+        ));
+        std::fs::create_dir_all(&tmp).unwrap();
+        let err = resolve_cursor_runtime(Some(&tmp), &tmp.join("src-tauri")).unwrap_err();
+        assert!(err.contains("missing local Cursor script"));
+        assert!(err.contains("Reinstall the latest IM Review release"));
+        let _ = std::fs::remove_dir_all(&tmp);
     }
 }
