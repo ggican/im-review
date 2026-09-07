@@ -69,9 +69,9 @@ export function AiReviewPanel({
           Cursor AI is reviewing… {clock}
         </div>
         <p className="text-xs text-violet-800/80 dark:text-violet-300/80">
-          Cursor SDK reviews pasted GitHub patches — no cloud VM clone (needs Node.js 22.13+).
-          Usually much faster than Cloud Agents. Nothing is posted until you
-          confirm.
+          Cursor SDK reviews pasted GitHub patches — no cloud VM clone (needs
+          Node.js 22.13+). Usually much faster than Cloud Agents. Nothing is
+          posted until you confirm.
         </p>
         <Button type="button" size="sm" variant="outline" onClick={onCancel}>
           Cancel waiting

@@ -8,13 +8,13 @@ You can store API keys for multiple providers and select which one is **active**
 
 ## Supported providers
 
-| Id          | Label            | Key storage account                                     | Backend                                               |
-| ----------- | ---------------- | ------------------------------------------------------- | ----------------------------------------------------- |
+| Id          | Label            | Key storage account                                     | Backend                                                      |
+| ----------- | ---------------- | ------------------------------------------------------- | ------------------------------------------------------------ |
 | `cursor`    | Cursor           | `ai-key:cursor` (also migrates legacy `cursor-api-key`) | Bundled Cursor SDK (`resources/cursor-runtime`, Node 22.13+) |
-| `openai`    | OpenAI           | `ai-key:openai`                                         | `POST https://api.openai.com/v1/chat/completions`     |
-| `codex`     | OpenAI Codex     | `ai-key:codex`                                          | OpenAI-compatible Chat Completions (Codex/GPT models) |
-| `anthropic` | Anthropic Claude | `ai-key:anthropic`                                      | `POST https://api.anthropic.com/v1/messages`          |
-| `gemini`    | Google Gemini    | `ai-key:gemini`                                         | Gemini `generateContent` API                          |
+| `openai`    | OpenAI           | `ai-key:openai`                                         | `POST https://api.openai.com/v1/chat/completions`            |
+| `codex`     | OpenAI Codex     | `ai-key:codex`                                          | OpenAI-compatible Chat Completions (Codex/GPT models)        |
+| `anthropic` | Anthropic Claude | `ai-key:anthropic`                                      | `POST https://api.anthropic.com/v1/messages`                 |
+| `gemini`    | Google Gemini    | `ai-key:gemini`                                         | Gemini `generateContent` API                                 |
 
 Keys are stored in **local app storage** (`localStorage`) and loaded into Rust memory when the app starts. No macOS Keychain prompt.
 
@@ -35,6 +35,7 @@ You can keep several keys saved and switch active provider without re-entering s
 Packaged `.app` / `.dmg` builds embed `src-tauri/resources/cursor-runtime` (script + `@cursor/sdk`) at build time via `scripts/prepare-cursor-runtime.mjs`. Path resolution uses the app resource directory at **runtime** (not `CARGO_MANIFEST_DIR` from CI).
 
 You still need **Node.js 22.13+** available on the Mac (PATH / Homebrew / nvm) because the app spawns `node` to run the SDK.
+
 - OpenAI / Codex: [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
 - Anthropic: [console.anthropic.com](https://console.anthropic.com/)
 - Gemini: [Google AI Studio](https://aistudio.google.com/apikey)
