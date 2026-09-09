@@ -73,6 +73,7 @@ describe("DashboardPage", () => {
       ...getSettings(),
       refreshIntervalMin: 0,
       favoritesOnly: false,
+      showFavoriteOpen: false,
     });
     mockNavigate.mockReset();
     mockValidateToken.mockResolvedValue({
@@ -82,7 +83,13 @@ describe("DashboardPage", () => {
     });
     mockDeleteToken.mockResolvedValue(undefined);
     mockUseMyPRs.mockReturnValue({
-      lists: { assigned: [], review: [reviewPr], mine: [minePr] },
+      lists: {
+        all: [],
+        assigned: [],
+        review: [reviewPr],
+        mine: [minePr],
+        favorites: [],
+      },
       loading: false,
       error: null,
       updatedAt: new Date("2026-09-04T12:00:00.000Z"),
@@ -98,14 +105,15 @@ describe("DashboardPage", () => {
   });
 
   it("renders user header and PR list tabs", async () => {
+    const user = userEvent.setup();
     renderDashboard();
     await waitFor(() => {
       expect(screen.getByText("Alice")).toBeInTheDocument();
     });
     expect(screen.getByText(/@alice/)).toBeInTheDocument();
-    expect(
-      screen.getByRole("tab", { name: /Review requested/ }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /All open/ })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /Favorites/ })).toBeInTheDocument();
+    await user.click(screen.getByRole("tab", { name: /Review requested/ }));
     expect(screen.getByText("Review me")).toBeInTheDocument();
   });
 
@@ -127,7 +135,7 @@ describe("DashboardPage", () => {
     expect(screen.getByText("Metrics page")).toBeInTheDocument();
   });
 
-  it("navigates from CI banner and PR list, toggles favorites, and signs out", async () => {
+  it("navigates from CI banner and PR list, and signs out", async () => {
     const user = userEvent.setup();
     renderDashboard();
     await waitFor(() => {
@@ -138,11 +146,9 @@ describe("DashboardPage", () => {
     );
     expect(mockNavigate).toHaveBeenCalledWith("/review/acme/app/9");
 
+    await user.click(screen.getByRole("tab", { name: /Review requested/ }));
     await user.click(screen.getByRole("button", { name: /Review me/ }));
     expect(mockNavigate).toHaveBeenCalledWith("/review/acme/app/10");
-
-    await user.click(screen.getByRole("button", { name: /Favorites/ }));
-    expect(getSettings().favoritesOnly).toBe(true);
 
     await user.click(screen.getByRole("button", { name: "Sign out" }));
     await waitFor(() => {
@@ -152,9 +158,7 @@ describe("DashboardPage", () => {
   });
 
   it("keeps locally reviewed PRs and redirects when token invalid", async () => {
-    const { saveReviewLocally, getSettings, saveSettings } =
-      await import("@/lib/settings");
-    saveSettings({ ...getSettings(), favoritesOnly: false });
+    const { saveReviewLocally } = await import("@/lib/settings");
     saveReviewLocally({
       repo: "acme/ghost",
       prNumber: 77,
@@ -167,17 +171,26 @@ describe("DashboardPage", () => {
       branch: "feat/ghost",
     });
     mockUseMyPRs.mockReturnValue({
-      lists: { assigned: [], review: [], mine: [] },
+      lists: {
+        all: [],
+        favorites: [],
+        assigned: [],
+        review: [],
+        mine: [],
+      },
       loading: false,
       error: null,
       updatedAt: new Date("2026-09-04T12:00:00.000Z"),
       refresh: vi.fn(),
     });
     mockScanMineCiFailures.mockResolvedValue([]);
+    const user = userEvent.setup();
     renderDashboard();
     await waitFor(() => {
-      expect(screen.getByText("Ghost reviewed")).toBeInTheDocument();
+      expect(screen.getByText("Alice")).toBeInTheDocument();
     });
+    await user.click(screen.getByRole("tab", { name: /Review requested/ }));
+    expect(screen.getByText("Ghost reviewed")).toBeInTheDocument();
 
     mockValidateToken.mockRejectedValueOnce(new Error("bad token"));
     renderDashboard();

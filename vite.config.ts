@@ -25,7 +25,7 @@ export default defineConfig(async () => ({
       reporter: ["text", "html", "lcov"],
       thresholds: {
         lines: 95,
-        statements: 94,
+        statements: 95,
         functions: 90,
         branches: 80,
       },

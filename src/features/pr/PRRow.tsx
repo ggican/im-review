@@ -166,6 +166,14 @@ export function PRRow({ pr, onSelect, isNew = false }: Props) {
                 <span aria-hidden>·</span>
                 <span className="font-mono text-neutral-400">
                   {pr.headBranch}
+                  {pr.baseBranch ? ` → ${pr.baseBranch}` : ""}
+                </span>
+              </>
+            ) : pr.baseBranch ? (
+              <>
+                <span aria-hidden>·</span>
+                <span className="font-mono text-neutral-400">
+                  → {pr.baseBranch}
                 </span>
               </>
             ) : null}

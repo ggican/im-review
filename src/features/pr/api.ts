@@ -57,24 +57,140 @@ function mapItem(item: SearchItem): PullRequest {
   };
 }
 
-async function searchPrs(query: string): Promise<PullRequest[]> {
+/** GitHub Search max is 100/page and 1000 results total.
+ * Keep pages low — Search secondary rate limits are easy to hit. */
+const SEARCH_PER_PAGE = 100;
+const SEARCH_MAX_PAGES = 3;
+
+async function searchPrs(
+  query: string,
+  maxPages = SEARCH_MAX_PAGES,
+): Promise<PullRequest[]> {
   const q = encodeURIComponent(query);
-  const data = await api.githubGet<SearchResponse>(
-    `/search/issues?q=${q}&per_page=50&sort=updated`,
-  );
-  return (data.items ?? []).map(mapItem);
+  const all: PullRequest[] = [];
+  const seen = new Set<number>();
+  const pages = Math.min(maxPages, SEARCH_MAX_PAGES);
+
+  for (let page = 1; page <= pages; page++) {
+    const data = await api.githubGet<SearchResponse>(
+      `/search/issues?q=${q}&per_page=${SEARCH_PER_PAGE}&page=${page}&sort=updated`,
+    );
+    const items = data.items ?? [];
+    for (const item of items) {
+      if (seen.has(item.id)) continue;
+      seen.add(item.id);
+      all.push(mapItem(item));
+    }
+    const loaded = page * SEARCH_PER_PAGE;
+    const total = data.total_count ?? all.length;
+    if (items.length < SEARCH_PER_PAGE || loaded >= total || loaded >= 1000) {
+      break;
+    }
+  }
+
+  return all;
+}
+
+type GhOpenPull = {
+  id: number;
+  number: number;
+  title: string;
+  html_url: string;
+  state: string;
+  draft?: boolean;
+  created_at: string;
+  updated_at: string;
+  user: { login: string; avatar_url: string } | null;
+  head: { ref: string };
+  base?: { ref: string };
+};
+
+const OPEN_PULLS_PER_PAGE = 100;
+const OPEN_PULLS_MAX_PAGES = 5;
+
+/** Open PRs for one repo (active head branches). */
+export async function fetchOpenPullsForRepo(
+  repoFullName: string,
+): Promise<PullRequest[]> {
+  const { owner, name } = splitRepo(repoFullName);
+  const all: PullRequest[] = [];
+
+  for (let page = 1; page <= OPEN_PULLS_MAX_PAGES; page++) {
+    const batch = await api.githubGet<GhOpenPull[]>(
+      `/repos/${owner}/${name}/pulls?state=open&per_page=${OPEN_PULLS_PER_PAGE}&page=${page}&sort=updated`,
+    );
+    if (!Array.isArray(batch) || batch.length === 0) break;
+    for (const p of batch) {
+      all.push({
+        id: p.id,
+        number: p.number,
+        repo: repoFullName,
+        title: p.title,
+        url: p.html_url,
+        state: p.state === "closed" ? "closed" : "open",
+        author: {
+          login: p.user?.login ?? "unknown",
+          avatarUrl: p.user?.avatar_url ?? "",
+        },
+        isDraft: Boolean(p.draft),
+        updatedAt: p.updated_at,
+        createdAt: p.created_at,
+        headBranch: p.head?.ref,
+        baseBranch: p.base?.ref,
+      });
+    }
+    if (batch.length < OPEN_PULLS_PER_PAGE) break;
+  }
+
+  return all;
+}
+
+/** Open PRs across many repos (e.g. favorites). Sequential batches to avoid secondary rate limits. */
+export async function fetchOpenPullsForRepos(
+  repoFullNames: string[],
+  concurrency = 2,
+): Promise<PullRequest[]> {
+  if (repoFullNames.length === 0) return [];
+  const seen = new Set<string>();
+  const all: PullRequest[] = [];
+  const limit = Math.max(1, concurrency);
+
+  for (let i = 0; i < repoFullNames.length; i += limit) {
+    const slice = repoFullNames.slice(i, i + limit);
+    const batches = await Promise.all(
+      slice.map((repo) =>
+        fetchOpenPullsForRepo(repo).catch(() => [] as PullRequest[]),
+      ),
+    );
+    for (const batch of batches) {
+      for (const pr of batch) {
+        const key = `${pr.repo}#${pr.number}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        all.push(pr);
+      }
+    }
+  }
+
+  all.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  return all;
+}
+
+/** Broad open-PR search — capped pages (expensive / rate-limit sensitive). */
+export async function fetchAllOpenPrs(): Promise<PullRequest[]> {
+  return searchPrs("is:pr is:open", 2);
 }
 
 export async function fetchAssignedPrs(): Promise<PullRequest[]> {
-  return searchPrs("is:pr is:open assignee:@me");
+  return searchPrs("is:pr is:open assignee:@me", 2);
 }
 
 export async function fetchReviewRequestedPrs(): Promise<PullRequest[]> {
-  return searchPrs("is:pr is:open review-requested:@me");
+  return searchPrs("is:pr is:open review-requested:@me", 2);
 }
 
 export async function fetchMyOpenPrs(): Promise<PullRequest[]> {
-  return searchPrs("is:pr is:open author:@me");
+  return searchPrs("is:pr is:open author:@me", 2);
 }
 
 /** ISO date (YYYY-MM-DD) for metrics window start. `days=0` is today. */
@@ -136,6 +252,7 @@ type GhPull = {
   merged_at: string | null;
   user: { login: string; avatar_url: string };
   head: { sha: string; ref: string };
+  base?: { ref: string };
   requested_reviewers?: { login: string }[];
 };
 
@@ -350,6 +467,7 @@ export async function fetchPrDetail(pr: PullRequest): Promise<PrDetail> {
     body: raw.body?.trim() || "",
     headSha: raw.head.sha,
     headBranch: raw.head.ref,
+    baseBranch: raw.base?.ref,
     nodeId: raw.node_id,
     mergedAt: raw.merged_at,
     additions: raw.additions,

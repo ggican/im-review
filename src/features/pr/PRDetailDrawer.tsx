@@ -176,6 +176,12 @@ export function PRDetailDrawer({ pr, open, onOpenChange }: Props) {
                     draft
                   </span>
                 ) : null}
+                {shown.headBranch || shown.baseBranch ? (
+                  <span className="font-mono text-neutral-400">
+                    {shown.headBranch ?? "?"}
+                    {shown.baseBranch ? <> → {shown.baseBranch}</> : null}
+                  </span>
+                ) : null}
                 {detail ? (
                   <span className="font-mono">
                     <span className="text-emerald-600">

@@ -22,6 +22,7 @@ export function makePr(
     updatedAt: overrides.updatedAt ?? "2026-09-01T12:00:00.000Z",
     createdAt: overrides.createdAt ?? "2026-09-01T10:00:00.000Z",
     headBranch: overrides.headBranch,
+    baseBranch: overrides.baseBranch,
     localReviewEvent: overrides.localReviewEvent,
     fromLocalReview: overrides.fromLocalReview,
   };

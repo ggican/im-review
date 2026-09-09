@@ -17,6 +17,8 @@ vi.mock("react-router-dom", async (importOriginal) => {
 
 const cachedPr = makePr({ repo: "acme/app", number: 5, title: "Cached PR" });
 const prCache = {
+  all: [] as ReturnType<typeof makePr>[],
+  favorites: [] as ReturnType<typeof makePr>[],
   assigned: [] as ReturnType<typeof makePr>[],
   review: [cachedPr],
   mine: [] as ReturnType<typeof makePr>[],

@@ -539,5 +539,180 @@ describe("AiReviewPage", () => {
         expect(mockReopenPullRequest).toHaveBeenCalled();
       });
     });
+
+    it("surfaces close failure", async () => {
+      const user = userEvent.setup();
+      mockClosePullRequest.mockRejectedValueOnce(new Error("close fail"));
+      mockFetchPrDetail.mockResolvedValue(
+        baseDetail({ author: { login: "alice", avatarUrl: "" } }),
+      );
+      renderAiReview();
+      await waitForLoaded();
+      await user.click(screen.getByRole("button", { name: "Close PR" }));
+      await user.click(
+        within(screen.getByRole("dialog")).getByRole("button", {
+          name: "Close PR",
+        }),
+      );
+      await waitFor(() => {
+        expect(vi.mocked(toast.error)).toHaveBeenCalledWith(
+          expect.stringContaining("close fail"),
+        );
+      });
+    });
+
+    it("surfaces reopen failure", async () => {
+      const user = userEvent.setup();
+      mockReopenPullRequest.mockRejectedValueOnce(new Error("reopen fail"));
+      mockFetchPrDetail.mockResolvedValue(
+        baseDetail({
+          author: { login: "alice", avatarUrl: "" },
+          state: "closed",
+        }),
+      );
+      renderAiReview();
+      await waitForLoaded();
+      await user.click(screen.getByRole("button", { name: "Reopen PR" }));
+      await waitFor(() => {
+        expect(vi.mocked(toast.error)).toHaveBeenCalledWith(
+          expect.stringContaining("reopen fail"),
+        );
+      });
+    });
+
+    it("surfaces convert-to-draft failure", async () => {
+      const user = userEvent.setup();
+      mockConvertToDraft.mockRejectedValueOnce(new Error("draft fail"));
+      mockFetchPrDetail.mockResolvedValue(
+        baseDetail({ author: { login: "alice", avatarUrl: "" } }),
+      );
+      renderAiReview();
+      await waitForLoaded();
+      await user.click(
+        screen.getByRole("button", { name: "Convert to draft" }),
+      );
+      await user.click(
+        within(screen.getByRole("dialog")).getByRole("button", {
+          name: "Convert to draft",
+        }),
+      );
+      await waitFor(() => {
+        expect(vi.mocked(toast.error)).toHaveBeenCalledWith(
+          expect.stringContaining("draft fail"),
+        );
+      });
+    });
+
+    it("surfaces mark-ready failure", async () => {
+      const user = userEvent.setup();
+      mockMarkReady.mockRejectedValueOnce(new Error("ready fail"));
+      mockFetchPrDetail.mockResolvedValue(
+        baseDetail({
+          author: { login: "alice", avatarUrl: "" },
+          isDraft: true,
+        }),
+      );
+      renderAiReview();
+      await waitForLoaded();
+      await user.click(
+        screen.getByRole("button", { name: "Mark ready for review" }),
+      );
+      await waitFor(() => {
+        expect(vi.mocked(toast.error)).toHaveBeenCalledWith(
+          expect.stringContaining("ready fail"),
+        );
+      });
+    });
+  });
+
+  it("shows base → target branch in header and overview", async () => {
+    mockFetchPrDetail.mockResolvedValue(
+      baseDetail({ headBranch: "feat/x", baseBranch: "main" }),
+    );
+    renderAiReview();
+    await waitForLoaded();
+    expect(screen.getAllByText(/feat\/x\s+→\s+main/).length).toBeGreaterThan(0);
+  });
+
+  it("surfaces AI / refine / submit failures", async () => {
+    const user = userEvent.setup();
+    mockFetchPrCiChecks.mockRejectedValueOnce(new Error("ci boom"));
+    renderAiReview();
+    await waitForLoaded();
+    await user.click(screen.getByRole("tab", { name: /CI/ }));
+    expect(await screen.findByText(/ci boom/)).toBeInTheDocument();
+
+    mockHasAiKey.mockResolvedValue(true);
+    mockAiReviewPr.mockRejectedValueOnce(new Error("ai boom"));
+    await user.click(screen.getByRole("tab", { name: /AI review/ }));
+    await user.click(screen.getByRole("button", { name: /Run AI review/ }));
+    await waitFor(() => {
+      expect(vi.mocked(toast.error)).toHaveBeenCalledWith("Error: ai boom");
+    });
+
+    mockAiReviewPr.mockResolvedValueOnce(AI_DRAFT_JSON);
+    await runAiToDraft(user);
+    vi.mocked(toast.error).mockClear();
+
+    const refineInput = screen.getByPlaceholderText(/Custom:/);
+    await user.click(refineInput);
+    await user.keyboard("{Enter}");
+    expect(vi.mocked(toast.error)).toHaveBeenCalledWith(
+      "Write a refine instruction first",
+    );
+
+    mockHasAiKey.mockResolvedValueOnce(false);
+    await user.type(screen.getByPlaceholderText(/Custom:/), "tighten wording");
+    await user.click(screen.getByRole("button", { name: "Apply" }));
+    expect(vi.mocked(toast.error)).toHaveBeenCalledWith(
+      "Add a Cursor API key in Settings first",
+    );
+
+    mockHasAiKey.mockResolvedValue(true);
+    mockAiRefineReview.mockRejectedValueOnce(new Error("refine boom"));
+    await user.click(screen.getByRole("button", { name: "Apply" }));
+    await waitFor(() => {
+      expect(vi.mocked(toast.error)).toHaveBeenCalledWith("Error: refine boom");
+    });
+
+    mockSubmitReview.mockRejectedValueOnce(new Error("submit boom"));
+    await user.click(
+      screen.getByRole("checkbox", {
+        name: /I reviewed these findings/,
+      }),
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Submit review to GitHub" }),
+    );
+    await waitFor(() => {
+      expect(vi.mocked(toast.error)).toHaveBeenCalledWith("Error: submit boom");
+    });
+  });
+
+  it("surfaces quick-approve and review-refresh failures", async () => {
+    const user = userEvent.setup();
+    mockSubmitReview.mockRejectedValueOnce(new Error("approve boom"));
+    renderAiReview();
+    await waitForLoaded();
+    await user.click(screen.getByRole("button", { name: "Approve LGTM" }));
+    await waitFor(() => {
+      expect(vi.mocked(toast.error)).toHaveBeenCalledWith(
+        "Error: approve boom",
+      );
+    });
+
+    mockFetchPrReviews.mockRejectedValueOnce(new Error("reviews boom"));
+    await user.click(screen.getByRole("tab", { name: /Reviews/ }));
+    await user.click(screen.getByRole("button", { name: "Refresh" }));
+    await waitFor(() => {
+      expect(screen.getByText(/reviews boom/)).toBeInTheDocument();
+    });
+
+    mockFetchPrCiChecks.mockRejectedValueOnce(new Error("ci refresh boom"));
+    await user.click(screen.getByRole("tab", { name: /CI/ }));
+    await user.click(screen.getByRole("button", { name: "Refresh" }));
+    await waitFor(() => {
+      expect(screen.getByText(/ci refresh boom/)).toBeInTheDocument();
+    });
   });
 });

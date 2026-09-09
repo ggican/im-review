@@ -14,11 +14,14 @@ import { api } from "@/lib/api";
 import {
   closePullRequest,
   convertPullRequestToDraft,
+  fetchAllOpenPrs,
   fetchAssignedPrs,
   fetchAuthoredPrsInWindow,
   fetchHeadBranch,
   fetchMergedPrsInWindow,
   fetchMyOpenPrs,
+  fetchOpenPullsForRepo,
+  fetchOpenPullsForRepos,
   fetchPrCiChecks,
   fetchPrCommitCount,
   fetchPrDetail,
@@ -63,7 +66,7 @@ describe("UNIT-API pr/api", () => {
   });
 
   it("UNIT-API-007 search mappers", async () => {
-    githubGet.mockResolvedValue({ items: [searchItem] });
+    githubGet.mockResolvedValue({ items: [searchItem], total_count: 1 });
     const assigned = await fetchAssignedPrs();
     expect(assigned[0]?.repo).toBe("acme/web");
     expect(assigned[0]?.url).toContain("/pull/10");
@@ -73,6 +76,106 @@ describe("UNIT-API pr/api", () => {
     await fetchReviewedPrsInWindow("2026-09-01");
     await fetchMergedPrsInWindow("2026-09-01");
     expect(githubGet.mock.calls.length).toBeGreaterThanOrEqual(6);
+  });
+
+  it("UNIT-API-007b searchPrs paginates until exhausted", async () => {
+    const page1 = Array.from({ length: 100 }, (_, i) => ({
+      ...searchItem,
+      id: i + 1,
+      number: i + 1,
+    }));
+    const page2 = [
+      { ...searchItem, id: 101, number: 101 },
+      { ...searchItem, id: 102, number: 102 },
+    ];
+    githubGet
+      .mockResolvedValueOnce({ items: page1, total_count: 102 })
+      .mockResolvedValueOnce({ items: page2, total_count: 102 });
+    const list = await fetchAssignedPrs();
+    expect(list).toHaveLength(102);
+    expect(githubGet).toHaveBeenCalledTimes(2);
+    expect(String(githubGet.mock.calls[0]?.[0])).toContain("per_page=100");
+    expect(String(githubGet.mock.calls[1]?.[0])).toContain("page=2");
+  });
+
+  it("UNIT-API-007c fetchOpenPullsForRepo maps head branch", async () => {
+    githubGet.mockResolvedValueOnce([
+      {
+        id: 9,
+        number: 3,
+        title: "Feat",
+        html_url: "https://github.com/acme/web/pull/3",
+        state: "open",
+        draft: false,
+        created_at: "2026-09-01T00:00:00Z",
+        updated_at: "2026-09-02T00:00:00Z",
+        user: { login: "bob", avatar_url: "" },
+        head: { ref: "feat/branch-x" },
+        base: { ref: "develop" },
+      },
+    ]);
+    const list = await fetchOpenPullsForRepo("acme/web");
+    expect(list).toHaveLength(1);
+    expect(list[0]?.headBranch).toBe("feat/branch-x");
+    expect(list[0]?.baseBranch).toBe("develop");
+    expect(list[0]?.repo).toBe("acme/web");
+  });
+
+  it("UNIT-API-007d fetchOpenPullsForRepos batches, dedupes, skips failures", async () => {
+    githubGet
+      .mockResolvedValueOnce([
+        {
+          id: 1,
+          number: 1,
+          title: "A",
+          html_url: "https://github.com/acme/a/pull/1",
+          state: "open",
+          created_at: "2026-09-01T00:00:00Z",
+          updated_at: "2026-09-03T00:00:00Z",
+          user: { login: "a", avatar_url: "" },
+          head: { ref: "feat/a" },
+        },
+      ])
+      .mockRejectedValueOnce(new Error("boom"))
+      .mockResolvedValueOnce([
+        {
+          id: 1,
+          number: 1,
+          title: "A-dup",
+          html_url: "https://github.com/acme/a/pull/1",
+          state: "open",
+          created_at: "2026-09-01T00:00:00Z",
+          updated_at: "2026-09-03T00:00:00Z",
+          user: { login: "a", avatar_url: "" },
+          head: { ref: "feat/a" },
+        },
+        {
+          id: 2,
+          number: 2,
+          title: "B",
+          html_url: "https://github.com/acme/c/pull/2",
+          state: "open",
+          created_at: "2026-09-01T00:00:00Z",
+          updated_at: "2026-09-04T00:00:00Z",
+          user: null,
+          head: { ref: "feat/b" },
+        },
+      ]);
+
+    expect(await fetchOpenPullsForRepos([])).toEqual([]);
+    const list = await fetchOpenPullsForRepos(
+      ["acme/a", "acme/b", "acme/a"],
+      2,
+    );
+    expect(list.map((p) => p.number)).toEqual([2, 1]);
+    expect(list[0]?.author.login).toBe("unknown");
+  });
+
+  it("UNIT-API-007e fetchAllOpenPrs uses open search", async () => {
+    githubGet.mockResolvedValueOnce({ items: [searchItem], total_count: 1 });
+    const list = await fetchAllOpenPrs();
+    expect(list[0]?.number).toBe(10);
+    expect(String(githubGet.mock.calls[0]?.[0])).toContain("is%3Aopen");
   });
 
   it("UNIT-API-008 fetchPrDetail", async () => {
@@ -94,6 +197,7 @@ describe("UNIT-API pr/api", () => {
         merged_at: null,
         user: { login: "alice", avatar_url: "" },
         head: { sha: "sha1", ref: "feat/x" },
+        base: { ref: "main" },
         requested_reviewers: [{ login: "bob" }],
       })
       .mockResolvedValueOnce([
@@ -122,6 +226,7 @@ describe("UNIT-API pr/api", () => {
       makePr({ repo: "acme/web", number: 10 }),
     );
     expect(detail.headBranch).toBe("feat/x");
+    expect(detail.baseBranch).toBe("main");
     expect(detail.reviewers).toEqual(expect.arrayContaining(["bob", "carol"]));
     expect(detail.ciStatus).toBe("failure");
     expect(detail.ciDescription).toContain("ci");

@@ -1,5 +1,5 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { ExternalLink, Lock, Star } from "lucide-react";
+import { ChevronRight, ExternalLink, Lock, Star } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -12,9 +12,10 @@ import type { Repo } from "./types";
 type Props = {
   repo: Repo;
   favorited: boolean;
+  onOpenDetail?: (repo: Repo) => void;
 };
 
-export function RepoRow({ repo, favorited }: Props) {
+export function RepoRow({ repo, favorited, onOpenDetail }: Props) {
   async function openRepo() {
     try {
       await openUrl(repo.htmlUrl);
@@ -39,7 +40,11 @@ export function RepoRow({ repo, favorited }: Props) {
           )}
         />
       </button>
-      <div className="min-w-0 flex-1">
+      <button
+        type="button"
+        onClick={() => onOpenDetail?.(repo)}
+        className="min-w-0 flex-1 rounded-md text-left hover:bg-neutral-50 dark:hover:bg-neutral-900/50"
+      >
         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
           <span className="truncate text-sm font-medium">{repo.fullName}</span>
           {repo.private ? (
@@ -54,12 +59,18 @@ export function RepoRow({ repo, favorited }: Props) {
             {repo.description}
           </p>
         ) : null}
-        <div className="mt-1 flex flex-wrap gap-x-2 text-xs text-neutral-400">
+        <div className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-neutral-400">
           {repo.language ? <span>{repo.language}</span> : null}
           {repo.language ? <span aria-hidden>·</span> : null}
           <span>{relativeTime(repo.updatedAt)}</span>
+          {onOpenDetail ? (
+            <span className="inline-flex items-center gap-0.5 text-sky-600 dark:text-sky-400">
+              Open PRs
+              <ChevronRight className="h-3 w-3" />
+            </span>
+          ) : null}
         </div>
-      </div>
+      </button>
       <Button
         type="button"
         variant="ghost"

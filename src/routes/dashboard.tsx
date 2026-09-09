@@ -22,32 +22,13 @@ import {
   getLastSeenSnapshot,
   subscribeLastSeen,
 } from "@/lib/seen";
-import { getSettings, saveSettings } from "@/lib/settings";
 import { useFavorites, useSavedReviews, useSettings } from "@/lib/use-settings";
-
-function filterLists(
-  lists: PrLists,
-  favorites: string[],
-  only: boolean,
-): PrLists {
-  if (!only || favorites.length === 0) return lists;
-  const set = new Set(favorites);
-  const pick = (items: PullRequest[]) => items.filter((pr) => set.has(pr.repo));
-  return {
-    assigned: pick(lists.assigned),
-    review: pick(lists.review),
-    mine: pick(lists.mine),
-  };
-}
 
 /** Annotate live PRs + keep locally reviewed ones visible on Review tab. */
 function mergeLocalReviews(
   lists: PrLists,
   saved: ReturnType<typeof latestReviewsByPr>,
-  favoriteRepos: string[],
-  favoritesOnly: boolean,
 ): PrLists {
-  const favSet = new Set(favoriteRepos);
   const annotate = (items: PullRequest[]) =>
     items.map((pr) => {
       const local = saved.get(prKey(pr.repo, pr.number));
@@ -59,12 +40,14 @@ function mergeLocalReviews(
       };
     });
 
+  const all = annotate(lists.all);
+  const favorites = annotate(lists.favorites);
   const assigned = annotate(lists.assigned);
   const mine = annotate(lists.mine);
   const reviewLive = annotate(lists.review);
 
   const present = new Set(
-    [...assigned, ...mine, ...reviewLive].map((pr) =>
+    [...all, ...favorites, ...assigned, ...mine, ...reviewLive].map((pr) =>
       prKey(pr.repo, pr.number),
     ),
   );
@@ -73,18 +56,16 @@ function mergeLocalReviews(
   for (const local of saved.values()) {
     const key = prKey(local.repo, local.prNumber);
     if (present.has(key)) continue;
-    if (favoritesOnly && favSet.size > 0 && !favSet.has(local.repo)) continue;
     kept.push(savedReviewToPullRequest(local));
   }
 
-  // Reviewed-from-app rows stay on Review tab (GitHub drops review-requested).
   const review = [
     ...reviewLive.filter((pr) => !pr.localReviewEvent),
     ...reviewLive.filter((pr) => pr.localReviewEvent),
     ...kept,
   ];
 
-  return { assigned, review, mine };
+  return { all, favorites, assigned, review, mine };
 }
 
 function reviewPath(pr: PullRequest): string {
@@ -103,23 +84,23 @@ export function DashboardPage() {
     getLastSeenSnapshot,
   );
   const [user, setUser] = useState<GithubUser | null>(null);
-  const [tab, setTab] = useState<PrTab>("review");
+  const [tab, setTab] = useState<PrTab>("favorites");
   const [ciFails, setCiFails] = useState<CiWatchHit[]>([]);
   const ready = Boolean(user);
-  const { lists, loading, error, updatedAt, refresh } = useMyPRs(ready);
+  const { lists, loading, error, stale, updatedAt, refresh } = useMyPRs(
+    ready,
+    tab,
+  );
 
-  const visibleLists = useMemo(() => {
-    const filtered = filterLists(lists, favorites, settings.favoritesOnly);
-    return mergeLocalReviews(
-      filtered,
-      latestReviewsByPr(savedReviews),
-      favorites,
-      settings.favoritesOnly,
-    );
-  }, [lists, favorites, settings.favoritesOnly, savedReviews]);
+  const visibleLists = useMemo(
+    () => mergeLocalReviews(lists, latestReviewsByPr(savedReviews)),
+    [lists, savedReviews],
+  );
 
   const newCount = useMemo(() => {
     return (
+      countNewPrs(visibleLists.all, lastSeen) +
+      countNewPrs(visibleLists.favorites, lastSeen) +
       countNewPrs(visibleLists.assigned, lastSeen) +
       countNewPrs(visibleLists.review, lastSeen) +
       countNewPrs(visibleLists.mine, lastSeen)
@@ -171,10 +152,6 @@ export function DashboardPage() {
     navigate("/onboarding", { replace: true });
   }
 
-  function setFavoritesOnly(value: boolean) {
-    saveSettings({ ...getSettings(), favoritesOnly: value });
-  }
-
   return (
     <PageShell>
       <header className="flex flex-wrap items-center justify-between gap-3">
@@ -216,6 +193,11 @@ export function DashboardPage() {
             <Link to="/repos">
               <BookMarked className="h-4 w-4" />
               Repos
+              {favorites.length > 0 ? (
+                <span className="tabular-nums opacity-70">
+                  {favorites.length}
+                </span>
+              ) : null}
             </Link>
           </Button>
           <Button asChild variant="outline" size="sm">
@@ -263,12 +245,10 @@ export function DashboardPage() {
         onTabChange={setTab}
         loading={loading}
         error={error}
+        stale={stale}
         onRefresh={() => void refresh()}
         updatedAt={updatedAt}
         onSelect={(pr) => navigate(reviewPath(pr))}
-        favoritesOnly={settings.favoritesOnly}
-        onFavoritesOnlyChange={setFavoritesOnly}
-        favoriteCount={favorites.length}
       />
     </PageShell>
   );

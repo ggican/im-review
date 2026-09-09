@@ -2,6 +2,8 @@
 
 > **Status:** Draft v0.2 · **Owner:** Ikhsan Mahendri · **Last updated:** 2026-09-03
 > Legenda: ✅ sudah pasti/terpasang · 📝 disepakati tapi belum dibangun · 🚧 sedang dikerjakan · **TBC** = to be confirmed
+>
+> **Next slice (v0.3):** review/comment loop via GitHub API — see [PRD-github-review-comments.md](./PRD-github-review-comments.md).
 
 ---
 
@@ -47,12 +49,14 @@ Reviewer PR (khususnya di tim yang punya banyak repo & banyak PR aktif) menghada
 
 ### Non-goals
 
-- ❌ Full diff viewer / inline code review di app (cukup redirect ke web / AI summary).
+- ❌ Full GitHub Conversation (nested replies, reactions, resolve UI) — lihat [inline file comments PRD](./prd/github-inline-file-comments.md) untuk scope M9+.
 - ❌ Multi-provider (GitLab/Bitbucket) — GitHub dulu.
-- ❌ Analytics/dashboard tim.
+- ❌ Analytics/dashboard tim (selain metrics scorecard pribadi yang sudah ada).
 - ❌ CI provider integrasi custom (pakai status yang sudah ada di GitHub API).
 - ❌ Auto-merge / push commit dari app.
 - ❌ Cursor AI yang langsung post review tanpa konfirmasi user.
+
+> **Update 2026-09-09:** “Full diff viewer / inline code review” **bukan lagi non-goal mutlak**. Diff viewer dasar sudah ada; **manual line comments ala github.com** direncanakan di [docs/prd/github-inline-file-comments.md](./prd/github-inline-file-comments.md) (M9).
 
 ## 4. Target user & use cases
 
@@ -67,6 +71,11 @@ Use cases:
 - UC5. "Favorite repos" — star/pin `acme/api`, `acme/web`; dashboard PR bisa difilter ke favorites saja. **M7**
 - UC6. "Browse all repos" — buka halaman Repos, search `payment`, favorite yang relevan. **M7**
 - UC7. "AI draft review" — di drawer PR, klik **Cursor AI** → tunggu findings → uncheck yang nggak relevan → **Post as comment**. **M8**
+- UC8. "Inline file comment" — di tab Files, klik baris → tulis komentar → kumpulkan pending → **Submit review** (seperti github.com). **M9** — lihat [PRD](./prd/github-inline-file-comments.md)
+- UC9. "Approve + notes" — kasih inline/AI/body review **dan** pilih **Approve** dalam satu submit (GitHub mengizinkan). **M9**
+- UC10. "Approve setelah review" — sudah COMMENT/REQUEST_CHANGES sebelumnya, lalu Instant **Approve** lagi. ✅ API · pastikan UI tidak mengunci Approve
+
+**Tiga mode review (produk):** Instant ✅ · AI ✅ · Manual line-comment 📝 — detail di [prd/github-inline-file-comments.md](./prd/github-inline-file-comments.md).
 
 ## 5. User flows
 
@@ -104,7 +113,7 @@ Use cases:
   │  ☑ Finding 2 …                      │
   │  ☐ Finding 3 (user uncheck)         │
   │  Summary (editable)                 │
-  │  Event: Comment | Request changes   │
+  │  Event: Comment | Request changes | Approve │
   │  [Cancel]  [Post review to GitHub]  │
   └─────────────────────────────────────┘
         │
@@ -116,7 +125,8 @@ Use cases:
 
 - AI **tidak pernah** memanggil GitHub review API sendiri.
 - Post hanya lewat tombol user + toast sukses/gagal.
-- Draft bisa di-cancel; findings hilang (tidak disimpan permanen di v0.2 — **TBC** simpan history).
+- Draft bisa di-cancel; findings hilang antar session (tidak disimpan — Q14 dikunci).
+- **Approve + findings/comments diizinkan**; Approve setelah review sebelumnya juga diizinkan.
 
 ## 6. Functional requirements
 
@@ -277,13 +287,13 @@ type AiReviewDraft = {
 | Q8  | Integrasi Jira?                                                      | Tidak                       |
 | Q9  | Nama app final?                                                      | **IM Review** (`im-review`) |
 | Q10 | Design/mockup?                                                       | Improv                      |
-| Q11 | Cursor AI: **cloud** agent vs **local** cwd?                         | TBC — default cloud         |
-| Q12 | PR besar: kirim full diff, file list only, atau top-N changed files? | TBC — top-N + patch         |
-| Q13 | Default post event AI: Comment vs Request changes?                   | TBC — Comment               |
-| Q14 | Simpan history AI drafts antar session?                              | TBC — tidak di M8           |
-| Q15 | Favorite sync antar mesin?                                           | TBC — lokal saja            |
+| Q11 | Cursor AI: **cloud** agent vs **local** cwd?                         | ✅ cloud (default)          |
+| Q12 | PR besar: kirim full diff, file list only, atau top-N changed files? | ✅ top-N + patch            |
+| Q13 | Default post event AI: Comment vs Request changes?                   | ✅ Comment                  |
+| Q14 | Simpan history AI drafts antar session?                              | ✅ tidak di M8/M9           |
+| Q15 | Favorite sync antar mesin?                                           | ✅ lokal saja               |
 
-> **Default sampai override:** Q11 cloud · Q12 top-N changed files + patch ringkas · Q13 Comment · Q14 no history · Q15 lokal.
+> **Dikunci 2026-09-09 (ikut default):** Q11–Q15. Review modes & Approve+comments: lihat [prd/github-inline-file-comments.md](./prd/github-inline-file-comments.md).
 
 ## 13. Appendix — struktur folder (target setelah M7–M8)
 

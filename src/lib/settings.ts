@@ -11,6 +11,11 @@ export type AppSettings = {
   refreshIntervalMin: number; // 0 = disabled
   theme: ThemeMode;
   favoritesOnly: boolean;
+  /**
+   * When true, dashboard shows tab "Open in favorites" with all open PRs
+   * in favorite repos (not limited to assigned / review-requested / authored).
+   */
+  showFavoriteOpen: boolean;
   /** Active AI backend for draft reviews. */
   aiProvider: AiProviderId;
 };
@@ -58,6 +63,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   refreshIntervalMin: 5,
   theme: "system",
   favoritesOnly: true,
+  showFavoriteOpen: true,
   aiProvider: DEFAULT_AI_PROVIDER,
 };
 

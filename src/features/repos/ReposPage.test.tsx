@@ -20,6 +20,32 @@ vi.mock("@tauri-apps/plugin-opener", () => ({
   openUrl: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("sonner", () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+    message: vi.fn(),
+  },
+}));
+
+vi.mock("@/features/pr/api", () => ({
+  fetchOpenPullsForRepo: vi.fn().mockResolvedValue([
+    {
+      id: 1,
+      number: 7,
+      repo: "acme/alpha",
+      title: "Add feature",
+      url: "https://github.com/acme/alpha/pull/7",
+      state: "open",
+      author: { login: "alice", avatarUrl: "" },
+      isDraft: false,
+      updatedAt: "2026-09-04T12:00:00.000Z",
+      createdAt: "2026-09-01T12:00:00.000Z",
+      headBranch: "feat/alpha-1",
+    },
+  ]),
+}));
+
 import { RepoRow } from "./RepoRow";
 import { ReposPage } from "./ReposPage";
 
@@ -64,6 +90,19 @@ describe("ReposPage", () => {
       refresh: vi.fn(),
       repos,
     });
+  });
+
+  it("opens repo detail with active branches / open PRs", async () => {
+    const user = userEvent.setup();
+    renderReposPage();
+    await user.click(screen.getByText("acme/alpha"));
+    expect(
+      await screen.findByText(/Open PRs \/ active head branches/),
+    ).toBeInTheDocument();
+    expect(await screen.findByText("feat/alpha-1")).toBeInTheDocument();
+    expect(screen.getByText("Add feature")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Back to repos/ }));
+    expect(screen.getByRole("heading", { name: "Repos" })).toBeInTheDocument();
   });
 
   it("renders favorites tab with favorite repo row", () => {
@@ -152,5 +191,15 @@ describe("ReposPage", () => {
     await user.click(screen.getByRole("button", { name: "Add to favorites" }));
     await user.click(screen.getByRole("button", { name: "Open on GitHub" }));
     expect(vi.mocked(openUrl)).toHaveBeenCalledWith(repos[1]!.htmlUrl);
+  });
+
+  it("surfaces openUrl failures on RepoRow", async () => {
+    const user = userEvent.setup();
+    const { openUrl } = await import("@tauri-apps/plugin-opener");
+    const { toast } = await import("sonner");
+    vi.mocked(openUrl).mockRejectedValueOnce(new Error("blocked"));
+    render(<RepoRow repo={repos[0]!} favorited onOpenDetail={vi.fn()} />);
+    await user.click(screen.getByRole("button", { name: "Open on GitHub" }));
+    expect(vi.mocked(toast.error)).toHaveBeenCalledWith("Error: blocked");
   });
 });

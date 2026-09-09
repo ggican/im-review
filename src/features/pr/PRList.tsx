@@ -1,5 +1,11 @@
-import { CheckCheck, Loader2, RefreshCw, Star } from "lucide-react";
-import { useSyncExternalStore } from "react";
+import {
+  CheckCheck,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  RefreshCw,
+} from "lucide-react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -16,10 +22,15 @@ import { PRRow } from "./PRRow";
 import type { PrLists, PrTab, PullRequest } from "./types";
 
 const TABS: { id: PrTab; label: string }[] = [
+  { id: "all", label: "All open" },
+  { id: "favorites", label: "Favorites" },
   { id: "assigned", label: "Assigned" },
   { id: "review", label: "Review requested" },
   { id: "mine", label: "My open" },
 ];
+
+/** Client-side page size for the visible list (API already loads all pages). */
+export const PR_LIST_PAGE_SIZE = 25;
 
 type Props = {
   lists: PrLists;
@@ -27,12 +38,10 @@ type Props = {
   onTabChange: (tab: PrTab) => void;
   loading: boolean;
   error: string | null;
+  stale?: boolean;
   onRefresh: () => void;
   updatedAt: Date | null;
   onSelect: (pr: PullRequest) => void;
-  favoritesOnly: boolean;
-  onFavoritesOnlyChange: (value: boolean) => void;
-  favoriteCount: number;
 };
 
 export function PRList({
@@ -41,26 +50,64 @@ export function PRList({
   onTabChange,
   loading,
   error,
+  stale = false,
   onRefresh,
   updatedAt,
   onSelect,
-  favoritesOnly,
-  onFavoritesOnlyChange,
-  favoriteCount,
 }: Props) {
   const lastSeen = useSyncExternalStore(
     subscribeLastSeen,
     getLastSeenSnapshot,
     getLastSeenSnapshot,
   );
-  const items: PullRequest[] = lists[active];
-  const pending = items.filter((pr) => !pr.localReviewEvent);
-  const reviewed = items.filter((pr) => pr.localReviewEvent);
+  const [page, setPage] = useState(1);
+  const items = useMemo(() => lists[active] ?? [], [lists, active]);
+  const pending = useMemo(
+    () => items.filter((pr) => !pr.localReviewEvent),
+    [items],
+  );
+  const reviewed = useMemo(
+    () => items.filter((pr) => pr.localReviewEvent),
+    [items],
+  );
   const newInActive = countNewPrs(items, lastSeen);
   const newTotal =
-    countNewPrs(lists.assigned, lastSeen) +
-    countNewPrs(lists.review, lastSeen) +
-    countNewPrs(lists.mine, lastSeen);
+    countNewPrs(lists.all ?? [], lastSeen) +
+    countNewPrs(lists.favorites ?? [], lastSeen) +
+    countNewPrs(lists.assigned ?? [], lastSeen) +
+    countNewPrs(lists.review ?? [], lastSeen) +
+    countNewPrs(lists.mine ?? [], lastSeen);
+
+  const ordered = useMemo(() => [...pending, ...reviewed], [pending, reviewed]);
+  const pageCount = Math.max(1, Math.ceil(ordered.length / PR_LIST_PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const pageItems = useMemo(() => {
+    const start = (safePage - 1) * PR_LIST_PAGE_SIZE;
+    return ordered.slice(start, start + PR_LIST_PAGE_SIZE);
+  }, [ordered, safePage]);
+  const pagePending = pageItems.filter((pr) => !pr.localReviewEvent);
+  const pageReviewed = pageItems.filter((pr) => pr.localReviewEvent);
+
+  useEffect(() => {
+    setPage(1);
+  }, [active, items.length]);
+
+  const emptyMessage =
+    active === "favorites" ? (
+      <>
+        No open PRs in favorite repos.{" "}
+        <Link
+          to="/repos"
+          className="underline underline-offset-2 hover:text-neutral-800 dark:hover:text-neutral-200"
+        >
+          Manage favorites
+        </Link>
+      </>
+    ) : active === "all" ? (
+      "No open pull requests found."
+    ) : (
+      "No pull requests in this list."
+    );
 
   return (
     <section className="flex flex-col gap-3">
@@ -76,7 +123,7 @@ export function PRList({
           >
             {TABS.map((tab) => {
               const selected = tab.id === active;
-              const newCount = countNewPrs(lists[tab.id], lastSeen);
+              const newCount = countNewPrs(lists[tab.id] ?? [], lastSeen);
               return (
                 <button
                   key={tab.id}
@@ -93,7 +140,7 @@ export function PRList({
                 >
                   {tab.label}
                   <span className="ml-1.5 text-neutral-400 tabular-nums">
-                    {lists[tab.id].length}
+                    {(lists[tab.id] ?? []).length}
                   </span>
                   {newCount > 0 ? (
                     <span
@@ -129,54 +176,24 @@ export function PRList({
               <span className="tabular-nums opacity-70">{newTotal}</span>
             </Button>
           ) : null}
-          <Button
-            type="button"
-            size="sm"
-            variant={favoritesOnly ? "default" : "outline"}
-            onClick={() => onFavoritesOnlyChange(!favoritesOnly)}
-            aria-pressed={favoritesOnly}
-            title={
-              favoriteCount === 0
-                ? "Add favorites from Repos first"
-                : "Show PRs from favorite repos only"
-            }
-          >
-            <Star
-              className={cn(
-                "h-3.5 w-3.5",
-                favoritesOnly && "fill-amber-400 text-amber-400",
-              )}
-            />
-            Favorites
-            {favoriteCount > 0 ? (
-              <span className="tabular-nums opacity-70">{favoriteCount}</span>
-            ) : null}
-          </Button>
-          {updatedAt ? (
-            <span className="hidden text-xs whitespace-nowrap text-neutral-400 sm:inline">
-              Updated {updatedAt.toLocaleTimeString()}
-            </span>
-          ) : null}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onRefresh}
-            disabled={loading}
-          >
-            {loading ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <RefreshCw className="h-3.5 w-3.5" />
-            )}
-            Refresh
-          </Button>
         </div>
       </div>
 
       {error ? (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+        <div
+          className={
+            stale
+              ? "rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
+              : "rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300"
+          }
+        >
           {error}
+        </div>
+      ) : null}
+
+      {stale && !error ? (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+          Menampilkan list tersimpan (cache). Data mungkin tidak terbaru.
         </div>
       ) : null}
 
@@ -187,6 +204,31 @@ export function PRList({
         </div>
       ) : null}
 
+      <div
+        data-testid="pr-list-refresh-row"
+        className="flex flex-wrap items-center justify-end gap-2"
+      >
+        {updatedAt ? (
+          <span className="text-xs whitespace-nowrap text-neutral-400">
+            Updated {updatedAt.toLocaleTimeString()}
+          </span>
+        ) : null}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onRefresh}
+          disabled={loading}
+        >
+          {loading ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <RefreshCw className="h-3.5 w-3.5" />
+          )}
+          Refresh
+        </Button>
+      </div>
+
       <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
         {loading && items.length === 0 ? (
           <div className="flex items-center justify-center gap-2 px-4 py-16 text-sm text-neutral-500">
@@ -195,31 +237,19 @@ export function PRList({
           </div>
         ) : items.length === 0 ? (
           <div className="px-4 py-16 text-center text-sm text-neutral-500">
-            {favoritesOnly ? (
-              <>
-                No PRs in favorite repos.{" "}
-                <Link
-                  to="/repos"
-                  className="underline underline-offset-2 hover:text-neutral-800 dark:hover:text-neutral-200"
-                >
-                  Manage favorites
-                </Link>
-              </>
-            ) : (
-              "No pull requests in this list."
-            )}
+            {emptyMessage}
           </div>
         ) : (
           <div>
-            {pending.length > 0 ? (
+            {pagePending.length > 0 ? (
               <div>
-                {reviewed.length > 0 ? (
+                {pending.length > 0 && reviewed.length > 0 && safePage === 1 ? (
                   <div className="bg-neutral-50 px-3 py-2 text-xs font-semibold tracking-wide text-neutral-500 uppercase dark:bg-neutral-900/80">
                     Needs review ({pending.length})
                   </div>
                 ) : null}
                 <ul>
-                  {pending.map((pr) => (
+                  {pagePending.map((pr) => (
                     <PRRow
                       key={`${pr.repo}#${pr.number}`}
                       pr={pr}
@@ -230,13 +260,13 @@ export function PRList({
                 </ul>
               </div>
             ) : null}
-            {reviewed.length > 0 ? (
+            {pageReviewed.length > 0 ? (
               <div>
                 <div className="border-t border-neutral-200 bg-neutral-50 px-3 py-2 text-xs font-semibold tracking-wide text-neutral-500 uppercase dark:border-neutral-800 dark:bg-neutral-900/80">
                   Already reviewed ({reviewed.length})
                 </div>
                 <ul>
-                  {reviewed.map((pr) => (
+                  {pageReviewed.map((pr) => (
                     <PRRow
                       key={`${pr.repo}#${pr.number}-reviewed`}
                       pr={pr}
@@ -250,6 +280,43 @@ export function PRList({
           </div>
         )}
       </div>
+
+      {ordered.length > PR_LIST_PAGE_SIZE ? (
+        <div className="flex items-center justify-between gap-2 text-xs text-neutral-500">
+          <span>
+            {(safePage - 1) * PR_LIST_PAGE_SIZE + 1}–
+            {Math.min(safePage * PR_LIST_PAGE_SIZE, ordered.length)} of{" "}
+            {ordered.length}
+          </span>
+          <div className="flex items-center gap-1">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={safePage <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              aria-label="Previous page"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+              Prev
+            </Button>
+            <span className="px-2 tabular-nums">
+              {safePage}/{pageCount}
+            </span>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={safePage >= pageCount}
+              onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+              aria-label="Next page"
+            >
+              Next
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

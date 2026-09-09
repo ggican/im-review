@@ -36,6 +36,8 @@ export type PullRequest = {
   createdAt: string;
   /** Head branch name when known (from PR detail / enrich). */
   headBranch?: string;
+  /** Base/target branch the PR merges into (e.g. main). */
+  baseBranch?: string;
   /**
    * Local review we submitted from IM Review (keeps PR visible after GitHub
    * drops it from review-requested).
@@ -45,9 +47,17 @@ export type PullRequest = {
   fromLocalReview?: boolean;
 };
 
-export type PrTab = "assigned" | "review" | "mine";
+export type PrTab = "all" | "favorites" | "assigned" | "review" | "mine";
 
 export type PrLists = Record<PrTab, PullRequest[]>;
+
+export const EMPTY_PR_LISTS: PrLists = {
+  all: [],
+  favorites: [],
+  assigned: [],
+  review: [],
+  mine: [],
+};
 
 export type PrDetail = PullRequest & {
   body: string;

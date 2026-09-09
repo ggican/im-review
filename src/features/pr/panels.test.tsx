@@ -44,7 +44,7 @@ import { ChangedFilesPanel } from "./ChangedFilesPanel";
 import { CiChecksPanel } from "./CiChecksPanel";
 import { CurrentReviewsPanel } from "./CurrentReviewsPanel";
 import { PRDetailDrawer } from "./PRDetailDrawer";
-import { PRList } from "./PRList";
+import { PR_LIST_PAGE_SIZE, PRList } from "./PRList";
 import { PRRow } from "./PRRow";
 import type { CiChecksSnapshot, PrReviewsSnapshot } from "./types";
 
@@ -161,6 +161,37 @@ describe("PRRow", () => {
     expect(openUrl).toHaveBeenCalledWith(pendingPr.url);
   });
 
+  it("shows head → base branch direction", () => {
+    render(
+      <PRRow
+        pr={makePr({
+          repo: "acme/app",
+          number: 20,
+          title: "With base",
+          headBranch: "feat/y",
+          baseBranch: "develop",
+        })}
+        onSelect={vi.fn()}
+      />,
+    );
+    expect(screen.getByText(/feat\/y → develop/)).toBeInTheDocument();
+  });
+
+  it("shows base-only branch when head unknown", () => {
+    render(
+      <PRRow
+        pr={makePr({
+          repo: "acme/app",
+          number: 21,
+          title: "Base only",
+          baseBranch: "main",
+        })}
+        onSelect={vi.fn()}
+      />,
+    );
+    expect(screen.getByText(/→ main/)).toBeInTheDocument();
+  });
+
   it("shows request-changes and draft badges", () => {
     render(
       <PRRow
@@ -226,7 +257,13 @@ describe("PRList", () => {
     render(
       <MemoryRouter>
         <PRList
-          lists={{ assigned: [], review: [pendingPr], mine: [pr] }}
+          lists={{
+            all: [],
+            assigned: [],
+            review: [pendingPr],
+            mine: [pr],
+            favorites: [],
+          }}
           active="review"
           onTabChange={onTabChange}
           loading={false}
@@ -234,9 +271,6 @@ describe("PRList", () => {
           onRefresh={vi.fn()}
           updatedAt={new Date("2026-09-04T12:00:00.000Z")}
           onSelect={onSelect}
-          favoritesOnly={false}
-          onFavoritesOnlyChange={vi.fn()}
-          favoriteCount={2}
         />
       </MemoryRouter>,
     );
@@ -249,21 +283,18 @@ describe("PRList", () => {
     expect(onSelect).toHaveBeenCalledWith(pendingPr);
   });
 
-  it("shows error and favorites-only empty message", () => {
+  it("shows error and favorites empty message", () => {
     render(
       <MemoryRouter>
         <PRList
-          lists={{ assigned: [], review: [], mine: [] }}
-          active="review"
+          lists={{ all: [], assigned: [], review: [], mine: [], favorites: [] }}
+          active="favorites"
           onTabChange={vi.fn()}
           loading={false}
           error="boom"
           onRefresh={vi.fn()}
           updatedAt={null}
           onSelect={vi.fn()}
-          favoritesOnly
-          onFavoritesOnlyChange={vi.fn()}
-          favoriteCount={1}
         />
       </MemoryRouter>,
     );
@@ -281,6 +312,8 @@ describe("PRList", () => {
       <MemoryRouter>
         <PRList
           lists={{
+            all: [],
+            favorites: [],
             assigned: [],
             review: [
               makePr({
@@ -300,9 +333,6 @@ describe("PRList", () => {
           onRefresh={vi.fn()}
           updatedAt={new Date("2026-09-04T12:00:00.000Z")}
           onSelect={vi.fn()}
-          favoritesOnly={false}
-          onFavoritesOnlyChange={vi.fn()}
-          favoriteCount={0}
         />
       </MemoryRouter>,
     );
@@ -310,13 +340,15 @@ describe("PRList", () => {
     await user.click(screen.getByRole("button", { name: /Mark seen/ }));
   });
 
-  it("UNIT-PRLIST-001 keeps Mark seen and Favorites on one non-wrapping toolbar row", async () => {
+  it("UNIT-PRLIST-001 keeps Mark seen on toolbar; Refresh on its own row", async () => {
     const { markAllSeen } = await import("@/lib/seen");
     markAllSeen("2020-01-01T00:00:00.000Z");
     render(
       <MemoryRouter>
         <PRList
           lists={{
+            all: [],
+            favorites: [],
             assigned: [],
             review: [
               makePr({
@@ -335,29 +367,98 @@ describe("PRList", () => {
           onRefresh={vi.fn()}
           updatedAt={new Date("2026-09-07T12:00:00.000Z")}
           onSelect={vi.fn()}
-          favoritesOnly={false}
-          onFavoritesOnlyChange={vi.fn()}
-          favoriteCount={10}
         />
       </MemoryRouter>,
     );
 
     const toolbar = screen.getByTestId("pr-list-toolbar");
     const actions = screen.getByTestId("pr-list-actions");
+    const refreshRow = screen.getByTestId("pr-list-refresh-row");
     expect(toolbar).toHaveClass("flex-nowrap");
     expect(actions).toHaveClass("flex-nowrap", "shrink-0");
     expect(actions).not.toHaveClass("flex-wrap");
 
     const markSeen = screen.getByRole("button", { name: /Mark seen/ });
-    const favorites = screen.getByRole("button", { name: /Favorites/ });
     const refresh = screen.getByRole("button", { name: /Refresh/ });
     expect(actions).toContainElement(markSeen);
-    expect(actions).toContainElement(favorites);
-    expect(actions).toContainElement(refresh);
+    expect(actions).not.toContainElement(refresh);
+    expect(refreshRow).toContainElement(refresh);
+    expect(refreshRow).toHaveTextContent(/Updated/);
+    expect(screen.getByRole("tab", { name: /Favorites/ })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /All open/ })).toBeInTheDocument();
     expect(toolbar).toContainElement(
       screen.getByRole("tablist", { name: "Pull request lists" }),
     );
     expect(toolbar).toContainElement(actions);
+  });
+
+  it("paginates long lists and shows stale banner", async () => {
+    const user = userEvent.setup();
+    const many = Array.from({ length: PR_LIST_PAGE_SIZE + 2 }, (_, i) =>
+      makePr({
+        repo: "acme/app",
+        number: i + 1,
+        title: `PR ${i + 1}`,
+        updatedAt: `2026-09-${String((i % 28) + 1).padStart(2, "0")}T12:00:00.000Z`,
+      }),
+    );
+    render(
+      <MemoryRouter>
+        <PRList
+          lists={{
+            all: [],
+            favorites: [],
+            assigned: [],
+            review: many,
+            mine: [],
+          }}
+          active="review"
+          onTabChange={vi.fn()}
+          loading={false}
+          error={null}
+          stale
+          onRefresh={vi.fn()}
+          updatedAt={new Date("2026-09-07T12:00:00.000Z")}
+          onSelect={vi.fn()}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText(/Menampilkan list tersimpan/)).toBeInTheDocument();
+    expect(screen.getByText(/1–25 of 27/)).toBeInTheDocument();
+    const next = screen.getByRole("button", { name: "Next page" });
+    const prev = screen.getByRole("button", { name: "Previous page" });
+    expect(prev).toBeDisabled();
+    await user.click(next);
+    expect(screen.getByText(/26–27 of 27/)).toBeInTheDocument();
+    expect(next).toBeDisabled();
+    await user.click(prev);
+    expect(screen.getByText(/1–25 of 27/)).toBeInTheDocument();
+  });
+
+  it("uses amber error style when stale with error", () => {
+    render(
+      <MemoryRouter>
+        <PRList
+          lists={{
+            all: [],
+            favorites: [pr],
+            assigned: [],
+            review: [],
+            mine: [],
+          }}
+          active="favorites"
+          onTabChange={vi.fn()}
+          loading={false}
+          error="GitHub rate limit — cached"
+          stale
+          onRefresh={vi.fn()}
+          updatedAt={new Date()}
+          onSelect={vi.fn()}
+        />
+      </MemoryRouter>,
+    );
+    expect(screen.getByText(/GitHub rate limit/)).toHaveClass("text-amber-900");
   });
 });
 

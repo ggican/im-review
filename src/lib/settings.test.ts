@@ -31,6 +31,7 @@ describe("UNIT-SETTINGS store", () => {
       refreshIntervalMin: 5,
       theme: "system",
       favoritesOnly: true,
+      showFavoriteOpen: true,
       aiProvider: "cursor",
     });
     // Clear favorites then restore defaults for predictable set.
@@ -51,6 +52,7 @@ describe("UNIT-SETTINGS store", () => {
       ...getSettings(),
       refreshIntervalMin: 15,
       favoritesOnly: false,
+      showFavoriteOpen: true,
       theme: "dark",
     });
     expect(getSettings().refreshIntervalMin).toBe(15);

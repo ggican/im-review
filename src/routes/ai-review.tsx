@@ -667,6 +667,15 @@ export function AiReviewPage() {
                     ·{" "}
                     <span className="font-mono text-neutral-400">
                       {detail.headBranch}
+                      {detail.baseBranch ? <> → {detail.baseBranch}</> : null}
+                    </span>
+                  </>
+                ) : detail.baseBranch ? (
+                  <>
+                    {" "}
+                    ·{" "}
+                    <span className="font-mono text-neutral-400">
+                      → {detail.baseBranch}
                     </span>
                   </>
                 ) : null}{" "}
@@ -994,7 +1003,9 @@ export function AiReviewPage() {
                       Branch
                     </dt>
                     <dd className="mt-1 font-mono text-xs text-neutral-700 dark:text-neutral-300">
-                      {detail.headBranch || "—"}
+                      {detail.headBranch || detail.baseBranch
+                        ? `${detail.headBranch ?? "?"}${detail.baseBranch ? ` → ${detail.baseBranch}` : ""}`
+                        : "—"}
                     </dd>
                   </div>
                   <div>

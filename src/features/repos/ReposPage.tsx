@@ -8,6 +8,7 @@ import { cn } from "@/lib/cn";
 import { useFavorites } from "@/lib/use-settings";
 
 import { useRepos } from "./hooks";
+import { RepoOpenBranchesPanel } from "./RepoOpenBranchesPanel";
 import { RepoRow } from "./RepoRow";
 import type { Repo } from "./types";
 
@@ -36,6 +37,7 @@ export function ReposPage() {
   const { filtered, loading, error, query, setQuery, refresh, repos } =
     useRepos(true);
   const [tab, setTab] = useState<ReposTab>("favorites");
+  const [selected, setSelected] = useState<Repo | null>(null);
 
   const favoriteRows = useMemo(() => {
     const byName = new Map(repos.map((r) => [r.fullName, r]));
@@ -71,15 +73,28 @@ export function ReposPage() {
   ];
 
   useEffect(() => {
-    document.title = "Repos · IM Review";
-  }, []);
+    document.title = selected
+      ? `${selected.fullName} · Repos · IM Review`
+      : "Repos · IM Review";
+  }, [selected]);
+
+  if (selected) {
+    return (
+      <PageShell width="lg" className="gap-5">
+        <RepoOpenBranchesPanel
+          repo={selected}
+          onBack={() => setSelected(null)}
+        />
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell width="lg" className="gap-5">
       <PageHeader
         backTo="/"
         title="Repos"
-        subtitle={`${favorites.length} favorite${favorites.length === 1 ? "" : "s"} · ${repos.length} loaded`}
+        subtitle={`${favorites.length} favorite${favorites.length === 1 ? "" : "s"} · ${repos.length} loaded · click a repo for open PRs`}
         actions={
           <Button
             type="button"
@@ -111,17 +126,17 @@ export function ReposPage() {
         className="inline-flex flex-wrap rounded-lg border border-neutral-200 bg-neutral-100 p-0.5 dark:border-neutral-800 dark:bg-neutral-900"
       >
         {tabs.map((item) => {
-          const selected = tab === item.id;
+          const selectedTab = tab === item.id;
           return (
             <button
               key={item.id}
               type="button"
               role="tab"
-              aria-selected={selected}
+              aria-selected={selectedTab}
               onClick={() => setTab(item.id)}
               className={cn(
                 "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                selected
+                selectedTab
                   ? "bg-white text-neutral-900 shadow-sm dark:bg-neutral-800 dark:text-neutral-50"
                   : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200",
               )}
@@ -152,7 +167,12 @@ export function ReposPage() {
             ) : (
               <ul>
                 {visibleFavorites.map((repo) => (
-                  <RepoRow key={`fav-${repo.fullName}`} repo={repo} favorited />
+                  <RepoRow
+                    key={`fav-${repo.fullName}`}
+                    repo={repo}
+                    favorited
+                    onOpenDetail={setSelected}
+                  />
                 ))}
               </ul>
             )}
@@ -184,6 +204,7 @@ export function ReposPage() {
                     key={repo.id}
                     repo={repo}
                     favorited={favSet.has(repo.fullName)}
+                    onOpenDetail={setSelected}
                   />
                 ))}
               </ul>
