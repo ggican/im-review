@@ -199,20 +199,20 @@ Local history boleh menyimpan kedua jejak; badge dashboard = **latest** submit d
 
 | ID    | Requirement                                                                | Pri    | Status |
 | ----- | -------------------------------------------------------------------------- | ------ | ------ |
-| IFC1  | Line gutter affordance (+) on commentable diff lines                       | Must   | 📝     |
-| IFC2  | Inline composer anchored to line                                           | Must   | 📝     |
-| IFC3  | Pending comments store (path, line, side, body, source: manual\|ai)        | Must   | 📝     |
-| IFC4  | Edit / remove pending comment                                              | Must   | 📝     |
-| IFC5  | Submit via existing `submitReview(..., { commitId, comments })`            | Must   | 📝     |
-| IFC6  | Pass `commit_id` = PR head SHA (required by GitHub for inline comments)    | Must   | 📝     |
-| IFC7  | Merge selected AI findings into same pending bag before submit             | Should | 📝     |
+| IFC1  | Line gutter affordance (+) on commentable diff lines                       | Must   | ✅     |
+| IFC2  | Inline composer anchored to line                                           | Must   | ✅     |
+| IFC3  | Pending comments store (path, line, side, body, source: manual\|ai)        | Must   | ✅     |
+| IFC4  | Edit / remove pending comment                                              | Must   | ✅     |
+| IFC5  | Submit via existing `submitReview(..., { commitId, comments })`            | Must   | ✅     |
+| IFC6  | Pass `commit_id` = PR head SHA (required by GitHub for inline comments)    | Must   | ✅     |
+| IFC7  | Merge selected AI findings into same pending bag before submit             | Should | ✅     |
 | IFC8  | Disable Submit when COMMENT/REQUEST_CHANGES and no body + no comments      | Must   | ✅ API |
-| IFC9  | After success: clear pending, toast, refresh reviews tab                   | Must   | 📝     |
+| IFC9  | After success: clear pending, toast, refresh reviews tab                   | Must   | ✅     |
 | IFC10 | Show existing GitHub inline count (read) near files — deep thread UI later | Nice   | 📝     |
-| IFC11 | Unit tests: parse commentable lines, pending store, payload builder        | Must   | 📝     |
-| IFC12 | Finish-review bar includes **Approve** even when pending.length > 0        | Must   | 📝     |
-| IFC13 | Instant / AI Approve tetap usable after prior COMMENT/REQUEST_CHANGES      | Must   | 📝     |
-| IFC14 | Copy/helper text: “You can approve and still leave line comments”          | Should | 📝     |
+| IFC11 | Unit tests: parse commentable lines, pending store, payload builder        | Must   | ✅     |
+| IFC12 | Finish-review bar includes **Approve** even when pending.length > 0        | Must   | ✅     |
+| IFC13 | Instant / AI Approve tetap usable after prior COMMENT/REQUEST_CHANGES      | Must   | ✅     |
+| IFC14 | Copy/helper text: “You can approve and still leave line comments”          | Should | ✅     |
 
 ---
 
@@ -287,7 +287,7 @@ Scope: **per PR session** (in-memory). Tidak persist localStorage di M9a (keputu
 
 | Phase | Scope                                                                  | Effort (rough) |
 | ----- | ---------------------------------------------------------------------- | -------------- |
-| M9a   | RIGHT-side line comment + pending + submit (termasuk Approve+comments) | S–M            |
+| M9a   | RIGHT-side line comment + pending + submit (termasuk Approve+comments) | ✅ Done        |
 | M9b   | Merge AI findings into pending UI                                      | S              |
 | M9c   | LEFT-side (deleted lines)                                              | S              |
 | M10   | Show existing threads read-only on lines                               | M              |

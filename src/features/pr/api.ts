@@ -4,6 +4,7 @@ import type {
   CiCheckItem,
   CiChecksSnapshot,
   CiStatus,
+  IssueComment,
   PrDetail,
   PrReviewComment,
   PrReviewItem,
@@ -622,15 +623,64 @@ export async function submitReview(
 export async function postIssueComment(
   pr: Pick<PullRequest, "repo" | "number">,
   body: string,
-): Promise<void> {
+): Promise<IssueComment> {
   const trimmed = body.trim();
   if (!trimmed) throw new Error("Comment cannot be empty");
   const { owner, name } = splitRepo(pr.repo);
-  await api.githubRequest(
-    "POST",
-    `/repos/${owner}/${name}/issues/${pr.number}/comments`,
-    { body: trimmed },
+  const raw = await api.githubRequest<{
+    id: number;
+    body: string;
+    user: { login: string; avatar_url: string } | null;
+    created_at: string;
+    updated_at: string;
+    html_url: string;
+  }>("POST", `/repos/${owner}/${name}/issues/${pr.number}/comments`, {
+    body: trimmed,
+  });
+  return {
+    id: raw.id,
+    body: raw.body,
+    user: raw.user?.login ?? "unknown",
+    avatarUrl: raw.user?.avatar_url ?? "",
+    createdAt: raw.created_at,
+    updatedAt: raw.updated_at,
+    htmlUrl: raw.html_url,
+    isOwn: true,
+  };
+}
+
+type GhIssueComment = {
+  id: number;
+  body: string;
+  user: { login: string; avatar_url: string } | null;
+  created_at: string;
+  updated_at: string;
+  html_url: string;
+};
+
+/** Issue-level conversation comments on the PR. */
+export async function fetchIssueComments(
+  pr: Pick<PullRequest, "repo" | "number">,
+  viewerLogin?: string | null,
+): Promise<IssueComment[]> {
+  const { owner, name } = splitRepo(pr.repo);
+  const raw = await api.githubGet<GhIssueComment[]>(
+    `/repos/${owner}/${name}/issues/${pr.number}/comments?per_page=100`,
   );
+  const me = viewerLogin?.toLowerCase() ?? "";
+  return (Array.isArray(raw) ? raw : []).map((c) => {
+    const login = c.user?.login ?? "unknown";
+    return {
+      id: c.id,
+      body: c.body,
+      user: login,
+      avatarUrl: c.user?.avatar_url ?? "",
+      createdAt: c.created_at,
+      updatedAt: c.updated_at,
+      htmlUrl: c.html_url,
+      isOwn: Boolean(me && login.toLowerCase() === me),
+    };
+  });
 }
 
 /** Close an open PR (author only). */

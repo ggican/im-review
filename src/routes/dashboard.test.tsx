@@ -87,6 +87,7 @@ describe("DashboardPage", () => {
         all: [],
         assigned: [],
         review: [reviewPr],
+        reviewed: [],
         mine: [minePr],
         favorites: [],
       },
@@ -113,6 +114,9 @@ describe("DashboardPage", () => {
     expect(screen.getByText(/@alice/)).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /All open/ })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /Favorites/ })).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: /Already reviewed/ }),
+    ).toBeInTheDocument();
     await user.click(screen.getByRole("tab", { name: /Review requested/ }));
     expect(screen.getByText("Review me")).toBeInTheDocument();
   });
@@ -176,6 +180,7 @@ describe("DashboardPage", () => {
         favorites: [],
         assigned: [],
         review: [],
+        reviewed: [],
         mine: [],
       },
       loading: false,
@@ -189,7 +194,7 @@ describe("DashboardPage", () => {
     await waitFor(() => {
       expect(screen.getByText("Alice")).toBeInTheDocument();
     });
-    await user.click(screen.getByRole("tab", { name: /Review requested/ }));
+    await user.click(screen.getByRole("tab", { name: /Already reviewed/ }));
     expect(screen.getByText("Ghost reviewed")).toBeInTheDocument();
 
     mockValidateToken.mockRejectedValueOnce(new Error("bad token"));

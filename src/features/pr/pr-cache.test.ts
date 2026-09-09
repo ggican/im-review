@@ -72,6 +72,7 @@ describe("UNIT-PR-005..008 pr-cache", () => {
       favorites: [],
       assigned: [shared],
       review: [shared, makePr({ repo: "acme/api", number: 2 })],
+      reviewed: [],
       mine: [makePr({ repo: "acme/web", number: 3 })],
     });
     expect(getPrCache().mine).toHaveLength(1);
@@ -101,6 +102,7 @@ describe("UNIT-PR-005..008 pr-cache", () => {
       all: [],
       assigned: [],
       review: [],
+      reviewed: [],
       mine: [],
       favorites: [],
     });
@@ -111,6 +113,7 @@ describe("UNIT-PR-005..008 pr-cache", () => {
       favorites: [],
       assigned: [],
       review: [],
+      reviewed: [],
       mine: [makePr({ repo: "acme/web", number: 9 })],
     });
     expect(listener).toHaveBeenCalledTimes(1);
@@ -122,6 +125,7 @@ describe("UNIT-PR-005..008 pr-cache", () => {
         all: [],
         assigned: [],
         review: [],
+        reviewed: [],
         mine: [],
         favorites: [],
       }),
@@ -135,6 +139,7 @@ describe("UNIT-PR-005..008 pr-cache", () => {
       favorites: [],
       assigned: [],
       review: [],
+      reviewed: [],
       mine: [],
     });
 
@@ -152,6 +157,7 @@ describe("UNIT-PR-005..008 pr-cache", () => {
           favorites: [makePr({ repo: "acme/web", number: 1 })],
           assigned: [],
           review: [],
+          reviewed: [],
           mine: [],
         },
         updatedAt: null,

@@ -168,9 +168,9 @@ Semua lewat `api.githubGet` / `api.githubRequest` (Rust proxy). Path relatif ke 
 
 | ID  | Requirement                                                                        | Priority | API        | Status      |
 | --- | ---------------------------------------------------------------------------------- | -------- | ---------- | ----------- |
-| F21 | UI compose + kirim **issue comment** di section Conversation (tab **Files**)       | Must     | A2         | 📝          |
-| F22 | List **issue comments** chronologis di tab Files (avatar, body, time, link GitHub) | Must     | A1         | 📝          |
-| F23 | Template chips mengisi compose issue comment (reuse templates)                     | Should   | —          | 📝          |
+| F21 | UI compose + kirim **issue comment** di section Conversation (tab **Files**)       | Must     | A2         | ✅          |
+| F22 | List **issue comments** chronologis di tab Files (avatar, body, time, link GitHub) | Must     | A1         | ✅          |
+| F23 | Template chips mengisi compose issue comment (reuse templates)                     | Should   | —          | ✅          |
 | F24 | **Reply** pada inline review comment                                               | Must     | A5         | 📝          |
 | F25 | Tampilkan replies nested / flat-with-parent di Current reviews                     | Should   | A1/A5 data | 📝          |
 | F26 | Edit own issue comment                                                             | Should   | A3         | 📝          |
@@ -280,7 +280,7 @@ Scope PAT: dokumentasikan di onboarding/settings bahwa write comments butuh toke
 
 | Milestone | Scope                                                 | Target  |
 | --------- | ----------------------------------------------------- | ------- |
-| **M9a**   | F21–F23 + F31–F32 (issue comments UI + rate-limit UX) | 📝 Next |
+| **M9a**   | F21–F23 + F31–F32 (issue comments UI + rate-limit UX) | ✅ Done |
 | **M9b**   | F24–F25 (reply inline + tampilan thread)              | 📝      |
 | **M9c**   | F26–F29 (edit/delete own comments)                    | 📝      |
 | **M9d**   | F30 (dismiss review)                                  | 📝      |
@@ -322,11 +322,11 @@ Tidak ada pertanyaan produk yang blocking M9a (issue comment di Files).
 
 ### M9a
 
-- [ ] Di tab **Files**, di bawah patch viewer ada section Conversation (list + compose)
-- [ ] User bisa mengirim issue comment dan melihatnya di list tanpa membuka browser
-- [ ] Template chip mengisi compose
-- [ ] `postIssueComment` dipanggil dari UI (bukan hanya test)
-- [ ] Saat GitHub mengembalikan secondary rate limit, UI menampilkan pesan jelas dan tidak me-retry agresif
+- [x] Di tab **Files**, di bawah patch viewer ada section Conversation (list + compose)
+- [x] User bisa mengirim issue comment dan melihatnya di list tanpa membuka browser
+- [x] Template chip mengisi compose
+- [x] `postIssueComment` dipanggil dari UI (bukan hanya test)
+- [x] Saat GitHub mengembalikan secondary rate limit, UI menampilkan pesan jelas dan tidak me-retry agresif
 - [ ] Tidak ada tab Conversation terpisah
 
 ### M9b

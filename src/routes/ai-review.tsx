@@ -42,6 +42,7 @@ import type {
 import {
   closePullRequest,
   convertPullRequestToDraft,
+  fetchIssueComments,
   fetchPrCiChecks,
   fetchPrDetail,
   fetchPrReviews,
@@ -51,9 +52,17 @@ import {
 } from "@/features/pr/api";
 import { ChangedFilesPanel } from "@/features/pr/ChangedFilesPanel";
 import { CiChecksPanel } from "@/features/pr/CiChecksPanel";
+import { ConversationPanel } from "@/features/pr/ConversationPanel";
 import { CurrentReviewsPanel } from "@/features/pr/CurrentReviewsPanel";
+import { PendingReviewBar } from "@/features/pr/PendingReviewBar";
+import {
+  isGithubRateLimitError,
+  rateLimitUserMessage,
+} from "@/features/pr/rate-limit";
 import type {
   CiChecksSnapshot,
+  IssueComment,
+  PendingInlineComment,
   PrDetail,
   PrReviewsSnapshot,
   PullRequest,
@@ -155,6 +164,17 @@ export function AiReviewPage() {
   const [approveBody, setApproveBody] = useState(defaultApproveBody);
   const [approving, setApproving] = useState(false);
   const [viewerLogin, setViewerLogin] = useState<string | null>(null);
+  const [issueComments, setIssueComments] = useState<IssueComment[]>([]);
+  const [issueCommentsLoading, setIssueCommentsLoading] = useState(false);
+  const [issueCommentsError, setIssueCommentsError] = useState<string | null>(
+    null,
+  );
+  const [writesPaused, setWritesPaused] = useState(false);
+  const [pendingComments, setPendingComments] = useState<
+    PendingInlineComment[]
+  >([]);
+  const [pendingEvent, setPendingEvent] = useState<ReviewEvent>("COMMENT");
+  const [pendingBody, setPendingBody] = useState("");
   const [ownerAction, setOwnerAction] = useState<
     "close" | "reopen" | "draft" | "ready" | null
   >(null);
@@ -300,6 +320,36 @@ export function AiReviewPage() {
       cancelled = true;
     };
   }, [owner, repo, prNumber, aiProvider]);
+
+  useEffect(() => {
+    if (detailTab !== "files" || !pr) return;
+    let cancelled = false;
+    setIssueCommentsLoading(true);
+    setIssueCommentsError(null);
+    void fetchIssueComments(pr, viewerLogin)
+      .then((list) => {
+        if (!cancelled) setIssueComments(list);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        const msg = rateLimitUserMessage(err);
+        setIssueCommentsError(msg);
+        if (isGithubRateLimitError(err)) setWritesPaused(true);
+      })
+      .finally(() => {
+        if (!cancelled) setIssueCommentsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [detailTab, pr, viewerLogin]);
+
+  useEffect(() => {
+    setPendingComments([]);
+    setPendingBody("");
+    setPendingEvent("COMMENT");
+    setWritesPaused(false);
+  }, [owner, repo, prNumber]);
 
   const refreshReviews = useCallback(async () => {
     if (!pr) return;
@@ -561,9 +611,15 @@ export function AiReviewPage() {
     setPosting(true);
     try {
       const payload = buildGithubReviewPayload(draft, files);
+      const manual = pendingComments.map((c) => ({
+        path: c.path,
+        line: c.line,
+        side: c.side,
+        body: c.body,
+      }));
       await submitReview(pr, draft.suggestedEvent, payload.body, {
         commitId: detail.headSha,
-        comments: payload.comments,
+        comments: [...payload.comments, ...manual],
       });
       saveReviewLocally({
         repo: pr.repo,
@@ -574,20 +630,87 @@ export function AiReviewPage() {
         event: draft.suggestedEvent,
         summary: draft.summary,
         body: payload.body,
-        comments: payload.comments.map((c) => ({
+        comments: [...payload.comments, ...manual].map((c) => ({
           path: c.path,
           line: c.line,
           body: c.body,
         })),
       });
+      setPendingComments([]);
       toast.success(
-        payload.inlineCount > 0
-          ? `Submitted ${payload.inlineCount} inline comment(s) — saved locally`
+        payload.inlineCount + manual.length > 0
+          ? `Submitted ${payload.inlineCount + manual.length} inline comment(s) — saved locally`
           : "Review submitted — saved locally",
       );
       navigate("/");
     } catch (err) {
-      toast.error(String(err));
+      if (isGithubRateLimitError(err)) setWritesPaused(true);
+      toast.error(rateLimitUserMessage(err));
+    } finally {
+      setPosting(false);
+    }
+  }
+
+  async function onSubmitPendingReview() {
+    if (!pr || !detail || pendingComments.length === 0) return;
+    if (pendingEvent === "APPROVE" && (detail.isDraft || pr.isDraft)) {
+      toast.error("Draft PRs cannot be approved on GitHub");
+      return;
+    }
+    setPosting(true);
+    try {
+      const aiPayload =
+        draft != null
+          ? buildGithubReviewPayload(draft, files)
+          : {
+              body: "",
+              comments: [] as Array<{
+                path: string;
+                line: number;
+                side: "RIGHT";
+                body: string;
+              }>,
+            };
+      const manual = pendingComments.map((c) => ({
+        path: c.path,
+        line: c.line,
+        side: c.side,
+        body: c.body,
+      }));
+      const body =
+        pendingBody.trim() ||
+        (draft ? aiPayload.body : "") ||
+        (pendingEvent === "APPROVE" ? "" : "Review comments");
+      const comments = [...aiPayload.comments, ...manual];
+      await submitReview(pr, pendingEvent, body, {
+        commitId: detail.headSha,
+        comments,
+      });
+      saveReviewLocally({
+        repo: pr.repo,
+        prNumber: pr.number,
+        prTitle: detail.title,
+        prUrl: pr.url,
+        branch: detail.headBranch,
+        event: pendingEvent,
+        summary: body || pendingEvent,
+        body,
+        comments: comments.map((c) => ({
+          path: c.path,
+          line: c.line,
+          body: c.body,
+        })),
+      });
+      setPendingComments([]);
+      setPendingBody("");
+      toast.success(
+        `Submitted ${comments.length} inline comment(s) as ${pendingEvent}`,
+      );
+      void refreshReviews();
+      setDetailTab("reviews");
+    } catch (err) {
+      if (isGithubRateLimitError(err)) setWritesPaused(true);
+      toast.error(rateLimitUserMessage(err));
     } finally {
       setPosting(false);
     }
@@ -1053,7 +1176,38 @@ export function AiReviewPage() {
           ) : null}
 
           {detailTab === "files" ? (
-            <ChangedFilesPanel files={files} totals={totals} />
+            <div className="space-y-4">
+              <ChangedFilesPanel
+                files={files}
+                totals={totals}
+                pendingComments={pendingComments}
+                onAddPending={(c) => setPendingComments((prev) => [...prev, c])}
+              />
+              {pr ? (
+                <ConversationPanel
+                  pr={pr}
+                  comments={issueComments}
+                  loading={issueCommentsLoading}
+                  error={issueCommentsError}
+                  templates={templates}
+                  writeDisabled={writesPaused}
+                  onPosted={(c) => setIssueComments((prev) => [...prev, c])}
+                />
+              ) : null}
+              <PendingReviewBar
+                pending={pendingComments}
+                event={pendingEvent}
+                body={pendingBody}
+                isDraft={Boolean(detail?.isDraft || pr?.isDraft)}
+                submitting={posting}
+                onEventChange={setPendingEvent}
+                onBodyChange={setPendingBody}
+                onRemove={(id) =>
+                  setPendingComments((prev) => prev.filter((p) => p.id !== id))
+                }
+                onSubmit={() => void onSubmitPendingReview()}
+              />
+            </div>
           ) : null}
 
           {detailTab === "ci" ? (

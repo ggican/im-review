@@ -1,8 +1,18 @@
-import { ChevronDown, ChevronRight, FileCode2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import {
+  ChevronDown,
+  ChevronRight,
+  FileCode2,
+  MessageSquarePlus,
+  X,
+} from "lucide-react";
+import { Fragment, useMemo, useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import type { ChangedFile } from "@/features/ai-review/generate";
 import { cn } from "@/lib/cn";
+
+import type { PendingInlineComment } from "./types";
 
 type DiffLineKind = "hunk" | "add" | "del" | "ctx" | "meta";
 
@@ -13,7 +23,7 @@ type DiffLine = {
   newLine: number | null;
 };
 
-function parsePatch(patch: string): DiffLine[] {
+export function parsePatch(patch: string): DiffLine[] {
   const out: DiffLine[] = [];
   let oldLine = 0;
   let newLine = 0;
@@ -52,7 +62,6 @@ function parsePatch(patch: string): DiffLine[] {
       oldLine += 1;
       continue;
     }
-    // context (space-prefixed) or bare
     const text = raw.startsWith(" ") ? raw.slice(1) : raw;
     out.push({
       kind: "ctx",
@@ -82,11 +91,29 @@ function statusLabel(status: string): string {
   }
 }
 
-function FileDiff({ file, open }: { file: ChangedFile; open: boolean }) {
+function newPendingId(): string {
+  return `pending-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+type ComposeTarget = { path: string; line: number };
+
+function FileDiff({
+  file,
+  open,
+  pendingForFile,
+  onAddPending,
+}: {
+  file: ChangedFile;
+  open: boolean;
+  pendingForFile: PendingInlineComment[];
+  onAddPending?: (comment: PendingInlineComment) => void;
+}) {
   const lines = useMemo(
     () => (file.patch ? parsePatch(file.patch) : []),
     [file.patch],
   );
+  const [compose, setCompose] = useState<ComposeTarget | null>(null);
+  const [draftBody, setDraftBody] = useState("");
 
   if (!open) return null;
 
@@ -98,43 +125,146 @@ function FileDiff({ file, open }: { file: ChangedFile; open: boolean }) {
     );
   }
 
+  function startCompose(line: number) {
+    setCompose({ path: file.filename, line });
+    setDraftBody("");
+  }
+
+  function addToPending() {
+    if (!compose || !onAddPending) return;
+    const trimmed = draftBody.trim();
+    if (!trimmed) return;
+    onAddPending({
+      id: newPendingId(),
+      path: compose.path,
+      line: compose.line,
+      side: "RIGHT",
+      body: trimmed,
+      source: "manual",
+    });
+    setCompose(null);
+    setDraftBody("");
+  }
+
   return (
     <div className="max-h-96 overflow-auto border-t border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/40">
       <table className="w-full min-w-[40rem] border-collapse font-mono text-xs leading-5">
         <tbody>
-          {lines.map((line, i) => (
-            <tr
-              key={`${i}-${line.kind}-${line.oldLine}-${line.newLine}`}
-              className={cn(
-                line.kind === "add" &&
-                  "bg-emerald-50 text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-100",
-                line.kind === "del" &&
-                  "bg-red-50 text-red-950 dark:bg-red-950/40 dark:text-red-100",
-                line.kind === "hunk" &&
-                  "bg-sky-50 text-sky-800 dark:bg-sky-950/50 dark:text-sky-200",
-                line.kind === "meta" && "text-neutral-400 italic",
-              )}
-            >
-              <td className="w-10 px-2 text-right text-neutral-400 tabular-nums select-none">
-                {line.oldLine ?? ""}
-              </td>
-              <td className="w-10 px-2 text-right text-neutral-400 tabular-nums select-none">
-                {line.newLine ?? ""}
-              </td>
-              <td
-                className={cn(
-                  "w-4 px-1 text-center font-semibold select-none",
-                  line.kind === "add" && "text-emerald-600",
-                  line.kind === "del" && "text-red-600",
-                )}
+          {lines.map((line, i) => {
+            const commentable =
+              Boolean(onAddPending) &&
+              (line.kind === "add" || line.kind === "ctx") &&
+              line.newLine != null;
+            const pendingHere = pendingForFile.filter(
+              (p) => p.line === line.newLine && p.side === "RIGHT",
+            );
+            const composingHere =
+              compose?.line === line.newLine && compose.path === file.filename;
+
+            return (
+              <Fragment
+                key={`${i}-${line.kind}-${line.oldLine}-${line.newLine}`}
               >
-                {line.kind === "add" ? "+" : line.kind === "del" ? "−" : ""}
-              </td>
-              <td className="px-2 py-0.5 break-all whitespace-pre-wrap">
-                {line.kind === "hunk" ? line.text : line.text || " "}
-              </td>
-            </tr>
-          ))}
+                <tr
+                  className={cn(
+                    "group",
+                    line.kind === "add" &&
+                      "bg-emerald-50 text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-100",
+                    line.kind === "del" &&
+                      "bg-red-50 text-red-950 dark:bg-red-950/40 dark:text-red-100",
+                    line.kind === "hunk" &&
+                      "bg-sky-50 text-sky-800 dark:bg-sky-950/50 dark:text-sky-200",
+                    line.kind === "meta" && "text-neutral-400 italic",
+                  )}
+                >
+                  <td className="w-8 px-1 text-center align-top">
+                    {commentable ? (
+                      <button
+                        type="button"
+                        aria-label={`Add comment on line ${line.newLine}`}
+                        className="mt-0.5 rounded p-0.5 text-neutral-400 opacity-0 group-hover:opacity-100 hover:bg-neutral-200 hover:text-sky-700 dark:hover:bg-neutral-800"
+                        onClick={() => startCompose(line.newLine!)}
+                      >
+                        <MessageSquarePlus className="h-3.5 w-3.5" />
+                      </button>
+                    ) : null}
+                  </td>
+                  <td className="w-10 px-2 text-right text-neutral-400 tabular-nums select-none">
+                    {line.oldLine ?? ""}
+                  </td>
+                  <td className="w-10 px-2 text-right text-neutral-400 tabular-nums select-none">
+                    {line.newLine ?? ""}
+                  </td>
+                  <td
+                    className={cn(
+                      "w-4 px-1 text-center font-semibold select-none",
+                      line.kind === "add" && "text-emerald-600",
+                      line.kind === "del" && "text-red-600",
+                    )}
+                  >
+                    {line.kind === "add" ? "+" : line.kind === "del" ? "−" : ""}
+                  </td>
+                  <td className="px-2 py-0.5 break-all whitespace-pre-wrap">
+                    {line.kind === "hunk" ? line.text : line.text || " "}
+                  </td>
+                </tr>
+                {pendingHere.map((p) => (
+                  <tr
+                    key={p.id}
+                    className="bg-amber-50/80 dark:bg-amber-950/30"
+                  >
+                    <td
+                      colSpan={5}
+                      className="px-3 py-2 text-xs text-amber-900 dark:text-amber-200"
+                    >
+                      Pending · L{p.line}: {p.body}
+                    </td>
+                  </tr>
+                ))}
+                {composingHere ? (
+                  <tr className="bg-sky-50 dark:bg-sky-950/40">
+                    <td colSpan={5} className="px-3 py-2">
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-sky-800 dark:text-sky-200">
+                          Draft comment on {file.filename}:{compose.line}{" "}
+                          (RIGHT)
+                        </p>
+                        <Textarea
+                          rows={3}
+                          autoFocus
+                          value={draftBody}
+                          onChange={(e) => setDraftBody(e.currentTarget.value)}
+                          placeholder="Leave a comment…"
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            disabled={!draftBody.trim()}
+                            onClick={addToPending}
+                          >
+                            Add to pending
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setCompose(null);
+                              setDraftBody("");
+                            }}
+                          >
+                            <X className="h-3.5 w-3.5" />
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                ) : null}
+              </Fragment>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -144,9 +274,13 @@ function FileDiff({ file, open }: { file: ChangedFile; open: boolean }) {
 export function ChangedFilesPanel({
   files,
   totals,
+  pendingComments = [],
+  onAddPending,
 }: {
   files: ChangedFile[];
   totals: { add: number; del: number };
+  pendingComments?: PendingInlineComment[];
+  onAddPending?: (comment: PendingInlineComment) => void;
 }) {
   const [openFiles, setOpenFiles] = useState<Set<string>>(() => new Set());
 
@@ -207,6 +341,9 @@ export function ChangedFilesPanel({
         <ul className="overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800">
           {files.map((f) => {
             const open = openFiles.has(f.filename);
+            const pendingForFile = pendingComments.filter(
+              (p) => p.path === f.filename,
+            );
             return (
               <li
                 key={f.filename}
@@ -227,6 +364,11 @@ export function ChangedFilesPanel({
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-mono text-xs text-neutral-900 dark:text-neutral-100">
                       {f.filename}
+                      {pendingForFile.length > 0 ? (
+                        <span className="ml-2 text-amber-700 dark:text-amber-300">
+                          · {pendingForFile.length} pending
+                        </span>
+                      ) : null}
                     </div>
                     <div className="text-xs text-neutral-400">
                       {statusLabel(f.status)}
@@ -238,7 +380,12 @@ export function ChangedFilesPanel({
                     <span className="text-red-600">−{f.deletions}</span>
                   </div>
                 </button>
-                <FileDiff file={f} open={open} />
+                <FileDiff
+                  file={f}
+                  open={open}
+                  pendingForFile={pendingForFile}
+                  onAddPending={onAddPending}
+                />
               </li>
             );
           })}

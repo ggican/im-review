@@ -26,6 +26,7 @@ const TABS: { id: PrTab; label: string }[] = [
   { id: "favorites", label: "Favorites" },
   { id: "assigned", label: "Assigned" },
   { id: "review", label: "Review requested" },
+  { id: "reviewed", label: "Already reviewed" },
   { id: "mine", label: "My open" },
 ];
 
@@ -62,13 +63,14 @@ export function PRList({
   );
   const [page, setPage] = useState(1);
   const items = useMemo(() => lists[active] ?? [], [lists, active]);
+  const isReviewedTab = active === "reviewed";
   const pending = useMemo(
-    () => items.filter((pr) => !pr.localReviewEvent),
-    [items],
+    () => (isReviewedTab ? [] : items.filter((pr) => !pr.localReviewEvent)),
+    [items, isReviewedTab],
   );
   const reviewed = useMemo(
-    () => items.filter((pr) => pr.localReviewEvent),
-    [items],
+    () => (isReviewedTab ? items : items.filter((pr) => pr.localReviewEvent)),
+    [items, isReviewedTab],
   );
   const newInActive = countNewPrs(items, lastSeen);
   const newTotal =
@@ -76,17 +78,25 @@ export function PRList({
     countNewPrs(lists.favorites ?? [], lastSeen) +
     countNewPrs(lists.assigned ?? [], lastSeen) +
     countNewPrs(lists.review ?? [], lastSeen) +
+    countNewPrs(lists.reviewed ?? [], lastSeen) +
     countNewPrs(lists.mine ?? [], lastSeen);
 
-  const ordered = useMemo(() => [...pending, ...reviewed], [pending, reviewed]);
+  const ordered = useMemo(
+    () => (isReviewedTab ? items : [...pending, ...reviewed]),
+    [isReviewedTab, items, pending, reviewed],
+  );
   const pageCount = Math.max(1, Math.ceil(ordered.length / PR_LIST_PAGE_SIZE));
   const safePage = Math.min(page, pageCount);
   const pageItems = useMemo(() => {
     const start = (safePage - 1) * PR_LIST_PAGE_SIZE;
     return ordered.slice(start, start + PR_LIST_PAGE_SIZE);
   }, [ordered, safePage]);
-  const pagePending = pageItems.filter((pr) => !pr.localReviewEvent);
-  const pageReviewed = pageItems.filter((pr) => pr.localReviewEvent);
+  const pagePending = isReviewedTab
+    ? []
+    : pageItems.filter((pr) => !pr.localReviewEvent);
+  const pageReviewed = isReviewedTab
+    ? pageItems
+    : pageItems.filter((pr) => pr.localReviewEvent);
 
   useEffect(() => {
     setPage(1);
@@ -105,6 +115,17 @@ export function PRList({
       </>
     ) : active === "all" ? (
       "No open pull requests found."
+    ) : active === "reviewed" ? (
+      <>
+        No reviews submitted from IM Review yet. Approve or comment on a PR and
+        it will show up here.{" "}
+        <Link
+          to="/settings"
+          className="underline underline-offset-2 hover:text-neutral-800 dark:hover:text-neutral-200"
+        >
+          Open History
+        </Link>
+      </>
     ) : (
       "No pull requests in this list."
     );
@@ -262,9 +283,11 @@ export function PRList({
             ) : null}
             {pageReviewed.length > 0 ? (
               <div>
-                <div className="border-t border-neutral-200 bg-neutral-50 px-3 py-2 text-xs font-semibold tracking-wide text-neutral-500 uppercase dark:border-neutral-800 dark:bg-neutral-900/80">
-                  Already reviewed ({reviewed.length})
-                </div>
+                {!isReviewedTab ? (
+                  <div className="border-t border-neutral-200 bg-neutral-50 px-3 py-2 text-xs font-semibold tracking-wide text-neutral-500 uppercase dark:border-neutral-800 dark:bg-neutral-900/80">
+                    Already reviewed ({reviewed.length})
+                  </div>
+                ) : null}
                 <ul>
                   {pageReviewed.map((pr) => (
                     <PRRow

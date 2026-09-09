@@ -46,6 +46,11 @@ function readPersisted(): PersistedPrCache {
         favorites: parsed.lists.favorites ?? [],
         assigned: parsed.lists.assigned ?? [],
         review: parsed.lists.review ?? [],
+        reviewed: Array.isArray(
+          (parsed.lists as { reviewed?: unknown }).reviewed,
+        )
+          ? (parsed.lists as { reviewed: PullRequest[] }).reviewed
+          : [],
         mine: parsed.lists.mine ?? [],
       },
       updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : null,
@@ -125,6 +130,7 @@ export function flattenPrCache(lists: PrLists = cache): PullRequest[] {
     ...lists.all,
     ...lists.favorites,
     ...lists.review,
+    ...lists.reviewed,
     ...lists.assigned,
     ...lists.mine,
   ]) {

@@ -23,6 +23,28 @@ export type CiChecksSnapshot = {
 
 export type ReviewEvent = "APPROVE" | "REQUEST_CHANGES" | "COMMENT";
 
+/** Issue / PR conversation comment (REST issues comments). */
+export type IssueComment = {
+  id: number;
+  body: string;
+  user: string;
+  avatarUrl: string;
+  createdAt: string;
+  updatedAt: string;
+  htmlUrl: string;
+  isOwn: boolean;
+};
+
+/** Local draft inline comment before submit (session only). */
+export type PendingInlineComment = {
+  id: string;
+  path: string;
+  line: number;
+  side: "LEFT" | "RIGHT";
+  body: string;
+  source: "manual" | "ai";
+};
+
 export type PullRequest = {
   id: number;
   number: number;
@@ -47,7 +69,8 @@ export type PullRequest = {
   fromLocalReview?: boolean;
 };
 
-export type PrTab = "all" | "favorites" | "assigned" | "review" | "mine";
+export type PrTab =
+  "all" | "favorites" | "assigned" | "review" | "reviewed" | "mine";
 
 export type PrLists = Record<PrTab, PullRequest[]>;
 
@@ -56,6 +79,7 @@ export const EMPTY_PR_LISTS: PrLists = {
   favorites: [],
   assigned: [],
   review: [],
+  reviewed: [],
   mine: [],
 };
 

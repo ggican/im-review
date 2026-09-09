@@ -15,17 +15,8 @@ import {
   getPrTabUpdatedAt,
   setPrCacheTab,
 } from "./pr-cache";
+import { isGithubRateLimitError } from "./rate-limit";
 import type { PrLists, PrTab, PullRequest } from "./types";
-
-function isRateLimitError(err: unknown): boolean {
-  const msg = String(err).toLowerCase();
-  return (
-    msg.includes("secondary rate limit") ||
-    msg.includes("rate limit") ||
-    msg.includes("api rate limit") ||
-    (msg.includes("403") && msg.includes("github"))
-  );
-}
 
 async function fetchTab(
   tab: PrTab,
@@ -40,6 +31,9 @@ async function fetchTab(
       return fetchAssignedPrs();
     case "review":
       return fetchReviewRequestedPrs();
+    case "reviewed":
+      // Local history only — filled by dashboard mergeLocalReviews.
+      return [];
     case "mine":
       return fetchMyOpenPrs();
   }
@@ -68,6 +62,16 @@ export function useMyPRs(enabled: boolean, activeTab: PrTab) {
       if (!enabled) return;
       if (!force && loadedRef.current.has(tab)) return;
 
+      // Already reviewed = local history only (no GitHub list fetch).
+      if (tab === "reviewed") {
+        loadedRef.current.add(tab);
+        setLoading(false);
+        setError(null);
+        setStale(false);
+        setLists(getPrCache());
+        return;
+      }
+
       const cachedCount = getPrCache()[tab]?.length ?? 0;
       setLoading(true);
       setError(null);
@@ -90,7 +94,7 @@ export function useMyPRs(enabled: boolean, activeTab: PrTab) {
         if (cached.length > 0) {
           setStale(true);
           loadedRef.current.add(tab);
-          if (isRateLimitError(err)) {
+          if (isGithubRateLimitError(err)) {
             setError(
               "GitHub rate limit — menampilkan list tersimpan. Tunggu beberapa menit lalu Refresh.",
             );
@@ -99,7 +103,7 @@ export function useMyPRs(enabled: boolean, activeTab: PrTab) {
               `Gagal update dari GitHub — menampilkan list tersimpan. (${String(err)})`,
             );
           }
-        } else if (isRateLimitError(err)) {
+        } else if (isGithubRateLimitError(err)) {
           setStale(false);
           setError(
             "GitHub secondary rate limit — tunggu beberapa menit, lalu Refresh. Belum ada cache untuk tab ini.",

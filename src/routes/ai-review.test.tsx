@@ -44,6 +44,8 @@ vi.mock("@/features/pr/api", () => ({
   fetchPrDetail: vi.fn(),
   fetchPrReviews: vi.fn(),
   fetchPrCiChecks: vi.fn(),
+  fetchIssueComments: vi.fn().mockResolvedValue([]),
+  postIssueComment: vi.fn(),
   submitReview: vi.fn(),
   closePullRequest: vi.fn(),
   convertPullRequestToDraft: vi.fn(),
@@ -72,6 +74,7 @@ import { fetchChangedFiles } from "@/features/ai-review/generate";
 import {
   closePullRequest,
   convertPullRequestToDraft,
+  fetchIssueComments,
   fetchPrCiChecks,
   fetchPrDetail,
   fetchPrReviews,
@@ -91,6 +94,7 @@ const mockFetchPrDetail = vi.mocked(fetchPrDetail);
 const mockFetchChangedFiles = vi.mocked(fetchChangedFiles);
 const mockFetchPrReviews = vi.mocked(fetchPrReviews);
 const mockFetchPrCiChecks = vi.mocked(fetchPrCiChecks);
+const mockFetchIssueComments = vi.mocked(fetchIssueComments);
 const mockSubmitReview = vi.mocked(submitReview);
 const mockClosePullRequest = vi.mocked(closePullRequest);
 const mockConvertToDraft = vi.mocked(convertPullRequestToDraft);
@@ -218,6 +222,7 @@ describe("AiReviewPage", () => {
       pendingCount: 0,
       successCount: 0,
     });
+    mockFetchIssueComments.mockResolvedValue([]);
     mockAiReviewPr.mockResolvedValue(AI_DRAFT_JSON);
     mockAiRefineReview.mockResolvedValue(REFINED_DRAFT_JSON);
     mockSubmitReview.mockResolvedValue(undefined);
@@ -251,6 +256,198 @@ describe("AiReviewPage", () => {
     await waitForLoaded();
     await user.click(screen.getByRole("tab", { name: /Files/ }));
     expect(screen.getByText("Changed files (1)")).toBeInTheDocument();
+  });
+
+  it("loads conversation on Files and submits pending line comment", async () => {
+    const user = userEvent.setup();
+    mockFetchIssueComments.mockResolvedValue([
+      {
+        id: 3,
+        body: "Ship it",
+        user: "carol",
+        avatarUrl: "",
+        createdAt: "2026-09-04T11:00:00.000Z",
+        updatedAt: "2026-09-04T11:00:00.000Z",
+        htmlUrl: "https://github.com/c/3",
+        isOwn: false,
+      },
+    ]);
+    renderAiReview();
+    await waitForLoaded();
+    await user.click(screen.getByRole("tab", { name: /Files/ }));
+    expect(await screen.findByText("Ship it")).toBeInTheDocument();
+    expect(screen.getByText("Conversation")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /src\/main\.ts/ }));
+    await user.click(
+      screen.getByRole("button", { name: /Add comment on line 1/ }),
+    );
+    await user.type(screen.getByPlaceholderText("Leave a comment…"), "nitpick");
+    await user.click(screen.getByRole("button", { name: "Add to pending" }));
+    expect(screen.getByText(/Pending review \(1\)/)).toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText("Review event"), "APPROVE");
+    await user.click(screen.getByRole("button", { name: "Submit review" }));
+    await waitFor(() => {
+      expect(mockSubmitReview).toHaveBeenCalledWith(
+        expect.objectContaining({ number: 42 }),
+        "APPROVE",
+        expect.any(String),
+        expect.objectContaining({
+          commitId: "abc1234",
+          comments: [
+            expect.objectContaining({
+              path: "src/main.ts",
+              line: 1,
+              body: "nitpick",
+            }),
+          ],
+        }),
+      );
+    });
+  });
+
+  it("surfaces conversation fetch and pending submit failures", async () => {
+    const user = userEvent.setup();
+    mockFetchIssueComments.mockRejectedValueOnce(
+      new Error("secondary rate limit exceeded"),
+    );
+    renderAiReview();
+    await waitForLoaded();
+    await user.click(screen.getByRole("tab", { name: /Files/ }));
+    expect(await screen.findByText(/Tidak auto-retry/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Writes paused after a GitHub rate limit/),
+    ).toBeInTheDocument();
+
+    mockFetchIssueComments.mockResolvedValueOnce([]);
+    await user.click(screen.getByRole("tab", { name: /CI/ }));
+    await user.click(screen.getByRole("tab", { name: /Files/ }));
+
+    await user.click(screen.getByRole("button", { name: /src\/main\.ts/ }));
+    await user.click(
+      screen.getByRole("button", { name: /Add comment on line 1/ }),
+    );
+    await user.type(
+      screen.getByPlaceholderText("Leave a comment…"),
+      "retry later",
+    );
+    await user.click(screen.getByRole("button", { name: "Add to pending" }));
+    mockSubmitReview.mockRejectedValueOnce(
+      new Error("secondary rate limit exceeded"),
+    );
+    await user.click(screen.getByRole("button", { name: "Submit review" }));
+    await waitFor(() => {
+      expect(vi.mocked(toast.error)).toHaveBeenCalledWith(
+        expect.stringMatching(/rate limit/i),
+      );
+    });
+  });
+
+  it("disables pending Approve submit on draft PRs", async () => {
+    const user = userEvent.setup();
+    mockFetchPrDetail.mockResolvedValue(
+      baseDetail({ isDraft: true, author: { login: "bob", avatarUrl: "" } }),
+    );
+    renderAiReview();
+    await waitForLoaded();
+    await user.click(screen.getByRole("tab", { name: /Files/ }));
+    await user.click(screen.getByRole("button", { name: /src\/main\.ts/ }));
+    await user.click(
+      screen.getByRole("button", { name: /Add comment on line 1/ }),
+    );
+    await user.type(
+      screen.getByPlaceholderText("Leave a comment…"),
+      "draft note",
+    );
+    await user.click(screen.getByRole("button", { name: "Add to pending" }));
+    expect(screen.getByText(/Pending review \(1\)/)).toBeInTheDocument();
+    await user.selectOptions(screen.getByLabelText("Review event"), "APPROVE");
+    expect(
+      screen.getByText(/Draft PRs cannot be approved until marked ready/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Submit review" }),
+    ).toBeDisabled();
+  });
+
+  it("cancels owner confirm dialog", async () => {
+    const user = userEvent.setup();
+    mockFetchPrDetail.mockResolvedValue(
+      baseDetail({ author: { login: "alice", avatarUrl: "" } }),
+    );
+    renderAiReview();
+    await waitForLoaded();
+    await user.click(screen.getByRole("button", { name: "Close PR" }));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    await user.keyboard("{Escape}");
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+  });
+
+  it("posts conversation comment from Files tab", async () => {
+    const user = userEvent.setup();
+    const { postIssueComment } = await import("@/features/pr/api");
+    vi.mocked(postIssueComment).mockResolvedValueOnce({
+      id: 88,
+      body: "From app",
+      user: "alice",
+      avatarUrl: "",
+      createdAt: "2026-09-04T12:00:00.000Z",
+      updatedAt: "2026-09-04T12:00:00.000Z",
+      htmlUrl: "https://github.com/c/88",
+      isOwn: true,
+    });
+    renderAiReview();
+    await waitForLoaded();
+    await user.click(screen.getByRole("tab", { name: /Files/ }));
+    await user.type(
+      screen.getByPlaceholderText(/Leave a comment on this PR/),
+      "From app",
+    );
+    await user.click(screen.getByRole("button", { name: "Comment" }));
+    await waitFor(() => {
+      expect(vi.mocked(toast.success)).toHaveBeenCalledWith("Comment posted");
+    });
+    expect(screen.getByText("From app")).toBeInTheDocument();
+  });
+
+  it("includes pending comments when submitting AI review", async () => {
+    const user = userEvent.setup();
+    renderAiReview();
+    await waitForLoaded();
+    await user.click(screen.getByRole("tab", { name: /Files/ }));
+    await user.click(screen.getByRole("button", { name: /src\/main\.ts/ }));
+    await user.click(
+      screen.getByRole("button", { name: /Add comment on line 1/ }),
+    );
+    await user.type(
+      screen.getByPlaceholderText("Leave a comment…"),
+      "manual note",
+    );
+    await user.click(screen.getByRole("button", { name: "Add to pending" }));
+    await runAiToDraft(user);
+    await user.click(
+      screen.getByRole("checkbox", {
+        name: /I reviewed these findings/,
+      }),
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Submit review to GitHub" }),
+    );
+    await waitFor(() => {
+      expect(mockSubmitReview).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        expect.any(String),
+        expect.objectContaining({
+          comments: expect.arrayContaining([
+            expect.objectContaining({ body: "manual note" }),
+          ]),
+        }),
+      );
+    });
   });
 
   it("loads reviews tab and refreshes on button click", async () => {

@@ -158,6 +158,20 @@ describe("useMyPRs", () => {
     expect(result.current.error).toBe("Error: boom");
   });
 
+  it("skips GitHub fetch for reviewed tab", async () => {
+    const { result } = renderHook(() => useMyPRs(true, "reviewed"));
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    expect(mockFavorites).not.toHaveBeenCalled();
+    expect(mockAll).not.toHaveBeenCalled();
+    expect(mockAssigned).not.toHaveBeenCalled();
+    expect(mockReview).not.toHaveBeenCalled();
+    expect(mockMine).not.toHaveBeenCalled();
+  });
+
   it("skips fetch when disabled", async () => {
     const { result } = renderHook(() => useMyPRs(false, "favorites"));
 

@@ -21,6 +21,7 @@ const prCache = {
   favorites: [] as ReturnType<typeof makePr>[],
   assigned: [] as ReturnType<typeof makePr>[],
   review: [cachedPr],
+  reviewed: [],
   mine: [] as ReturnType<typeof makePr>[],
 };
 

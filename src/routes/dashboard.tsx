@@ -24,7 +24,7 @@ import {
 } from "@/lib/seen";
 import { useFavorites, useSavedReviews, useSettings } from "@/lib/use-settings";
 
-/** Annotate live PRs + keep locally reviewed ones visible on Review tab. */
+/** Annotate live PRs + fill Already reviewed tab from local submit history. */
 function mergeLocalReviews(
   lists: PrLists,
   saved: ReturnType<typeof latestReviewsByPr>,
@@ -46,26 +46,14 @@ function mergeLocalReviews(
   const mine = annotate(lists.mine);
   const reviewLive = annotate(lists.review);
 
-  const present = new Set(
-    [...all, ...favorites, ...assigned, ...mine, ...reviewLive].map((pr) =>
-      prKey(pr.repo, pr.number),
-    ),
-  );
+  // Review requested = still waiting on you (not yet submitted from this app).
+  const review = reviewLive.filter((pr) => !pr.localReviewEvent);
 
-  const kept: PullRequest[] = [];
-  for (const local of saved.values()) {
-    const key = prKey(local.repo, local.prNumber);
-    if (present.has(key)) continue;
-    kept.push(savedReviewToPullRequest(local));
-  }
+  const reviewed = [...saved.values()]
+    .map(savedReviewToPullRequest)
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 
-  const review = [
-    ...reviewLive.filter((pr) => !pr.localReviewEvent),
-    ...reviewLive.filter((pr) => pr.localReviewEvent),
-    ...kept,
-  ];
-
-  return { all, favorites, assigned, review, mine };
+  return { all, favorites, assigned, review, reviewed, mine };
 }
 
 function reviewPath(pr: PullRequest): string {
@@ -103,6 +91,7 @@ export function DashboardPage() {
       countNewPrs(visibleLists.favorites, lastSeen) +
       countNewPrs(visibleLists.assigned, lastSeen) +
       countNewPrs(visibleLists.review, lastSeen) +
+      countNewPrs(visibleLists.reviewed, lastSeen) +
       countNewPrs(visibleLists.mine, lastSeen)
     );
   }, [visibleLists, lastSeen]);

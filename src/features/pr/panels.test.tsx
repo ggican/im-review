@@ -261,6 +261,7 @@ describe("PRList", () => {
             all: [],
             assigned: [],
             review: [pendingPr],
+            reviewed: [],
             mine: [pr],
             favorites: [],
           }}
@@ -283,11 +284,75 @@ describe("PRList", () => {
     expect(onSelect).toHaveBeenCalledWith(pendingPr);
   });
 
+  it("shows Already reviewed tab empty state", () => {
+    render(
+      <MemoryRouter>
+        <PRList
+          lists={{
+            all: [],
+            favorites: [],
+            assigned: [],
+            review: [],
+            reviewed: [],
+            mine: [],
+          }}
+          active="reviewed"
+          onTabChange={vi.fn()}
+          loading={false}
+          error={null}
+          onRefresh={vi.fn()}
+          updatedAt={null}
+          onSelect={vi.fn()}
+        />
+      </MemoryRouter>,
+    );
+    expect(
+      screen.getByText(/No reviews submitted from IM Review yet/),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open History" })).toHaveAttribute(
+      "href",
+      "/settings",
+    );
+  });
+
+  it("lists items on Already reviewed tab without Needs review header", () => {
+    render(
+      <MemoryRouter>
+        <PRList
+          lists={{
+            all: [],
+            favorites: [],
+            assigned: [],
+            review: [],
+            reviewed: [pr],
+            mine: [],
+          }}
+          active="reviewed"
+          onTabChange={vi.fn()}
+          loading={false}
+          error={null}
+          onRefresh={vi.fn()}
+          updatedAt={new Date()}
+          onSelect={vi.fn()}
+        />
+      </MemoryRouter>,
+    );
+    expect(screen.getByText("Add feature")).toBeInTheDocument();
+    expect(screen.queryByText(/Needs review/)).not.toBeInTheDocument();
+  });
+
   it("shows error and favorites empty message", () => {
     render(
       <MemoryRouter>
         <PRList
-          lists={{ all: [], assigned: [], review: [], mine: [], favorites: [] }}
+          lists={{
+            all: [],
+            assigned: [],
+            review: [],
+            reviewed: [],
+            mine: [],
+            favorites: [],
+          }}
           active="favorites"
           onTabChange={vi.fn()}
           loading={false}
@@ -324,6 +389,7 @@ describe("PRList", () => {
               }),
               pr,
             ],
+            reviewed: [],
             mine: [],
           }}
           active="review"
@@ -336,7 +402,10 @@ describe("PRList", () => {
         />
       </MemoryRouter>,
     );
-    expect(screen.getByText(/Already reviewed/)).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: /Already reviewed/ }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Already reviewed \(/)).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /Mark seen/ }));
   });
 
@@ -358,6 +427,7 @@ describe("PRList", () => {
                 updatedAt: "2026-09-07T12:00:00.000Z",
               }),
             ],
+            reviewed: [],
             mine: [],
           }}
           active="review"
@@ -410,6 +480,7 @@ describe("PRList", () => {
             favorites: [],
             assigned: [],
             review: many,
+            reviewed: [],
             mine: [],
           }}
           active="review"
@@ -445,6 +516,7 @@ describe("PRList", () => {
             favorites: [pr],
             assigned: [],
             review: [],
+            reviewed: [],
             mine: [],
           }}
           active="favorites"
@@ -487,6 +559,84 @@ describe("ChangedFilesPanel", () => {
     expect(screen.queryByText("new")).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Expand all" }));
     expect(screen.getByText("new")).toBeInTheDocument();
+  });
+
+  it("adds RIGHT-side line comments to pending", async () => {
+    const user = userEvent.setup();
+    const onAddPending = vi.fn();
+    render(
+      <ChangedFilesPanel
+        totals={{ add: 1, del: 0 }}
+        onAddPending={onAddPending}
+        files={[
+          {
+            filename: "src/a.ts",
+            status: "modified",
+            additions: 1,
+            deletions: 0,
+            changes: 1,
+            patch: "@@ -1,0 +1,1 @@\n+hello",
+          },
+        ]}
+      />,
+    );
+    await user.click(screen.getByRole("button", { name: /src\/a.ts/ }));
+    await user.click(
+      screen.getByRole("button", { name: /Add comment on line 1/ }),
+    );
+    await user.type(screen.getByPlaceholderText("Leave a comment…"), "nit");
+    await user.click(screen.getByRole("button", { name: "Add to pending" }));
+    expect(onAddPending).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: "src/a.ts",
+        line: 1,
+        side: "RIGHT",
+        body: "nit",
+        source: "manual",
+      }),
+    );
+  });
+
+  it("cancels inline composer without adding pending", async () => {
+    const user = userEvent.setup();
+    const onAddPending = vi.fn();
+    render(
+      <ChangedFilesPanel
+        totals={{ add: 1, del: 0 }}
+        onAddPending={onAddPending}
+        pendingComments={[
+          {
+            id: "p1",
+            path: "src/a.ts",
+            line: 1,
+            side: "RIGHT",
+            body: "existing",
+            source: "manual",
+          },
+        ]}
+        files={[
+          {
+            filename: "src/a.ts",
+            status: "modified",
+            additions: 1,
+            deletions: 0,
+            changes: 1,
+            patch: "@@ -1,0 +1,1 @@\n+hello",
+          },
+        ]}
+      />,
+    );
+    await user.click(screen.getByRole("button", { name: /src\/a.ts/ }));
+    expect(screen.getByText(/Pending · L1/)).toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", { name: /Add comment on line 1/ }),
+    );
+    await user.type(screen.getByPlaceholderText("Leave a comment…"), "temp");
+    await user.click(screen.getByRole("button", { name: /Cancel/ }));
+    expect(
+      screen.queryByPlaceholderText("Leave a comment…"),
+    ).not.toBeInTheDocument();
+    expect(onAddPending).not.toHaveBeenCalled();
   });
 
   it("covers status labels, meta patch lines, and missing patch", async () => {

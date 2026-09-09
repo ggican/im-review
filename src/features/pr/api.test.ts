@@ -18,6 +18,7 @@ import {
   fetchAssignedPrs,
   fetchAuthoredPrsInWindow,
   fetchHeadBranch,
+  fetchIssueComments,
   fetchMergedPrsInWindow,
   fetchMyOpenPrs,
   fetchOpenPullsForRepo,
@@ -588,8 +589,37 @@ describe("UNIT-API pr/api", () => {
     await expect(
       postIssueComment(makePr({ repo: "acme/web", number: 1 }), "  "),
     ).rejects.toThrow(/empty/i);
-    githubRequest.mockResolvedValueOnce({});
-    await postIssueComment(makePr({ repo: "acme/web", number: 1 }), "note");
+    githubRequest.mockResolvedValueOnce({
+      id: 99,
+      body: "note",
+      user: { login: "alice", avatar_url: "" },
+      created_at: "2026-09-01T00:00:00Z",
+      updated_at: "2026-09-01T00:00:00Z",
+      html_url: "https://github.com/c/99",
+    });
+    const posted = await postIssueComment(
+      makePr({ repo: "acme/web", number: 1 }),
+      "note",
+    );
+    expect(posted.id).toBe(99);
+    expect(posted.isOwn).toBe(true);
+
+    githubGet.mockResolvedValueOnce([
+      {
+        id: 1,
+        body: "hello",
+        user: { login: "bob", avatar_url: "b" },
+        created_at: "2026-09-01T00:00:00Z",
+        updated_at: "2026-09-01T00:00:00Z",
+        html_url: "https://github.com/c/1",
+      },
+    ]);
+    const listed = await fetchIssueComments(
+      makePr({ repo: "acme/web", number: 1 }),
+      "bob",
+    );
+    expect(listed[0]?.isOwn).toBe(true);
+    expect(listed[0]?.body).toBe("hello");
 
     githubRequest.mockResolvedValueOnce({});
     await closePullRequest(makePr({ repo: "acme/web", number: 1 }));
