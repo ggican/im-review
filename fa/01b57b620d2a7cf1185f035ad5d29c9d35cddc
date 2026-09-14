@@ -1,0 +1,32 @@
+README.md
+  s_984251fb2511d4::t_3d0e52eb802dec 4
+package.json
+  s_984251fb2511d4::t_fe0d3d7aabd231 4
+src-tauri/Cargo.lock
+  s_984251fb2511d4::t_e3a990f99be1e5 1748
+src-tauri/Cargo.toml
+  s_984251fb2511d4::t_017dc1ab0490db 3
+src-tauri/tauri.conf.json
+  s_984251fb2511d4::t_03d35f9b614f5d 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "fa01b57b620d2a7cf1185f035ad5d29c9d35cddc",
+  "prompts": {},
+  "humans": {
+    "h_830b5f0628c690": {
+      "author": "ggican <ikhsan.mahendri@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_984251fb2511d4": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "66be65cb-e452-44c5-ac97-6779174677f4",
+        "model": "default"
+      },
+      "human_author": "ggican <ikhsan.mahendri@gmail.com>"
+    }
+  }
+}
