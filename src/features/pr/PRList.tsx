@@ -9,6 +9,8 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
+import { AuthorFilterBar } from "@/features/people/AuthorFilterBar";
+import type { AuthorFilterMode } from "@/features/people/types";
 import { cn } from "@/lib/cn";
 import {
   countNewPrs,
@@ -17,11 +19,12 @@ import {
   markAllSeen,
   subscribeLastSeen,
 } from "@/lib/seen";
+import { useFavoriteUsers, useSettings } from "@/lib/use-settings";
 
 import { PRRow } from "./PRRow";
 import type { PrLists, PrTab, PullRequest } from "./types";
 
-const TABS: { id: PrTab; label: string }[] = [
+const BASE_TABS: { id: PrTab; label: string }[] = [
   { id: "all", label: "All open" },
   { id: "favorites", label: "Favorites" },
   { id: "assigned", label: "Assigned" },
@@ -29,6 +32,11 @@ const TABS: { id: PrTab; label: string }[] = [
   { id: "reviewed", label: "Already reviewed" },
   { id: "mine", label: "My open" },
 ];
+
+const PEOPLE_TAB: { id: PrTab; label: string } = {
+  id: "people",
+  label: "People",
+};
 
 /** Client-side page size for the visible list (API already loads all pages). */
 export const PR_LIST_PAGE_SIZE = 25;
@@ -43,6 +51,12 @@ type Props = {
   onRefresh: () => void;
   updatedAt: Date | null;
   onSelect: (pr: PullRequest) => void;
+  authorLogin?: string | null;
+  authorMode?: AuthorFilterMode;
+  onAuthorChange?: (login: string | null, mode: AuthorFilterMode) => void;
+  searchItems?: PullRequest[];
+  searchLoading?: boolean;
+  searchError?: string | null;
 };
 
 export function PRList({
@@ -55,15 +69,35 @@ export function PRList({
   onRefresh,
   updatedAt,
   onSelect,
+  authorLogin = null,
+  authorMode = "filter",
+  onAuthorChange,
+  searchItems = [],
+  searchLoading = false,
+  searchError = null,
 }: Props) {
   const lastSeen = useSyncExternalStore(
     subscribeLastSeen,
     getLastSeenSnapshot,
     getLastSeenSnapshot,
   );
+  const favoriteUsers = useFavoriteUsers();
+  const { showFavoritePeople } = useSettings();
+  const tabs = showFavoritePeople
+    ? [...BASE_TABS, PEOPLE_TAB]
+    : BASE_TABS;
   const [page, setPage] = useState(1);
-  const items = useMemo(() => lists[active] ?? [], [lists, active]);
-  const isReviewedTab = active === "reviewed";
+  const tabItems = useMemo(() => lists[active] ?? [], [lists, active]);
+  const searching = authorMode === "search" && Boolean(authorLogin);
+  const items = useMemo(() => {
+    if (searching) return searchItems;
+    if (!authorLogin) return tabItems;
+    const needle = authorLogin.toLowerCase();
+    return tabItems.filter((pr) => pr.author.login.toLowerCase() === needle);
+  }, [searching, searchItems, authorLogin, tabItems]);
+  const listLoading = loading || (searching && searchLoading);
+  const listError = searching ? searchError || error : error;
+  const isReviewedTab = active === "reviewed" && !searching;
   const pending = useMemo(
     () => (isReviewedTab ? [] : items.filter((pr) => !pr.localReviewEvent)),
     [items, isReviewedTab],
@@ -79,7 +113,8 @@ export function PRList({
     countNewPrs(lists.assigned ?? [], lastSeen) +
     countNewPrs(lists.review ?? [], lastSeen) +
     countNewPrs(lists.reviewed ?? [], lastSeen) +
-    countNewPrs(lists.mine ?? [], lastSeen);
+    countNewPrs(lists.mine ?? [], lastSeen) +
+    (showFavoritePeople ? countNewPrs(lists.people ?? [], lastSeen) : 0);
 
   const ordered = useMemo(
     () => (isReviewedTab ? items : [...pending, ...reviewed]),
@@ -100,10 +135,27 @@ export function PRList({
 
   useEffect(() => {
     setPage(1);
-  }, [active, items.length]);
+  }, [active, items.length, authorLogin, authorMode]);
 
   const emptyMessage =
-    active === "favorites" ? (
+    authorLogin && items.length === 0 && !listLoading ? (
+      searching ? (
+        `No open PRs by @${authorLogin}.`
+      ) : (
+        <>
+          No open PRs by @{authorLogin} in this list.{" "}
+          {onAuthorChange ? (
+            <button
+              type="button"
+              className="underline underline-offset-2 hover:text-neutral-800 dark:hover:text-neutral-200"
+              onClick={() => onAuthorChange(authorLogin, "search")}
+            >
+              Show all PRs by @{authorLogin}
+            </button>
+          ) : null}
+        </>
+      )
+    ) : active === "favorites" ? (
       <>
         No open PRs in favorite repos.{" "}
         <Link
@@ -115,6 +167,20 @@ export function PRList({
       </>
     ) : active === "all" ? (
       "No open pull requests found."
+    ) : active === "people" ? (
+      favoriteUsers.length === 0 ? (
+        <>
+          No favorite people yet.{" "}
+          <Link
+            to="/settings"
+            className="underline underline-offset-2 hover:text-neutral-800 dark:hover:text-neutral-200"
+          >
+            Add favorite people
+          </Link>
+        </>
+      ) : (
+        "No open PRs from favorite people."
+      )
     ) : active === "reviewed" ? (
       <>
         No reviews submitted from IM Review yet. Approve or comment on a PR and
@@ -142,7 +208,7 @@ export function PRList({
             aria-label="Pull request lists"
             className="inline-flex rounded-lg border border-neutral-200 bg-neutral-100 p-0.5 whitespace-nowrap dark:border-neutral-800 dark:bg-neutral-900"
           >
-            {TABS.map((tab) => {
+            {tabs.map((tab) => {
               const selected = tab.id === active;
               const newCount = countNewPrs(lists[tab.id] ?? [], lastSeen);
               return (
@@ -200,7 +266,23 @@ export function PRList({
         </div>
       </div>
 
-      {error ? (
+      {onAuthorChange ? (
+        <AuthorFilterBar
+          authorLogin={authorLogin}
+          authorMode={authorMode}
+          tabItems={tabItems}
+          favoriteUsers={favoriteUsers}
+          onChange={onAuthorChange}
+        />
+      ) : null}
+
+      {searching && authorLogin ? (
+        <p className="text-xs text-neutral-500">
+          Open PRs by @{authorLogin} ({items.length})
+        </p>
+      ) : null}
+
+      {listError ? (
         <div
           className={
             stale
@@ -208,11 +290,11 @@ export function PRList({
               : "rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300"
           }
         >
-          {error}
+          {listError}
         </div>
       ) : null}
 
-      {stale && !error ? (
+      {stale && !listError ? (
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
           Menampilkan list tersimpan (cache). Data mungkin tidak terbaru.
         </div>
@@ -239,9 +321,9 @@ export function PRList({
           variant="outline"
           size="sm"
           onClick={onRefresh}
-          disabled={loading}
+          disabled={listLoading}
         >
-          {loading ? (
+          {listLoading ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
           ) : (
             <RefreshCw className="h-3.5 w-3.5" />
@@ -251,7 +333,7 @@ export function PRList({
       </div>
 
       <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
-        {loading && items.length === 0 ? (
+        {listLoading && items.length === 0 ? (
           <div className="flex items-center justify-center gap-2 px-4 py-16 text-sm text-neutral-500">
             <Loader2 className="h-4 w-4 animate-spin" />
             Loading pull requests…
@@ -276,6 +358,11 @@ export function PRList({
                       pr={pr}
                       isNew={isPrNew(pr, lastSeen)}
                       onSelect={onSelect}
+                      onFilterAuthor={
+                        onAuthorChange
+                          ? (login) => onAuthorChange(login, "filter")
+                          : undefined
+                      }
                     />
                   ))}
                 </ul>
@@ -295,6 +382,11 @@ export function PRList({
                       pr={pr}
                       isNew={isPrNew(pr, lastSeen)}
                       onSelect={onSelect}
+                      onFilterAuthor={
+                        onAuthorChange
+                          ? (login) => onAuthorChange(login, "filter")
+                          : undefined
+                      }
                     />
                   ))}
                 </ul>

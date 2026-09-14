@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useFavorites, useSettings } from "@/lib/use-settings";
+import { useFavorites, useFavoriteUsers, useSettings } from "@/lib/use-settings";
 
 import {
   fetchAllOpenPrs,
   fetchAssignedPrs,
   fetchMyOpenPrs,
+  fetchOpenPrsByAuthors,
   fetchOpenPullsForRepos,
   fetchReviewRequestedPrs,
 } from "./api";
@@ -21,6 +22,7 @@ import type { PrLists, PrTab, PullRequest } from "./types";
 async function fetchTab(
   tab: PrTab,
   favoriteRepos: string[],
+  favoritePeopleLogins: string[],
 ): Promise<PullRequest[]> {
   switch (tab) {
     case "all":
@@ -36,6 +38,8 @@ async function fetchTab(
       return [];
     case "mine":
       return fetchMyOpenPrs();
+    case "people":
+      return fetchOpenPrsByAuthors(favoritePeopleLogins);
   }
 }
 
@@ -47,6 +51,7 @@ async function fetchTab(
 export function useMyPRs(enabled: boolean, activeTab: PrTab) {
   const { refreshIntervalMin } = useSettings();
   const favorites = useFavorites();
+  const favoriteUsers = useFavoriteUsers();
   const [lists, setLists] = useState<PrLists>(() => getPrCache());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,6 +61,7 @@ export function useMyPRs(enabled: boolean, activeTab: PrTab) {
   );
   const loadedRef = useRef<Set<PrTab>>(new Set());
   const favoritesKey = favorites.join(",");
+  const favoritePeopleKey = favoriteUsers.map((u) => u.login).join(",");
 
   const loadTab = useCallback(
     async (tab: PrTab, force = false) => {
@@ -78,7 +84,11 @@ export function useMyPRs(enabled: boolean, activeTab: PrTab) {
       if (cachedCount === 0) setStale(false);
 
       try {
-        const items = await fetchTab(tab, favorites);
+        const items = await fetchTab(
+          tab,
+          favorites,
+          favoriteUsers.map((u) => u.login),
+        );
         setPrCacheTab(tab, items);
         setLists(getPrCache());
         loadedRef.current.add(tab);
@@ -116,7 +126,7 @@ export function useMyPRs(enabled: boolean, activeTab: PrTab) {
         setLoading(false);
       }
     },
-    [enabled, favorites],
+    [enabled, favorites, favoriteUsers],
   );
 
   const refresh = useCallback(async () => {
@@ -129,8 +139,12 @@ export function useMyPRs(enabled: boolean, activeTab: PrTab) {
   }, [favoritesKey]);
 
   useEffect(() => {
+    loadedRef.current.delete("people");
+  }, [favoritePeopleKey]);
+
+  useEffect(() => {
     void loadTab(activeTab);
-  }, [activeTab, loadTab, favoritesKey]);
+  }, [activeTab, loadTab, favoritesKey, favoritePeopleKey]);
 
   useEffect(() => {
     if (!enabled || refreshIntervalMin <= 0) return;

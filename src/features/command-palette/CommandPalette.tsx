@@ -1,10 +1,14 @@
 import {
   BarChart3,
   BookMarked,
+  CalendarDays,
   GitPullRequest,
+  Mail,
   Search,
   Settings,
   Sparkles,
+  SquareKanban,
+  Users,
 } from "lucide-react";
 import {
   type KeyboardEvent,
@@ -30,7 +34,7 @@ import {
 } from "@/features/pr/pr-cache";
 import { cn } from "@/lib/cn";
 import { getLastSeenSnapshot, isPrNew, subscribeLastSeen } from "@/lib/seen";
-import { getFavorites } from "@/lib/settings";
+import { getFavorites, getFavoriteUsers } from "@/lib/settings";
 
 type PaletteItem = {
   id: string;
@@ -101,6 +105,38 @@ export function CommandPalette() {
         run: () => navigate("/repos"),
       },
       {
+        id: "nav-people",
+        label: "People",
+        hint: "Favorite authors",
+        group: "Navigate",
+        icon: Users,
+        run: () => navigate("/people"),
+      },
+      {
+        id: "nav-jira",
+        label: "Jira",
+        hint: "My work & saved filters",
+        group: "Navigate",
+        icon: SquareKanban,
+        run: () => navigate("/jira"),
+      },
+      {
+        id: "nav-calendar",
+        label: "Calendar",
+        hint: "Upcoming Google events",
+        group: "Navigate",
+        icon: CalendarDays,
+        run: () => navigate("/calendar"),
+      },
+      {
+        id: "nav-gmail",
+        label: "Gmail",
+        hint: "Inbox & unread mail",
+        group: "Navigate",
+        icon: Mail,
+        run: () => navigate("/gmail"),
+      },
+      {
         id: "nav-metrics",
         label: "Metrics",
         hint: "Scorecard",
@@ -139,7 +175,34 @@ export function CommandPalette() {
       run: () => navigate("/repos"),
     }));
 
-    const all = [...nav, ...prs, ...favs];
+    const people = getFavoriteUsers().map((user) => ({
+      id: `person-${user.login}`,
+      label: `@${user.login}`,
+      hint: user.name ?? "Favorite person",
+      group: "People",
+      icon: Users,
+      run: () => navigate(`/?author=${encodeURIComponent(user.login)}`),
+    }));
+
+    const all = [...nav, ...prs, ...favs, ...people];
+    const at = q.startsWith("@")
+      ? q.slice(1)
+      : q.startsWith("user ")
+        ? q.slice(5)
+        : null;
+    if (at && at.length > 0) {
+      all.unshift({
+        id: `author-search-${at}`,
+        label: `PRs by @${at.replace(/^@/, "")}`,
+        hint: "Author search",
+        group: "People",
+        icon: Users,
+        run: () =>
+          navigate(
+            `/?author=${encodeURIComponent(at.replace(/^@/, ""))}&by=all`,
+          ),
+      });
+    }
     if (!q) return all.slice(0, 40);
     return all
       .filter(

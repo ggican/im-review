@@ -1,4 +1,6 @@
 mod commands;
+mod google;
+mod notifications;
 
 use tauri::{Manager, WindowEvent};
 
@@ -24,10 +26,21 @@ pub fn run() {
             commands::list_ai_provider_status,
             commands::github_get,
             commands::github_request,
+            commands::validate_jira,
+            commands::jira_request,
+            google::google_oauth_connect,
+            google::google_oauth_cancel,
+            google::google_api_request_command,
+            google::google_calendar_events,
+            google::gmail_list_messages,
+            google::gmail_get_message,
+            google::gmail_modify_message,
+            google::gmail_list_labels,
             commands::ai_review_pr,
             commands::ai_refine_review,
             commands::cursor_review_pr,
             commands::cursor_refine_review,
+            notifications::send_app_notification,
         ])
         .setup(|app| {
             // Red close button / window X → hide to tray (keep polling alive).

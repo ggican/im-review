@@ -7,7 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import type { CommentTemplate } from "@/lib/settings";
 import { relativeTime } from "@/lib/time";
 
-import { postIssueComment } from "./api";
+import {
+  deleteIssueComment,
+  postIssueComment,
+  updateIssueComment,
+} from "./api";
 import { rateLimitUserMessage } from "./rate-limit";
 import type { IssueComment, PullRequest } from "./types";
 
@@ -19,6 +23,8 @@ type Props = {
   templates: CommentTemplate[];
   writeDisabled?: boolean;
   onPosted: (comment: IssueComment) => void;
+  onUpdated: (comment: IssueComment) => void;
+  onDeleted: (commentId: number) => void;
 };
 
 export function ConversationPanel({
@@ -29,9 +35,14 @@ export function ConversationPanel({
   templates,
   writeDisabled = false,
   onPosted,
+  onUpdated,
+  onDeleted,
 }: Props) {
   const [body, setBody] = useState("");
   const [posting, setPosting] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editBody, setEditBody] = useState("");
+  const [rowBusy, setRowBusy] = useState(false);
 
   async function onSubmit() {
     if (writeDisabled || posting) return;
@@ -47,6 +58,38 @@ export function ConversationPanel({
       toast.error(rateLimitUserMessage(err));
     } finally {
       setPosting(false);
+    }
+  }
+
+  async function saveEdit(id: number) {
+    if (writeDisabled || rowBusy) return;
+    const trimmed = editBody.trim();
+    if (!trimmed) return;
+    setRowBusy(true);
+    try {
+      const updated = await updateIssueComment(pr, id, trimmed);
+      onUpdated(updated);
+      setEditingId(null);
+      toast.success("Comment updated");
+    } catch (err) {
+      toast.error(rateLimitUserMessage(err));
+    } finally {
+      setRowBusy(false);
+    }
+  }
+
+  async function onDelete(id: number) {
+    if (writeDisabled || rowBusy) return;
+    if (!window.confirm("Delete this comment?")) return;
+    setRowBusy(true);
+    try {
+      await deleteIssueComment(pr, id);
+      onDeleted(id);
+      toast.success("Comment deleted");
+    } catch (err) {
+      toast.error(rateLimitUserMessage(err));
+    } finally {
+      setRowBusy(false);
     }
   }
 
@@ -112,9 +155,69 @@ export function ConversationPanel({
                   GitHub
                 </a>
               </div>
-              <p className="mt-2 text-sm whitespace-pre-wrap text-neutral-800 dark:text-neutral-200">
-                {c.body}
-              </p>
+              {editingId === c.id ? (
+                <div className="mt-2 space-y-2">
+                  <Textarea
+                    rows={3}
+                    value={editBody}
+                    onChange={(e) => setEditBody(e.target.value)}
+                    disabled={rowBusy || writeDisabled}
+                    aria-label="Edit comment"
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={
+                        rowBusy || writeDisabled || !editBody.trim()
+                      }
+                      onClick={() => void saveEdit(c.id)}
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      disabled={rowBusy}
+                      onClick={() => setEditingId(null)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p className="mt-2 text-sm whitespace-pre-wrap text-neutral-800 dark:text-neutral-200">
+                    {c.body}
+                  </p>
+                  {c.isOwn ? (
+                    <div className="mt-2 flex gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        disabled={writeDisabled || rowBusy}
+                        onClick={() => {
+                          setEditingId(c.id);
+                          setEditBody(c.body);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        disabled={writeDisabled || rowBusy}
+                        onClick={() => void onDelete(c.id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  ) : null}
+                </>
+              )}
             </li>
           ))}
         </ul>

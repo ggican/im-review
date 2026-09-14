@@ -19,14 +19,27 @@ vi.mock("sonner", () => ({
 
 import { toast } from "sonner";
 
-vi.mock("@/features/pr/api", () => ({
-  fetchHeadBranch: vi.fn(),
-  fetchPrDetail: vi.fn(),
-  submitReview: vi.fn(),
-}));
+vi.mock("@/features/pr/api", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/features/pr/api")>();
+  return {
+    ...actual,
+    fetchHeadBranch: vi.fn(),
+    fetchPrDetail: vi.fn(),
+    submitReview: vi.fn(),
+  };
+});
 
 vi.mock("@/lib/use-settings", () => ({
   useFavoriteBranches: vi.fn(() => []),
+  useFavoriteUsers: vi.fn(() => []),
+  useSettings: vi.fn(() => ({
+    refreshIntervalMin: 5,
+    theme: "system",
+    favoritesOnly: true,
+    showFavoriteOpen: true,
+    showFavoritePeople: false,
+    aiProvider: "cursor",
+  })),
   useTemplates: vi.fn(() => [
     { id: "lgtm", name: "LGTM", body: "Looks good!" },
   ]),
@@ -116,6 +129,8 @@ const reviewsSnapshot: PrReviewsSnapshot = {
           createdAt: "2026-09-04T11:00:00.000Z",
           htmlUrl: "https://github.com/comment/9",
           reviewId: 1,
+          inReplyToId: null,
+          isOwn: false,
         },
       ],
     },
@@ -142,7 +157,7 @@ describe("PRRow", () => {
 
   it("shows reviewed state and favorite branch badge", () => {
     render(<PRRow pr={pr} onSelect={vi.fn()} />);
-    expect(screen.getByText(/Reviewed · Approved/)).toBeInTheDocument();
+    expect(screen.getByText(/Already reviewed/)).toBeInTheDocument();
   });
 
   it("toggles favorite branch and copies link", async () => {
@@ -205,9 +220,7 @@ describe("PRRow", () => {
         onSelect={vi.fn()}
       />,
     );
-    expect(
-      screen.getByText(/Reviewed · Changes requested/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Already reviewed/)).toBeInTheDocument();
     expect(screen.getByText("draft")).toBeInTheDocument();
   });
 
@@ -225,7 +238,7 @@ describe("PRRow", () => {
         onSelect={vi.fn()}
       />,
     );
-    expect(screen.getByText(/Reviewed · Commented/)).toBeInTheDocument();
+    expect(screen.getByText(/Already reviewed/)).toBeInTheDocument();
 
     vi.spyOn(navigator.clipboard, "writeText").mockRejectedValueOnce(
       new Error("denied"),
@@ -264,6 +277,7 @@ describe("PRList", () => {
             reviewed: [],
             mine: [pr],
             favorites: [],
+            people: [],
           }}
           active="review"
           onTabChange={onTabChange}
@@ -295,6 +309,7 @@ describe("PRList", () => {
             review: [],
             reviewed: [],
             mine: [],
+            people: [],
           }}
           active="reviewed"
           onTabChange={vi.fn()}
@@ -326,6 +341,7 @@ describe("PRList", () => {
             review: [],
             reviewed: [pr],
             mine: [],
+            people: [],
           }}
           active="reviewed"
           onTabChange={vi.fn()}
@@ -352,6 +368,7 @@ describe("PRList", () => {
             reviewed: [],
             mine: [],
             favorites: [],
+            people: [],
           }}
           active="favorites"
           onTabChange={vi.fn()}
@@ -391,6 +408,7 @@ describe("PRList", () => {
             ],
             reviewed: [],
             mine: [],
+            people: [],
           }}
           active="review"
           onTabChange={vi.fn()}
@@ -429,6 +447,7 @@ describe("PRList", () => {
             ],
             reviewed: [],
             mine: [],
+            people: [],
           }}
           active="review"
           onTabChange={vi.fn()}
@@ -482,6 +501,7 @@ describe("PRList", () => {
             review: many,
             reviewed: [],
             mine: [],
+            people: [],
           }}
           active="review"
           onTabChange={vi.fn()}
@@ -518,6 +538,7 @@ describe("PRList", () => {
             review: [],
             reviewed: [],
             mine: [],
+            people: [],
           }}
           active="favorites"
           onTabChange={vi.fn()}
@@ -838,9 +859,16 @@ describe("CiChecksPanel", () => {
 });
 
 describe("CurrentReviewsPanel", () => {
+  const reviewPr = { repo: "acme/app", number: 1 };
+  const panelProps = {
+    pr: reviewPr,
+    onMutated: vi.fn(),
+  };
+
   it("renders loading and error states", () => {
     const { rerender } = render(
       <CurrentReviewsPanel
+        {...panelProps}
         snapshot={null}
         loading
         error={null}
@@ -852,6 +880,7 @@ describe("CurrentReviewsPanel", () => {
     ).toBeInTheDocument();
     rerender(
       <CurrentReviewsPanel
+        {...panelProps}
         snapshot={null}
         loading={false}
         error="reviews down"
@@ -866,6 +895,7 @@ describe("CurrentReviewsPanel", () => {
     const { openUrl } = await import("@tauri-apps/plugin-opener");
     render(
       <CurrentReviewsPanel
+        {...panelProps}
         snapshot={{
           reviews: [
             {
@@ -897,6 +927,7 @@ describe("CurrentReviewsPanel", () => {
     const onRefresh = vi.fn();
     render(
       <CurrentReviewsPanel
+        {...panelProps}
         snapshot={reviewsSnapshot}
         loading={false}
         error={null}
@@ -913,6 +944,7 @@ describe("CurrentReviewsPanel", () => {
   it("covers changes-requested, commented, unknown state, and empty list", () => {
     const { rerender } = render(
       <CurrentReviewsPanel
+        {...panelProps}
         snapshot={{
           reviews: [
             {
@@ -934,6 +966,8 @@ describe("CurrentReviewsPanel", () => {
                   createdAt: "2026-09-04T10:00:00.000Z",
                   htmlUrl: "https://github.com/c/1",
                   reviewId: 3,
+                  inReplyToId: null,
+                  isOwn: false,
                 },
               ],
             },
@@ -942,8 +976,8 @@ describe("CurrentReviewsPanel", () => {
               user: "erin",
               avatarUrl: "",
               state: "COMMENTED",
-              body: "note",
-              submittedAt: "2026-09-04T11:00:00.000Z",
+              body: "Note",
+              submittedAt: "2026-09-04T09:00:00.000Z",
               htmlUrl: "https://github.com/review/4",
               comments: [],
             },
@@ -951,9 +985,9 @@ describe("CurrentReviewsPanel", () => {
               id: 5,
               user: "frank",
               avatarUrl: "",
-              state: "PENDING",
-              body: "",
-              submittedAt: null,
+              state: "UNKNOWN_STATE",
+              body: "x",
+              submittedAt: "2026-09-04T08:00:00.000Z",
               htmlUrl: "https://github.com/review/5",
               comments: [],
             },
@@ -964,8 +998,6 @@ describe("CurrentReviewsPanel", () => {
               avatarUrl: "https://avatar.example/dave.png",
               state: "CHANGES_REQUESTED",
             },
-            { user: "erin", avatarUrl: "", state: "COMMENTED" },
-            { user: "frank", avatarUrl: "", state: "PENDING" },
           ],
           inlineCount: 1,
         }}
@@ -975,12 +1007,11 @@ describe("CurrentReviewsPanel", () => {
       />,
     );
     expect(screen.getAllByText("Changes requested").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Commented").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("PENDING").length).toBeGreaterThan(0);
-    expect(screen.getByText("(empty comment)")).toBeInTheDocument();
-
+    expect(screen.getByText("Commented")).toBeInTheDocument();
+    expect(screen.getByText("UNKNOWN_STATE")).toBeInTheDocument();
     rerender(
       <CurrentReviewsPanel
+        {...panelProps}
         snapshot={{ reviews: [], latestByUser: [], inlineCount: 0 }}
         loading={false}
         error={null}

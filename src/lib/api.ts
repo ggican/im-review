@@ -3,22 +3,54 @@ import { invoke } from "@tauri-apps/api/core";
 import type { AiProviderId } from "@/features/ai-review/providers";
 import { AI_PROVIDERS } from "@/features/ai-review/providers";
 import {
+  GOOGLE_OAUTH_CLIENT_ID,
+  GOOGLE_OAUTH_CLIENT_SECRET,
+  isGoogleOAuthConfigured,
+} from "@/lib/google-oauth";
+import {
   clearAiKey,
   clearGithubToken,
+  clearGoogleCreds,
+  clearJiraCreds,
+  ensureGoogleOAuthClient,
   getAiKey,
   getGithubToken,
+  getJiraEmail,
+  getJiraHost,
+  getJiraToken,
   hasAiKeyLocal,
   hasGithubToken,
+  hasGoogleCreds,
+  hasJiraCreds,
   listAiKeysLocal,
   secretsHydratePayload,
   setAiKey,
   setGithubToken,
+  setGoogleTokens,
+  setJiraCreds,
 } from "@/lib/secrets";
+import { getGooglePublic } from "@/lib/settings";
 
 export type GithubUser = {
   login: string;
   name: string | null;
   avatar_url: string;
+};
+
+export type JiraUser = {
+  account_id: string;
+  display_name: string;
+  email: string;
+  avatar_url: string;
+  host: string;
+};
+
+export type GoogleAccount = {
+  email: string;
+  name: string;
+  access_token: string;
+  refresh_token: string;
+  expiry: number;
 };
 
 export type AiProviderStatus = {
@@ -29,9 +61,20 @@ export type AiProviderStatus = {
 /** Push localStorage secrets into Rust memory for GitHub/AI HTTP calls. */
 export async function hydrateRuntimeSecrets(): Promise<void> {
   const payload = secretsHydratePayload();
+  const google = getGooglePublic();
   await invoke<void>("hydrate_runtime_secrets", {
     githubToken: payload.githubToken,
     aiKeys: payload.aiKeys,
+    jiraHost: payload.jiraHost,
+    jiraEmail: payload.jiraEmail,
+    jiraToken: payload.jiraToken,
+    googleClientId: payload.googleClientId,
+    googleClientSecret: payload.googleClientSecret,
+    googleAccessToken: payload.googleAccessToken,
+    googleRefreshToken: payload.googleRefreshToken,
+    googleExpiry: payload.googleExpiry,
+    googleEmail: google?.email ?? null,
+    googleName: google?.name ?? null,
   });
 }
 
@@ -88,6 +131,100 @@ export const api = {
       path,
       body: body ?? null,
     }),
+
+  saveJira: async (input: { host: string; email: string; token: string }) => {
+    setJiraCreds(input);
+    await hydrateRuntimeSecrets();
+  },
+  hasJira: async () => hasJiraCreds(),
+  deleteJira: async () => {
+    clearJiraCreds();
+    await hydrateRuntimeSecrets();
+  },
+  validateJira: (input?: { host: string; email: string; token: string }) =>
+    invoke<JiraUser>("validate_jira", {
+      host: input?.host ?? getJiraHost(),
+      email: input?.email ?? getJiraEmail(),
+      token: input?.token ?? getJiraToken(),
+    }),
+  jiraRequest: <T = unknown>(method: string, path: string, body?: unknown) =>
+    invoke<T>("jira_request", {
+      method,
+      path,
+      body: body ?? null,
+    }),
+
+  connectGoogle: async () => {
+    if (!isGoogleOAuthConfigured()) {
+      throw new Error(
+        "Google is not configured in this build (missing OAuth client ID or secret)",
+      );
+    }
+    ensureGoogleOAuthClient();
+    const account = await invoke<GoogleAccount>("google_oauth_connect", {
+      clientId: GOOGLE_OAUTH_CLIENT_ID,
+      clientSecret: GOOGLE_OAUTH_CLIENT_SECRET,
+    });
+    setGoogleTokens({
+      accessToken: account.access_token,
+      refreshToken: account.refresh_token,
+      expiry: account.expiry,
+    });
+    await hydrateRuntimeSecrets();
+    return account;
+  },
+  cancelGoogleConnect: () => invoke<void>("google_oauth_cancel"),
+  hasGoogle: async () => hasGoogleCreds(),
+  deleteGoogle: async () => {
+    clearGoogleCreds();
+    await hydrateRuntimeSecrets();
+  },
+  googleCalendarEvents: <T = unknown>() => invoke<T>("google_calendar_events"),
+  googleApiRequest: <T = unknown>(
+    method: string,
+    urlOrPath: string,
+    body?: unknown,
+  ) =>
+    invoke<T>("google_api_request_command", {
+      method,
+      urlOrPath,
+      body: body ?? null,
+    }),
+  gmailListMessages: (args: {
+    query?: string | null;
+    labelIds?: string[] | null;
+    pageToken?: string | null;
+    maxResults?: number;
+  }) =>
+    invoke<unknown>("gmail_list_messages", {
+      query: args.query ?? null,
+      labelIds: args.labelIds ?? null,
+      pageToken: args.pageToken ?? null,
+      maxResults: args.maxResults ?? null,
+    }),
+  gmailGetMessage: (
+    id: string,
+    format?: string | null,
+    metadataHeaders?: string[] | null,
+  ) =>
+    invoke<unknown>("gmail_get_message", {
+      id,
+      format: format ?? null,
+      metadataHeaders: metadataHeaders ?? null,
+    }),
+  gmailModifyMessage: (
+    id: string,
+    args: {
+      addLabelIds?: string[];
+      removeLabelIds?: string[];
+    },
+  ) =>
+    invoke<unknown>("gmail_modify_message", {
+      id,
+      addLabelIds: args.addLabelIds ?? null,
+      removeLabelIds: args.removeLabelIds ?? null,
+    }),
+  gmailListLabels: () => invoke<unknown>("gmail_list_labels"),
 
   aiReviewPr: (args: {
     provider: AiProviderId;

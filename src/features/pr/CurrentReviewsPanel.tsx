@@ -5,18 +5,38 @@ import {
   MessageSquareText,
   RefreshCw,
 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/cn";
 import { relativeTime } from "@/lib/time";
 
-import type { PrReviewItem, PrReviewsSnapshot } from "./types";
+import {
+  deleteReviewComment,
+  dismissReview,
+  replyToReviewComment,
+  threadReviewComments,
+  updateReviewComment,
+} from "./api";
+import { rateLimitUserMessage } from "./rate-limit";
+import type {
+  PrReviewComment,
+  PrReviewItem,
+  PrReviewsSnapshot,
+  PullRequest,
+} from "./types";
 
 type Props = {
+  pr: Pick<PullRequest, "repo" | "number">;
   snapshot: PrReviewsSnapshot | null;
   loading: boolean;
   error: string | null;
+  writeDisabled?: boolean;
   onRefresh: () => void;
+  onMutated: () => void;
 };
 
 function stateLabel(state: string): string {
@@ -49,7 +69,252 @@ function stateClass(state: string): string {
   }
 }
 
-function ReviewCard({ review }: { review: PrReviewItem }) {
+function InlineCommentBlock({
+  comment,
+  indent,
+  writeDisabled,
+  pr,
+  replyToId,
+  onStartReply,
+  onCancelReply,
+  onMutated,
+}: {
+  comment: PrReviewComment;
+  indent?: boolean;
+  writeDisabled: boolean;
+  pr: Pick<PullRequest, "repo" | "number">;
+  replyToId: number | null;
+  onStartReply: (id: number) => void;
+  onCancelReply: () => void;
+  onMutated: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(comment.body);
+  const [replyBody, setReplyBody] = useState("");
+  const [busy, setBusy] = useState(false);
+  const replying = replyToId === comment.id;
+
+  async function saveEdit() {
+    if (writeDisabled || busy) return;
+    const trimmed = draft.trim();
+    if (!trimmed) return;
+    setBusy(true);
+    try {
+      await updateReviewComment(pr, comment.id, trimmed);
+      setEditing(false);
+      toast.success("Comment updated");
+      onMutated();
+    } catch (err) {
+      toast.error(rateLimitUserMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onDelete() {
+    if (writeDisabled || busy) return;
+    if (!window.confirm("Delete this review comment?")) return;
+    setBusy(true);
+    try {
+      await deleteReviewComment(pr, comment.id);
+      toast.success("Comment deleted");
+      onMutated();
+    } catch (err) {
+      toast.error(rateLimitUserMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function sendReply() {
+    if (writeDisabled || busy) return;
+    const trimmed = replyBody.trim();
+    if (!trimmed) return;
+    setBusy(true);
+    try {
+      await replyToReviewComment(pr, comment.id, trimmed);
+      setReplyBody("");
+      onCancelReply();
+      toast.success("Reply posted");
+      onMutated();
+    } catch (err) {
+      toast.error(rateLimitUserMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <li
+      className={cn(
+        "rounded-md border border-neutral-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-950",
+        indent && "ml-4 border-l-2 border-l-sky-300 dark:border-l-sky-800",
+      )}
+    >
+      <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xs text-neutral-500">
+        <span className="truncate">{comment.path}</span>
+        {comment.line != null ? <span>:{comment.line}</span> : null}
+        <span className="font-sans text-neutral-400">· {comment.user}</span>
+        <span className="font-sans">{relativeTime(comment.createdAt)}</span>
+      </div>
+      {editing ? (
+        <div className="space-y-2">
+          <Textarea
+            rows={3}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            disabled={busy || writeDisabled}
+          />
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              size="sm"
+              disabled={busy || writeDisabled || !draft.trim()}
+              onClick={() => void saveEdit()}
+            >
+              Save
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              disabled={busy}
+              onClick={() => {
+                setEditing(false);
+                setDraft(comment.body);
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <pre className="text-xs leading-relaxed whitespace-pre-wrap text-neutral-800 dark:text-neutral-200">
+          {comment.body || "(empty comment)"}
+        </pre>
+      )}
+      {!editing ? (
+        <div className="mt-2 flex flex-wrap gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            disabled={writeDisabled || busy}
+            onClick={() =>
+              replying ? onCancelReply() : onStartReply(comment.id)
+            }
+          >
+            Reply
+          </Button>
+          {comment.isOwn ? (
+            <>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                disabled={writeDisabled || busy}
+                onClick={() => {
+                  setDraft(comment.body);
+                  setEditing(true);
+                }}
+              >
+                Edit
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                disabled={writeDisabled || busy}
+                onClick={() => void onDelete()}
+              >
+                Delete
+              </Button>
+            </>
+          ) : null}
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={() => void openUrl(comment.htmlUrl)}
+          >
+            GitHub
+          </Button>
+        </div>
+      ) : null}
+      {replying ? (
+        <div className="mt-2 space-y-2 border-t border-neutral-200 pt-2 dark:border-neutral-800">
+          <Textarea
+            rows={2}
+            value={replyBody}
+            onChange={(e) => setReplyBody(e.target.value)}
+            disabled={busy || writeDisabled}
+            placeholder="Write a reply…"
+            aria-label="Reply body"
+          />
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              size="sm"
+              disabled={busy || writeDisabled || !replyBody.trim()}
+              onClick={() => void sendReply()}
+            >
+              {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+              Post reply
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              disabled={busy}
+              onClick={onCancelReply}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      ) : null}
+    </li>
+  );
+}
+
+function ReviewCard({
+  review,
+  pr,
+  writeDisabled,
+  onMutated,
+}: {
+  review: PrReviewItem;
+  pr: Pick<PullRequest, "repo" | "number">;
+  writeDisabled: boolean;
+  onMutated: () => void;
+}) {
+  const [replyToId, setReplyToId] = useState<number | null>(null);
+  const [dismissOpen, setDismissOpen] = useState(false);
+  const [dismissMsg, setDismissMsg] = useState("");
+  const [busy, setBusy] = useState(false);
+  const threads = threadReviewComments(review.comments);
+
+  async function onDismiss() {
+    if (writeDisabled || busy) return;
+    const trimmed = dismissMsg.trim();
+    if (!trimmed) {
+      toast.error("Dismiss message is required");
+      return;
+    }
+    setBusy(true);
+    try {
+      await dismissReview(pr, review.id, trimmed);
+      setDismissOpen(false);
+      setDismissMsg("");
+      toast.success("Review dismissed");
+      onMutated();
+    } catch (err) {
+      toast.error(rateLimitUserMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <article className="space-y-3 border-b border-neutral-200 px-4 py-4 last:border-b-0 dark:border-neutral-800">
       <header className="flex flex-wrap items-start justify-between gap-2">
@@ -85,16 +350,60 @@ function ReviewCard({ review }: { review: PrReviewItem }) {
             </p>
           </div>
         </div>
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          onClick={() => void openUrl(review.htmlUrl)}
-        >
-          <ExternalLink className="h-3.5 w-3.5" />
-          Open
-        </Button>
+        <div className="flex flex-wrap gap-1">
+          {review.state !== "DISMISSED" ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={writeDisabled || busy}
+              onClick={() => setDismissOpen((v) => !v)}
+            >
+              Dismiss
+            </Button>
+          ) : null}
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={() => void openUrl(review.htmlUrl)}
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            Open
+          </Button>
+        </div>
       </header>
+
+      {dismissOpen ? (
+        <div className="space-y-2 rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950/30">
+          <Input
+            value={dismissMsg}
+            onChange={(e) => setDismissMsg(e.target.value)}
+            placeholder="Reason for dismissing (required)"
+            aria-label="Dismiss message"
+            disabled={busy || writeDisabled}
+          />
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              size="sm"
+              disabled={busy || writeDisabled || !dismissMsg.trim()}
+              onClick={() => void onDismiss()}
+            >
+              Confirm dismiss
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              disabled={busy}
+              onClick={() => setDismissOpen(false)}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      ) : null}
 
       {review.body ? (
         <pre className="rounded-md bg-neutral-50 p-3 text-xs leading-relaxed whitespace-pre-wrap text-neutral-800 dark:bg-neutral-900 dark:text-neutral-200">
@@ -106,21 +415,33 @@ function ReviewCard({ review }: { review: PrReviewItem }) {
         </p>
       )}
 
-      {review.comments.length > 0 ? (
+      {threads.length > 0 ? (
         <ul className="space-y-2">
-          {review.comments.map((c) => (
-            <li
-              key={c.id}
-              className="rounded-md border border-neutral-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-950"
-            >
-              <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xs text-neutral-500">
-                <span className="truncate">{c.path}</span>
-                {c.line != null ? <span>:{c.line}</span> : null}
-              </div>
-              <pre className="text-xs leading-relaxed whitespace-pre-wrap text-neutral-800 dark:text-neutral-200">
-                {c.body || "(empty comment)"}
-              </pre>
-            </li>
+          {threads.map(({ root, replies }) => (
+            <div key={root.id} className="space-y-2">
+              <InlineCommentBlock
+                comment={root}
+                pr={pr}
+                writeDisabled={writeDisabled}
+                replyToId={replyToId}
+                onStartReply={setReplyToId}
+                onCancelReply={() => setReplyToId(null)}
+                onMutated={onMutated}
+              />
+              {replies.map((r) => (
+                <InlineCommentBlock
+                  key={r.id}
+                  comment={r}
+                  indent
+                  pr={pr}
+                  writeDisabled={writeDisabled}
+                  replyToId={replyToId}
+                  onStartReply={setReplyToId}
+                  onCancelReply={() => setReplyToId(null)}
+                  onMutated={onMutated}
+                />
+              ))}
+            </div>
           ))}
         </ul>
       ) : null}
@@ -129,10 +450,13 @@ function ReviewCard({ review }: { review: PrReviewItem }) {
 }
 
 export function CurrentReviewsPanel({
+  pr,
   snapshot,
   loading,
   error,
+  writeDisabled = false,
   onRefresh,
+  onMutated,
 }: Props) {
   return (
     <section className="space-y-4 rounded-lg border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-950">
@@ -144,7 +468,7 @@ export function CurrentReviewsPanel({
           </h2>
           <p className="mt-1 text-xs text-neutral-500">
             Who already reviewed this PR on GitHub, including their summary and
-            inline comments.
+            inline comments. Reply, edit, or dismiss from here.
           </p>
         </div>
         <Button
@@ -221,7 +545,13 @@ export function CurrentReviewsPanel({
           ) : (
             <div className="overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800">
               {snapshot.reviews.map((r) => (
-                <ReviewCard key={r.id} review={r} />
+                <ReviewCard
+                  key={r.id}
+                  review={r}
+                  pr={pr}
+                  writeDisabled={writeDisabled}
+                  onMutated={onMutated}
+                />
               ))}
             </div>
           )}

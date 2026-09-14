@@ -32,6 +32,7 @@ function resetSettingsStore() {
     theme: "system",
     favoritesOnly: true,
     showFavoriteOpen: true,
+    showFavoritePeople: false,
     aiProvider: "cursor",
   });
   for (const fav of [...getFavorites()]) {

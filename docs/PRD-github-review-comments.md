@@ -327,23 +327,23 @@ Tidak ada pertanyaan produk yang blocking M9a (issue comment di Files).
 - [x] Template chip mengisi compose
 - [x] `postIssueComment` dipanggil dari UI (bukan hanya test)
 - [x] Saat GitHub mengembalikan secondary rate limit, UI menampilkan pesan jelas dan tidak me-retry agresif
-- [ ] Tidak ada tab Conversation terpisah
+- [x] Tidak ada tab Conversation terpisah
 
 ### M9b
 
-- [ ] Setiap inline comment punya aksi Reply
-- [ ] Reply muncul terkait parent (nested atau “↳ reply to”)
-- [ ] Unit test API untuk payload `in_reply_to` / replies
+- [x] Setiap inline comment punya aksi Reply
+- [x] Reply muncul terkait parent (nested atau “↳ reply to”)
+- [x] Unit test API untuk payload `in_reply_to` / replies
 
 ### M9c
 
-- [ ] Edit/Delete hanya pada komentar own
-- [ ] Delete minta konfirmasi; gagal menampilkan toast tanpa menghapus row lokal
+- [x] Edit/Delete hanya pada komentar own
+- [x] Delete minta konfirmasi; gagal menampilkan toast tanpa menghapus row lokal
 
 ### M9d
 
-- [ ] Dismiss mengirim `message` non-empty
-- [ ] Kartu review menampilkan state Dismissed setelah sukses
+- [x] Dismiss mengirim `message` non-empty
+- [x] Kartu review menampilkan state Dismissed setelah sukses
 
 ---
 

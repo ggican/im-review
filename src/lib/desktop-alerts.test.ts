@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => {
   const mockTray = { setTooltip: vi.fn().mockResolvedValue(undefined) };
 
   return {
+    invoke: vi.fn(),
     defaultWindowIcon: vi.fn().mockResolvedValue("icon"),
     MenuItem: { new: vi.fn().mockResolvedValue({ id: "show" }) },
     PredefinedMenuItem: { new: vi.fn().mockResolvedValue({}) },
@@ -22,6 +23,10 @@ const mocks = vi.hoisted(() => {
     sendNotification: vi.fn(),
   };
 });
+
+vi.mock("@tauri-apps/api/core", () => ({
+  invoke: (...args: unknown[]) => mocks.invoke(...args),
+}));
 
 vi.mock("@tauri-apps/api/app", () => ({
   defaultWindowIcon: mocks.defaultWindowIcon,
@@ -69,6 +74,7 @@ describe("UNIT-DESKTOP desktop-alerts", () => {
     vi.clearAllMocks();
     setTauri(false);
 
+    mocks.invoke.mockResolvedValue(true);
     mocks.defaultWindowIcon.mockResolvedValue("icon");
     mocks.MenuItem.new.mockResolvedValue({ id: "show" });
     mocks.PredefinedMenuItem.new.mockResolvedValue({});
@@ -220,10 +226,11 @@ describe("UNIT-DESKTOP desktop-alerts", () => {
     await updateDesktopAlerts({ newCount: 1, ciFailCount: 0 });
     await updateDesktopAlerts({ newCount: 3, ciFailCount: 0 });
 
-    expect(mocks.sendNotification).toHaveBeenCalledWith({
+    expect(mocks.invoke).toHaveBeenCalledWith("send_app_notification", {
       title: "IM Review",
       body: "2 new PRs need attention",
     });
+    expect(mocks.sendNotification).not.toHaveBeenCalled();
   });
 
   it("UNIT-DESKTOP-006 notifies when CI fail count increases", async () => {
@@ -233,7 +240,7 @@ describe("UNIT-DESKTOP desktop-alerts", () => {
     await updateDesktopAlerts({ newCount: 0, ciFailCount: 0 });
     await updateDesktopAlerts({ newCount: 0, ciFailCount: 2 });
 
-    expect(mocks.sendNotification).toHaveBeenCalledWith({
+    expect(mocks.invoke).toHaveBeenCalledWith("send_app_notification", {
       title: "IM Review",
       body: "2 CI fails on your PRs",
     });
@@ -249,7 +256,21 @@ describe("UNIT-DESKTOP desktop-alerts", () => {
     await updateDesktopAlerts({ newCount: 1, ciFailCount: 0 });
 
     expect(mocks.requestPermission).toHaveBeenCalled();
-    expect(mocks.sendNotification).toHaveBeenCalled();
+    expect(mocks.invoke).toHaveBeenCalled();
+  });
+
+  it("UNIT-DESKTOP-006 falls back to plugin when native path declines", async () => {
+    setTauri(true);
+    mocks.invoke.mockResolvedValue(false);
+    const { updateDesktopAlerts } = await loadDesktopAlerts();
+
+    await updateDesktopAlerts({ newCount: 0, ciFailCount: 0 });
+    await updateDesktopAlerts({ newCount: 2, ciFailCount: 0 });
+
+    expect(mocks.sendNotification).toHaveBeenCalledWith({
+      title: "IM Review",
+      body: "2 new PRs need attention",
+    });
   });
 
   it("UNIT-DESKTOP-006 skips notify when permission denied", async () => {
@@ -323,12 +344,17 @@ describe("UNIT-DESKTOP desktop-alerts", () => {
 
     vi.resetModules();
     mocks.isPermissionGranted.mockResolvedValue(true);
+    mocks.invoke.mockRejectedValue(new Error("native boom"));
     mocks.sendNotification.mockImplementation(() => {
       throw new Error("notify boom");
     });
     const { updateDesktopAlerts: update2 } = await loadDesktopAlerts();
     await update2({ newCount: 0, ciFailCount: 0 });
     await update2({ newCount: 1, ciFailCount: 1 });
+    expect(warnSpy).toHaveBeenCalledWith(
+      "Native notification unavailable",
+      expect.any(Error),
+    );
     expect(warnSpy).toHaveBeenCalledWith(
       "Notification unavailable",
       expect.any(Error),
@@ -341,7 +367,7 @@ describe("UNIT-DESKTOP desktop-alerts", () => {
     const { updateDesktopAlerts } = await loadDesktopAlerts();
     await updateDesktopAlerts({ newCount: 0, ciFailCount: 0 });
     await updateDesktopAlerts({ newCount: 1, ciFailCount: 1 });
-    expect(mocks.sendNotification).toHaveBeenCalledWith({
+    expect(mocks.invoke).toHaveBeenCalledWith("send_app_notification", {
       title: "IM Review",
       body: "1 new PR need attention · 1 CI fail on your PRs",
     });

@@ -1,10 +1,21 @@
-import { BarChart3, BookMarked, LogOut, Settings } from "lucide-react";
+import {
+  BarChart3,
+  BookMarked,
+  CalendarDays,
+  LogOut,
+  Mail,
+  Settings,
+  SquareKanban,
+  Users,
+} from "lucide-react";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { BrandMark, PageShell } from "@/components/layout/PageShell";
 import { Button } from "@/components/ui/button";
+import type { AuthorFilterMode } from "@/features/people/types";
+import { fetchOpenPrsByAuthor } from "@/features/pr/api";
 import { type CiWatchHit, scanMineCiFailures } from "@/features/pr/ci-watch";
 import { useMyPRs } from "@/features/pr/hooks";
 import { PRList } from "@/features/pr/PRList";
@@ -44,6 +55,7 @@ function mergeLocalReviews(
   const favorites = annotate(lists.favorites);
   const assigned = annotate(lists.assigned);
   const mine = annotate(lists.mine);
+  const people = annotate(lists.people);
   const reviewLive = annotate(lists.review);
 
   // Review requested = still waiting on you (not yet submitted from this app).
@@ -53,7 +65,7 @@ function mergeLocalReviews(
     .map(savedReviewToPullRequest)
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 
-  return { all, favorites, assigned, review, reviewed, mine };
+  return { all, favorites, assigned, review, reviewed, mine, people };
 }
 
 function reviewPath(pr: PullRequest): string {
@@ -63,6 +75,7 @@ function reviewPath(pr: PullRequest): string {
 
 export function DashboardPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const settings = useSettings();
   const favorites = useFavorites();
   const savedReviews = useSavedReviews();
@@ -74,6 +87,12 @@ export function DashboardPage() {
   const [user, setUser] = useState<GithubUser | null>(null);
   const [tab, setTab] = useState<PrTab>("favorites");
   const [ciFails, setCiFails] = useState<CiWatchHit[]>([]);
+  const authorLogin = searchParams.get("author");
+  const authorMode: AuthorFilterMode =
+    searchParams.get("by") === "all" ? "search" : "filter";
+  const [searchItems, setSearchItems] = useState<PullRequest[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const ready = Boolean(user);
   const { lists, loading, error, stale, updatedAt, refresh } = useMyPRs(
     ready,
@@ -92,9 +111,12 @@ export function DashboardPage() {
       countNewPrs(visibleLists.assigned, lastSeen) +
       countNewPrs(visibleLists.review, lastSeen) +
       countNewPrs(visibleLists.reviewed, lastSeen) +
-      countNewPrs(visibleLists.mine, lastSeen)
+      countNewPrs(visibleLists.mine, lastSeen) +
+      (settings.showFavoritePeople
+        ? countNewPrs(visibleLists.people, lastSeen)
+        : 0)
     );
-  }, [visibleLists, lastSeen]);
+  }, [visibleLists, lastSeen, settings.showFavoritePeople]);
 
   useEffect(() => {
     document.title = newCount > 0 ? `(${newCount}) IM Review` : "IM Review";
@@ -103,6 +125,52 @@ export function DashboardPage() {
   useEffect(() => {
     ensureLastSeenSeeded();
   }, []);
+
+  useEffect(() => {
+    if (!settings.showFavoritePeople && tab === "people") {
+      setTab("favorites");
+    }
+  }, [settings.showFavoritePeople, tab]);
+
+  useEffect(() => {
+    if (!authorLogin || authorMode !== "search") {
+      setSearchItems([]);
+      setSearchError(null);
+      setSearchLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setSearchLoading(true);
+    void fetchOpenPrsByAuthor(authorLogin)
+      .then((items) => {
+        if (cancelled) return;
+        setSearchItems(items);
+        setSearchError(null);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setSearchError(String(err));
+      })
+      .finally(() => {
+        if (!cancelled) setSearchLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [authorLogin, authorMode]);
+
+  function onAuthorChange(login: string | null, mode: AuthorFilterMode) {
+    const next = new URLSearchParams(searchParams);
+    if (!login) {
+      next.delete("author");
+      next.delete("by");
+    } else {
+      next.set("author", login);
+      if (mode === "search") next.set("by", "all");
+      else next.delete("by");
+    }
+    setSearchParams(next, { replace: true });
+  }
 
   useEffect(() => {
     api
@@ -173,6 +241,30 @@ export function DashboardPage() {
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <Button asChild variant="outline" size="sm">
+            <Link to="/people">
+              <Users className="h-4 w-4" />
+              People
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link to="/jira">
+              <SquareKanban className="h-4 w-4" />
+              Jira
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link to="/calendar">
+              <CalendarDays className="h-4 w-4" />
+              Calendar
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link to="/gmail">
+              <Mail className="h-4 w-4" />
+              Gmail
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
             <Link to="/metrics">
               <BarChart3 className="h-4 w-4" />
               Metrics
@@ -238,6 +330,12 @@ export function DashboardPage() {
         onRefresh={() => void refresh()}
         updatedAt={updatedAt}
         onSelect={(pr) => navigate(reviewPath(pr))}
+        authorLogin={authorLogin}
+        authorMode={authorMode}
+        onAuthorChange={onAuthorChange}
+        searchItems={searchItems}
+        searchLoading={searchLoading}
+        searchError={searchError}
       />
     </PageShell>
   );

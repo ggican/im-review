@@ -1,3 +1,4 @@
+import { listen } from "@tauri-apps/api/event";
 import { Plus, Trash2 } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -11,26 +12,38 @@ import {
   AI_PROVIDERS,
   type AiProviderId,
 } from "@/features/ai-review/providers";
+import { fetchGithubUser } from "@/features/people/api";
+import { normalizeGithubLogin } from "@/features/people/login";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/cn";
+import { isGoogleOAuthConfigured } from "@/lib/google-oauth";
 import {
   type AppSettings,
   type CommentTemplate,
   deleteSavedReview,
   deleteTemplate,
+  getFavoriteUsers,
   getSettings,
+  MAX_FAVORITE_USERS,
   newTemplateId,
   removeFavorite,
   removeFavoriteBranch,
+  removeFavoriteUser,
   restoreDefaultFavorites,
+  saveGooglePublic,
+  saveJiraPublic,
   saveSettings,
   type ThemeMode,
+  toggleFavoriteUser,
   upsertTemplate,
 } from "@/lib/settings";
 import { relativeTime } from "@/lib/time";
 import {
   useFavoriteBranches,
   useFavorites,
+  useFavoriteUsers,
+  useGooglePublic,
+  useJiraPublic,
   useSavedReviews,
   useSettings,
   useTemplates,
@@ -44,11 +57,20 @@ const INTERVALS = [
   { value: 15, label: "15 min" },
 ];
 
-type SettingsTab = "general" | "ai" | "templates" | "favorites" | "history";
+type SettingsTab =
+  | "general"
+  | "ai"
+  | "jira"
+  | "google"
+  | "templates"
+  | "favorites"
+  | "history";
 
 const TABS: Array<{ id: SettingsTab; label: string }> = [
   { id: "general", label: "General" },
   { id: "ai", label: "AI" },
+  { id: "jira", label: "Jira" },
+  { id: "google", label: "Google" },
   { id: "templates", label: "Templates" },
   { id: "favorites", label: "Favorites" },
   { id: "history", label: "History" },
@@ -111,6 +133,9 @@ export function SettingsPage() {
   const templates = useTemplates();
   const favorites = useFavorites();
   const favoriteBranches = useFavoriteBranches();
+  const favoriteUsers = useFavoriteUsers();
+  const jiraPublic = useJiraPublic();
+  const googlePublic = useGooglePublic();
   const savedReviews = useSavedReviews();
   const [tab, setTab] = useState<SettingsTab>("general");
   const [draft, setDraft] = useState<AppSettings>(settings);
@@ -125,6 +150,28 @@ export function SettingsPage() {
   const [aiFocus, setAiFocus] = useState<AiProviderId>(
     settings.aiProvider ?? "cursor",
   );
+  const [jiraHost, setJiraHost] = useState(jiraPublic?.host ?? "");
+  const [jiraEmail, setJiraEmail] = useState(jiraPublic?.email ?? "");
+  const [jiraToken, setJiraToken] = useState("");
+  const [jiraBusy, setJiraBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
+  const [googleAuthUrl, setGoogleAuthUrl] = useState<string | null>(null);
+  const [personLogin, setPersonLogin] = useState("");
+  const [personBusy, setPersonBusy] = useState(false);
+
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+    void listen<string>("google-oauth-url", (event) => {
+      if (typeof event.payload === "string" && event.payload) {
+        setGoogleAuthUrl(event.payload);
+      }
+    }).then((fn) => {
+      unlisten = fn;
+    });
+    return () => {
+      unlisten?.();
+    };
+  }, []);
 
   useEffect(() => {
     document.title = "Settings · IM Review";
@@ -204,6 +251,130 @@ export function SettingsPage() {
     }
   }
 
+  async function connectJira() {
+    const host = jiraHost.trim();
+    const email = jiraEmail.trim();
+    const token = jiraToken.trim();
+    if (!host || !email || !token) {
+      toast.error("Site URL, email, and API token are required");
+      return;
+    }
+    setJiraBusy(true);
+    try {
+      const me = await api.validateJira({ host, email, token });
+      await api.saveJira({ host, email, token });
+      saveJiraPublic({
+        host: me.host,
+        email: me.email,
+        displayName: me.display_name,
+        accountId: me.account_id,
+        avatarUrl: me.avatar_url,
+      });
+      setJiraToken("");
+      toast.success("Jira API key saved");
+    } catch (err) {
+      toast.error(String(err));
+    } finally {
+      setJiraBusy(false);
+    }
+  }
+
+  async function disconnectJira() {
+    setJiraBusy(true);
+    try {
+      await api.deleteJira();
+      saveJiraPublic(null);
+      toast.success("Jira API key removed");
+    } catch (err) {
+      toast.error(String(err));
+    } finally {
+      setJiraBusy(false);
+    }
+  }
+
+  async function connectGoogle() {
+    if (!isGoogleOAuthConfigured()) {
+      toast.error("Google is not configured in this build");
+      return;
+    }
+    setGoogleBusy(true);
+    setGoogleAuthUrl(null);
+    try {
+      const account = await api.connectGoogle();
+      saveGooglePublic({ email: account.email, name: account.name });
+      toast.success("Google connected (Calendar & Gmail)");
+    } catch (err) {
+      const message = String(err);
+      if (/sign-in cancelled/i.test(message)) {
+        toast.message("Google sign-in cancelled");
+      } else {
+        toast.error(message);
+      }
+    } finally {
+      setGoogleBusy(false);
+      setGoogleAuthUrl(null);
+    }
+  }
+
+  async function cancelGoogleConnect() {
+    try {
+      await api.cancelGoogleConnect();
+    } catch (err) {
+      toast.error(String(err));
+    }
+  }
+
+  async function copyGoogleAuthUrl() {
+    if (!googleAuthUrl) return;
+    try {
+      await navigator.clipboard.writeText(googleAuthUrl);
+      toast.success("Sign-in URL copied");
+    } catch {
+      toast.error("Could not copy URL");
+    }
+  }
+
+  async function disconnectGoogle() {
+    setGoogleBusy(true);
+    try {
+      await api.deleteGoogle();
+      saveGooglePublic(null);
+      toast.success("Google disconnected");
+    } catch (err) {
+      toast.error(String(err));
+    } finally {
+      setGoogleBusy(false);
+    }
+  }
+
+  async function addFavoritePerson() {
+    const login = normalizeGithubLogin(personLogin);
+    if (!login) {
+      toast.error("Enter a valid GitHub login");
+      return;
+    }
+    setPersonBusy(true);
+    try {
+      const user = await fetchGithubUser(login);
+      if (
+        getFavoriteUsers().length >= MAX_FAVORITE_USERS &&
+        !getFavoriteUsers().some(
+          (u) => u.login.toLowerCase() === user.login.toLowerCase(),
+        )
+      ) {
+        toast.error(`Favorite people limit is ${MAX_FAVORITE_USERS}`);
+        return;
+      }
+      toggleFavoriteUser(user);
+      setPersonLogin("");
+      toast.success(`Favorited @${user.login}`);
+    } catch {
+      toast.error(`GitHub user @${login} not found`);
+    } finally {
+      setPersonBusy(false);
+    }
+  }
+
   const focusedProvider =
     AI_PROVIDERS.find((p) => p.id === aiFocus) ?? AI_PROVIDERS.find(() => true);
   if (!focusedProvider) {
@@ -217,7 +388,8 @@ export function SettingsPage() {
       return { ...item, label: `Templates (${templates.length})` };
     }
     if (item.id === "favorites") {
-      const n = favorites.length + favoriteBranches.length;
+      const n =
+        favorites.length + favoriteBranches.length + favoriteUsers.length;
       return n > 0 ? { ...item, label: `Favorites (${n})` } : item;
     }
     if (item.id === "history" && savedReviews.length > 0) {
@@ -302,6 +474,31 @@ export function SettingsPage() {
                   {mode}
                 </Button>
               ))}
+            </div>
+          </Panel>
+
+          <Panel>
+            <PanelIntro
+              title="People tab"
+              description="Optional dashboard tab listing open PRs from all favorite authors."
+            />
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant={draft.showFavoritePeople ? "default" : "outline"}
+                onClick={() => patch({ showFavoritePeople: true })}
+              >
+                Show People tab
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={!draft.showFavoritePeople ? "default" : "outline"}
+                onClick={() => patch({ showFavoritePeople: false })}
+              >
+                Hide
+              </Button>
             </div>
           </Panel>
 
@@ -466,6 +663,263 @@ export function SettingsPage() {
         </Panel>
       ) : null}
 
+      {tab === "jira" ? (
+        <Panel>
+          <PanelIntro
+            title="Jira Cloud"
+            description="Same as AI keys: paste the token, save locally, remove anytime. Used only to list your work items."
+          />
+          <div className="space-y-3 rounded-lg border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-900/50">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <h3 className="text-sm font-medium">Atlassian API token</h3>
+                <p className="mt-0.5 text-xs text-neutral-500">
+                  Site URL + email + token from Atlassian.{" "}
+                  <a
+                    href="https://id.atlassian.com/manage-profile/security/api-tokens"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline"
+                  >
+                    Get token
+                  </a>
+                </p>
+              </div>
+              {jiraPublic ? (
+                <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                  Key saved
+                </span>
+              ) : (
+                <span className="text-xs text-neutral-400">No key</span>
+              )}
+            </div>
+
+            {jiraPublic ? (
+              <>
+                <p className="truncate text-sm">
+                  {jiraPublic.displayName}
+                  <span className="block truncate text-xs text-neutral-500">
+                    {jiraPublic.email} ·{" "}
+                    {jiraPublic.host.replace(/^https:\/\//, "")}
+                  </span>
+                </p>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={jiraBusy}
+                  onClick={() => void disconnectJira()}
+                >
+                  Remove key
+                </Button>
+              </>
+            ) : (
+              <div className="space-y-2">
+                <Input
+                  placeholder="https://your-site.atlassian.net"
+                  value={jiraHost}
+                  onChange={(e) => setJiraHost(e.target.value)}
+                  aria-label="Jira site URL"
+                  disabled={jiraBusy}
+                />
+                <Input
+                  placeholder="Atlassian email"
+                  value={jiraEmail}
+                  onChange={(e) => setJiraEmail(e.target.value)}
+                  aria-label="Jira email"
+                  disabled={jiraBusy}
+                />
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Input
+                    type="password"
+                    placeholder="Atlassian API token"
+                    value={jiraToken}
+                    onChange={(e) => setJiraToken(e.target.value)}
+                    aria-label="Jira API token"
+                    disabled={jiraBusy}
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={
+                      jiraBusy ||
+                      !jiraHost.trim() ||
+                      !jiraEmail.trim() ||
+                      !jiraToken.trim()
+                    }
+                    onClick={() => void connectJira()}
+                  >
+                    Save key
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </Panel>
+      ) : null}
+
+      {tab === "google" ? (
+        <Panel>
+          <PanelIntro
+            title="Google (Calendar & Gmail)"
+            description="One Connect for Calendar and Gmail. IM Review stores a refresh token locally. Enable Calendar API and Gmail API in Google Cloud Console."
+          />
+          <div className="space-y-3 rounded-lg border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-900/50">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <h3 className="text-sm font-medium">Google account</h3>
+                <p className="mt-0.5 text-xs text-neutral-500">
+                  Calendar and Gmail share this sign-in. No Client ID needed —
+                  the app handles OAuth for you.
+                </p>
+              </div>
+              {googlePublic ? (
+                <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                  Connected
+                </span>
+              ) : (
+                <span className="text-xs text-neutral-400">Not connected</span>
+              )}
+            </div>
+
+            {googlePublic ? (
+              <>
+                <p className="truncate text-sm">
+                  {googlePublic.name || googlePublic.email}
+                  <span className="block truncate text-xs text-neutral-500">
+                    {googlePublic.email}
+                  </span>
+                </p>
+                <p className="text-xs text-neutral-500">
+                  Calendar and Gmail use the same account. If Gmail fails after an
+                  app update, use Connect again to grant new scopes.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={googleBusy}
+                    onClick={() => void connectGoogle()}
+                  >
+                    {googleBusy ? "Waiting for Google…" : "Reconnect Google"}
+                  </Button>
+                  {googleBusy ? (
+                    <>
+                      {googleAuthUrl ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => void copyGoogleAuthUrl()}
+                        >
+                          Copy URL
+                        </Button>
+                      ) : null}
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => void cancelGoogleConnect()}
+                      >
+                        Cancel
+                      </Button>
+                    </>
+                  ) : null}
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={googleBusy}
+                    onClick={() => void disconnectGoogle()}
+                  >
+                    Disconnect
+                  </Button>
+                </div>
+                {googleBusy && googleAuthUrl ? (
+                  <div className="space-y-1">
+                    <p className="text-xs text-neutral-500">
+                      Browser should open. If not, copy this URL and paste it in
+                      a browser:
+                    </p>
+                    <Input
+                      readOnly
+                      value={googleAuthUrl}
+                      className="font-mono text-xs"
+                      aria-label="Google sign-in URL"
+                      onFocus={(e) => e.currentTarget.select()}
+                    />
+                  </div>
+                ) : null}
+              </>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={googleBusy || !isGoogleOAuthConfigured()}
+                    onClick={() => void connectGoogle()}
+                  >
+                    {googleBusy ? "Waiting for Google…" : "Connect Google"}
+                  </Button>
+                  {googleBusy ? (
+                    <>
+                      {googleAuthUrl ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => void copyGoogleAuthUrl()}
+                        >
+                          Copy URL
+                        </Button>
+                      ) : null}
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => void cancelGoogleConnect()}
+                      >
+                        Cancel
+                      </Button>
+                    </>
+                  ) : null}
+                </div>
+                {googleBusy && googleAuthUrl ? (
+                  <div className="space-y-1">
+                    <p className="text-xs text-neutral-500">
+                      Browser should open. If not, copy this URL and paste it in
+                      a browser:
+                    </p>
+                    <Input
+                      readOnly
+                      value={googleAuthUrl}
+                      className="font-mono text-xs"
+                      aria-label="Google sign-in URL"
+                      onFocus={(e) => e.currentTarget.select()}
+                    />
+                  </div>
+                ) : null}
+              </div>
+            )}
+            {!isGoogleOAuthConfigured() && !googlePublic ? (
+              <p className="text-xs text-amber-700 dark:text-amber-400">
+                This build has no Google OAuth client. Set{" "}
+                <code className="rounded bg-neutral-200 px-1 dark:bg-neutral-800">
+                  VITE_GOOGLE_OAUTH_CLIENT_ID
+                </code>{" "}
+                and{" "}
+                <code className="rounded bg-neutral-200 px-1 dark:bg-neutral-800">
+                  VITE_GOOGLE_OAUTH_CLIENT_SECRET
+                </code>{" "}
+                then rebuild.
+              </p>
+            ) : null}
+          </div>
+        </Panel>
+      ) : null}
+
       {tab === "templates" ? (
         <Panel>
           <PanelIntro
@@ -558,46 +1012,172 @@ export function SettingsPage() {
       ) : null}
 
       {tab === "favorites" ? (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="space-y-4">
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Panel>
+              <PanelIntro
+                title="Favorite repos"
+                description="Used by the Favorites filter on the dashboard."
+                action={
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      restoreDefaultFavorites();
+                      toast.success("Default favorite repos restored");
+                    }}
+                  >
+                    Restore defaults
+                  </Button>
+                }
+              />
+              <ScrollList>
+                {favorites.length === 0 ? (
+                  <li className="px-3 py-4 text-sm text-neutral-500">
+                    No favorite repos. Click Restore defaults.
+                  </li>
+                ) : (
+                  favorites.map((fullName) => (
+                    <li
+                      key={fullName}
+                      className="flex items-center justify-between gap-3 px-3 py-2.5"
+                    >
+                      <span className="min-w-0 truncate font-mono text-xs">
+                        {fullName}
+                      </span>
+                      <div className="flex shrink-0 gap-1">
+                        <Button
+                          asChild
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                        >
+                          <a
+                            href={`https://github.com/${fullName}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Open
+                          </a>
+                        </Button>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          aria-label={`Remove ${fullName}`}
+                          onClick={() => {
+                            removeFavorite(fullName);
+                            toast.success(`Removed ${fullName}`);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </li>
+                  ))
+                )}
+              </ScrollList>
+            </Panel>
+
+            <Panel>
+              <PanelIntro
+                title="Favorite branches"
+                description="Star a PR to pin its head branch here."
+              />
+              <ScrollList>
+                {favoriteBranches.length === 0 ? (
+                  <li className="px-3 py-4 text-sm text-neutral-500">
+                    No favorite branches yet.
+                  </li>
+                ) : (
+                  favoriteBranches.map((b) => (
+                    <li
+                      key={b.id}
+                      className="flex items-start justify-between gap-3 px-3 py-3"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">
+                          {b.title}
+                        </p>
+                        <p className="mt-0.5 font-mono text-xs text-neutral-500">
+                          {b.repo} · {b.branch} · #{b.prNumber}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 gap-1">
+                        <Button
+                          asChild
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                        >
+                          <a href={b.url} target="_blank" rel="noreferrer">
+                            Open
+                          </a>
+                        </Button>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          aria-label="Remove favorite branch"
+                          onClick={() => {
+                            removeFavoriteBranch(b.id);
+                            toast.success("Removed favorite branch");
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </li>
+                  ))
+                )}
+              </ScrollList>
+            </Panel>
+          </div>
           <Panel>
             <PanelIntro
-              title="Favorite repos"
-              description="Used by the Favorites filter on the dashboard."
-              action={
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    restoreDefaultFavorites();
-                    toast.success("Default favorite repos restored");
-                  }}
-                >
-                  Restore defaults
-                </Button>
-              }
+              title="Favorite people"
+              description="Pin GitHub authors. Used by the Author filter on the dashboard."
             />
+            <form
+              className="flex gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void addFavoritePerson();
+              }}
+            >
+              <Input
+                placeholder="GitHub login"
+                value={personLogin}
+                onChange={(e) => setPersonLogin(e.target.value)}
+                aria-label="GitHub login to favorite"
+              />
+              <Button type="submit" size="sm" disabled={personBusy}>
+                Add
+              </Button>
+            </form>
             <ScrollList>
-              {favorites.length === 0 ? (
+              {favoriteUsers.length === 0 ? (
                 <li className="px-3 py-4 text-sm text-neutral-500">
-                  No favorite repos. Click Restore defaults.
+                  No favorite people yet.
                 </li>
               ) : (
-                favorites.map((fullName) => (
+                favoriteUsers.map((user) => (
                   <li
-                    key={fullName}
+                    key={user.login}
                     className="flex items-center justify-between gap-3 px-3 py-2.5"
                   >
-                    <span className="min-w-0 truncate font-mono text-xs">
-                      {fullName}
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-medium">
+                        {user.name ?? user.login}
+                      </span>
+                      <span className="block truncate font-mono text-xs text-neutral-500">
+                        @{user.login}
+                      </span>
                     </span>
                     <div className="flex shrink-0 gap-1">
                       <Button asChild type="button" size="sm" variant="outline">
-                        <a
-                          href={`https://github.com/${fullName}`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
+                        <a href={user.htmlUrl} target="_blank" rel="noreferrer">
                           Open
                         </a>
                       </Button>
@@ -605,57 +1185,10 @@ export function SettingsPage() {
                         type="button"
                         size="icon"
                         variant="ghost"
-                        aria-label={`Remove ${fullName}`}
+                        aria-label={`Remove @${user.login}`}
                         onClick={() => {
-                          removeFavorite(fullName);
-                          toast.success(`Removed ${fullName}`);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </li>
-                ))
-              )}
-            </ScrollList>
-          </Panel>
-
-          <Panel>
-            <PanelIntro
-              title="Favorite branches"
-              description="Star a PR to pin its head branch here."
-            />
-            <ScrollList>
-              {favoriteBranches.length === 0 ? (
-                <li className="px-3 py-4 text-sm text-neutral-500">
-                  No favorite branches yet.
-                </li>
-              ) : (
-                favoriteBranches.map((b) => (
-                  <li
-                    key={b.id}
-                    className="flex items-start justify-between gap-3 px-3 py-3"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{b.title}</p>
-                      <p className="mt-0.5 font-mono text-xs text-neutral-500">
-                        {b.repo} · {b.branch} · #{b.prNumber}
-                      </p>
-                    </div>
-                    <div className="flex shrink-0 gap-1">
-                      <Button asChild type="button" size="sm" variant="outline">
-                        <a href={b.url} target="_blank" rel="noreferrer">
-                          Open
-                        </a>
-                      </Button>
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="ghost"
-                        aria-label="Remove favorite branch"
-                        onClick={() => {
-                          removeFavoriteBranch(b.id);
-                          toast.success("Removed favorite branch");
+                          removeFavoriteUser(user.login);
+                          toast.success(`Removed @${user.login}`);
                         }}
                       >
                         <Trash2 className="h-4 w-4" />

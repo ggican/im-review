@@ -74,6 +74,7 @@ describe("UNIT-PR-005..008 pr-cache", () => {
       review: [shared, makePr({ repo: "acme/api", number: 2 })],
       reviewed: [],
       mine: [makePr({ repo: "acme/web", number: 3 })],
+      people: [],
     });
     expect(getPrCache().mine).toHaveLength(1);
     const flat = flattenPrCache();
@@ -105,6 +106,7 @@ describe("UNIT-PR-005..008 pr-cache", () => {
       reviewed: [],
       mine: [],
       favorites: [],
+      people: [],
     });
     expect(listener).toHaveBeenCalledTimes(1);
     unsub();
@@ -115,6 +117,7 @@ describe("UNIT-PR-005..008 pr-cache", () => {
       review: [],
       reviewed: [],
       mine: [makePr({ repo: "acme/web", number: 9 })],
+      people: [],
     });
     expect(listener).toHaveBeenCalledTimes(1);
   });
@@ -128,6 +131,7 @@ describe("UNIT-PR-005..008 pr-cache", () => {
         reviewed: [],
         mine: [],
         favorites: [],
+        people: [],
       }),
     ).toEqual([]);
   });
@@ -141,6 +145,7 @@ describe("UNIT-PR-005..008 pr-cache", () => {
       review: [],
       reviewed: [],
       mine: [],
+      people: [],
     });
 
     localStorage.setItem(
@@ -159,6 +164,7 @@ describe("UNIT-PR-005..008 pr-cache", () => {
           review: [],
           reviewed: [],
           mine: [],
+          people: [],
         },
         updatedAt: null,
         tabUpdatedAt: "bad",

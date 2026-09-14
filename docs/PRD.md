@@ -1,9 +1,14 @@
 # PRD — `im-review`
 
-> **Status:** Draft v0.2 · **Owner:** Ikhsan Mahendri · **Last updated:** 2026-09-03
+> **Status:** Draft v0.2 · **Owner:** Ikhsan Mahendri · **Last updated:** 2026-09-15
 > Legenda: ✅ sudah pasti/terpasang · 📝 disepakati tapi belum dibangun · 🚧 sedang dikerjakan · **TBC** = to be confirmed
 >
-> **Next slice (v0.3):** review/comment loop via GitHub API — see [PRD-github-review-comments.md](./PRD-github-review-comments.md).
+> **Next slice (v0.3):** review/comment loop via GitHub API — see [PRD-github-review-comments.md](./PRD-github-review-comments.md).  
+> **People slice (v0.4 / M11):** search/filter PR by user + favorite people — see [PRD-favorite-users.md](./PRD-favorite-users.md).  
+> **Jira slice (v0.5 / M12):** connect, my work, type/label/saved filters, issue detail — see [PRD-jira.md](./PRD-jira.md).  
+> **Google Calendar (v0.6 / M13a):** agenda tabs + detail — see [PRD-google-calendar.md](./PRD-google-calendar.md) (OAuth MVP ✅).  
+> **Gmail (v0.6 / M13b):** inbox list, tabs, read mail — see [PRD-gmail.md](./PRD-gmail.md).  
+> **Design / Google Stitch brief (from current code):** [PRD-design-stitch.md](./PRD-design-stitch.md).
 
 ---
 
@@ -275,23 +280,25 @@ type AiReviewDraft = {
 
 ## 12. Open questions
 
-| #   | Pertanyaan                                                           | Jawaban                     |
-| --- | -------------------------------------------------------------------- | --------------------------- |
-| Q1  | Target OS pertama: macOS only, atau macOS + Windows sekaligus?       | macOS (default)             |
-| Q2  | GitHub-only atau perlu GitLab/Bitbucket?                             | GitHub only                 |
-| Q3  | Auth: PAT saja, atau nanti OAuth Device Flow?                        | PAT                         |
-| Q4  | API call di frontend langsung, atau di-proxy lewat Rust?             | Proxy Rust ✅               |
-| Q5  | Multi-akun GitHub di v0.1?                                           | Single                      |
-| Q6  | Notifikasi native (tray/dock badge)?                                 | M5 / v0.2 later             |
-| Q7  | Comment templates — global atau per-repo?                            | Global                      |
-| Q8  | Integrasi Jira?                                                      | Tidak                       |
-| Q9  | Nama app final?                                                      | **IM Review** (`im-review`) |
-| Q10 | Design/mockup?                                                       | Improv                      |
-| Q11 | Cursor AI: **cloud** agent vs **local** cwd?                         | ✅ cloud (default)          |
-| Q12 | PR besar: kirim full diff, file list only, atau top-N changed files? | ✅ top-N + patch            |
-| Q13 | Default post event AI: Comment vs Request changes?                   | ✅ Comment                  |
-| Q14 | Simpan history AI drafts antar session?                              | ✅ tidak di M8/M9           |
-| Q15 | Favorite sync antar mesin?                                           | ✅ lokal saja               |
+| #   | Pertanyaan                                                           | Jawaban                                                               |
+| --- | -------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Q1  | Target OS pertama: macOS only, atau macOS + Windows sekaligus?       | macOS (default)                                                       |
+| Q2  | GitHub-only atau perlu GitLab/Bitbucket?                             | GitHub only                                                           |
+| Q3  | Auth: PAT saja, atau nanti OAuth Device Flow?                        | PAT                                                                   |
+| Q4  | API call di frontend langsung, atau di-proxy lewat Rust?             | Proxy Rust ✅                                                         |
+| Q5  | Multi-akun GitHub di v0.1?                                           | Single                                                                |
+| Q6  | Notifikasi native (tray/dock badge)?                                 | M5 / v0.2 later                                                       |
+| Q7  | Comment templates — global atau per-repo?                            | Global                                                                |
+| Q8  | Integrasi Jira?                                                      | ✅ Ya — baca list + detail, v0.5 / M12 ([PRD-jira.md](./PRD-jira.md)) |
+| Q16 | Google Calendar?                                                     | ✅ Ya — OAuth + agenda; expand tabs/detail ([PRD-google-calendar.md](./PRD-google-calendar.md)) |
+| Q17 | Gmail / email view?                                                  | ✅ Ya — list/tabs/read; shared Google OAuth ([PRD-gmail.md](./PRD-gmail.md)) |
+| Q9  | Nama app final?                                                      | **IM Review** (`im-review`)                                           |
+| Q10 | Design/mockup?                                                       | Improv                                                                |
+| Q11 | Cursor AI: **cloud** agent vs **local** cwd?                         | ✅ cloud (default)                                                    |
+| Q12 | PR besar: kirim full diff, file list only, atau top-N changed files? | ✅ top-N + patch                                                      |
+| Q13 | Default post event AI: Comment vs Request changes?                   | ✅ Comment                                                            |
+| Q14 | Simpan history AI drafts antar session?                              | ✅ tidak di M8/M9                                                     |
+| Q15 | Favorite sync antar mesin?                                           | ✅ lokal saja                                                         |
 
 > **Dikunci 2026-09-09 (ikut default):** Q11–Q15. Review modes & Approve+comments: lihat [prd/github-inline-file-comments.md](./prd/github-inline-file-comments.md).
 

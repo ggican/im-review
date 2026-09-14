@@ -20,3 +20,4 @@
 | UNIT-API-016 | P0  | `fetchAllRepos` pages until short page / empty                          | `repos/api.ts`     | passed | —              |
 | UNIT-API-017 | P0  | `buildMetricsWindow` / `buildDailyActivity` / `fetchEngineerMetrics`    | `metrics/fetch.ts` | passed | —              |
 | UNIT-API-018 | P1  | Enrich authored includes CI when enabled; reviewed enrich               | `metrics/fetch.ts` | passed | —              |
+| UNIT-API-019 | P0  | `connectGoogle` passes clientId+secret; cancel/delete Google             | `lib/api.ts`       | passed | mock invoke    |

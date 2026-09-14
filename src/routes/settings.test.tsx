@@ -6,6 +6,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   getSettings,
   getTemplates,
+  saveGooglePublic,
+  saveJiraPublic,
   saveReviewLocally,
   saveSettings,
   toggleFavorite,
@@ -29,16 +31,34 @@ vi.mock("@/lib/api", () => ({
     validateAiKey: vi.fn(),
     saveAiKey: vi.fn(),
     deleteAiKey: vi.fn(),
+    validateJira: vi.fn(),
+    saveJira: vi.fn(),
+    deleteJira: vi.fn(),
+    connectGoogle: vi.fn(),
+    cancelGoogleConnect: vi.fn(),
+    deleteGoogle: vi.fn(),
   },
+}));
+
+vi.mock("@/lib/google-oauth", () => ({
+  GOOGLE_OAUTH_CLIENT_ID: "test-client.apps.googleusercontent.com",
+  GOOGLE_OAUTH_CLIENT_SECRET: "test-secret",
+  isGoogleOAuthConfigured: () => true,
 }));
 
 vi.mock("sonner", () => ({
   toast: {
     success: vi.fn(),
     error: vi.fn(),
+    message: vi.fn(),
   },
 }));
 
+vi.mock("@tauri-apps/api/event", () => ({
+  listen: vi.fn(async () => () => {}),
+}));
+
+import { listen } from "@tauri-apps/api/event";
 import { toast } from "sonner";
 
 import { api } from "@/lib/api";
@@ -50,6 +70,13 @@ const mockValidateAiKey = vi.mocked(api.validateAiKey);
 const mockSaveAiKey = vi.mocked(api.saveAiKey);
 const mockDeleteAiKey = vi.mocked(api.deleteAiKey);
 const mockDeleteToken = vi.mocked(api.deleteToken);
+const mockValidateJira = vi.mocked(api.validateJira);
+const mockSaveJira = vi.mocked(api.saveJira);
+const mockDeleteJira = vi.mocked(api.deleteJira);
+const mockConnectGoogle = vi.mocked(api.connectGoogle);
+const mockCancelGoogleConnect = vi.mocked(api.cancelGoogleConnect);
+const mockDeleteGoogle = vi.mocked(api.deleteGoogle);
+const mockListen = vi.mocked(listen);
 
 function renderSettings() {
   return render(
@@ -71,6 +98,7 @@ describe("SettingsPage", () => {
       theme: "system",
       favoritesOnly: false,
       aiProvider: "cursor",
+      showFavoritePeople: false,
     });
     mockListAiProviderStatus.mockResolvedValue([
       { id: "cursor", has_key: true },
@@ -80,6 +108,27 @@ describe("SettingsPage", () => {
     mockSaveAiKey.mockResolvedValue(undefined);
     mockDeleteAiKey.mockResolvedValue(undefined);
     mockDeleteToken.mockResolvedValue(undefined);
+    mockValidateJira.mockResolvedValue({
+      account_id: "acc",
+      display_name: "Alice",
+      email: "alice@example.com",
+      avatar_url: "",
+      host: "https://acme.atlassian.net",
+    });
+    mockSaveJira.mockResolvedValue(undefined);
+    mockDeleteJira.mockResolvedValue(undefined);
+    mockConnectGoogle.mockResolvedValue({
+      email: "alice@gmail.com",
+      name: "Alice G",
+      access_token: "at",
+      refresh_token: "rt",
+      expiry: 1,
+    });
+    mockCancelGoogleConnect.mockResolvedValue(undefined);
+    mockDeleteGoogle.mockResolvedValue(undefined);
+    mockListen.mockImplementation(async () => () => {});
+    saveJiraPublic(null);
+    saveGooglePublic(null);
   });
 
   it("renders page header and general tab content", async () => {
@@ -110,9 +159,28 @@ describe("SettingsPage", () => {
 
     await user.click(screen.getByRole("tab", { name: /Favorites/ }));
     expect(screen.getByText("Favorite repos")).toBeInTheDocument();
+    expect(screen.getByText("Favorite people")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: /Jira/ }));
+    expect(screen.getByText("Jira Cloud")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: /Google/ }));
+    expect(screen.getByText(/Google \(Calendar & Gmail\)/)).toBeInTheDocument();
 
     await user.click(screen.getByRole("tab", { name: /History/ }));
     expect(screen.getByText("Submitted review history")).toBeInTheDocument();
+  });
+
+  it("toggles showFavoritePeople on general tab", async () => {
+    const user = userEvent.setup();
+    renderSettings();
+    expect(getSettings().showFavoritePeople).toBe(false);
+    await user.click(
+      screen.getByRole("button", { name: "Show People tab" }),
+    );
+    expect(getSettings().showFavoritePeople).toBe(true);
+    await user.click(screen.getByRole("button", { name: "Hide" }));
+    expect(getSettings().showFavoritePeople).toBe(false);
   });
 
   it("changes refresh interval and theme on general tab", async () => {
@@ -164,6 +232,148 @@ describe("SettingsPage", () => {
     await waitFor(() => {
       expect(mockDeleteAiKey).toHaveBeenCalledWith("cursor");
     });
+  });
+
+  it("saves and removes Jira API key like other tokens", async () => {
+    const user = userEvent.setup();
+    renderSettings();
+    await user.click(screen.getByRole("tab", { name: /Jira/ }));
+    expect(screen.getByText("No key")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Get token" })).toHaveAttribute(
+      "href",
+      "https://id.atlassian.com/manage-profile/security/api-tokens",
+    );
+
+    await user.type(
+      screen.getByLabelText("Jira site URL"),
+      "https://acme.atlassian.net",
+    );
+    await user.type(screen.getByLabelText("Jira email"), "alice@example.com");
+    await user.type(screen.getByLabelText("Jira API token"), "jira-token");
+    await user.click(screen.getByRole("button", { name: "Save key" }));
+
+    await waitFor(() => {
+      expect(mockValidateJira).toHaveBeenCalledWith({
+        host: "https://acme.atlassian.net",
+        email: "alice@example.com",
+        token: "jira-token",
+      });
+      expect(mockSaveJira).toHaveBeenCalledWith({
+        host: "https://acme.atlassian.net",
+        email: "alice@example.com",
+        token: "jira-token",
+      });
+    });
+    expect(screen.getByText("Key saved")).toBeInTheDocument();
+    expect(screen.getByText("Alice")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Remove key" }));
+    await waitFor(() => {
+      expect(mockDeleteJira).toHaveBeenCalled();
+    });
+    expect(vi.mocked(toast.success)).toHaveBeenCalledWith(
+      "Jira API key removed",
+    );
+  });
+
+  it("connects and disconnects Google via OAuth", async () => {
+    const user = userEvent.setup();
+    renderSettings();
+    await user.click(screen.getByRole("tab", { name: /Google/ }));
+    expect(screen.getByText("Not connected")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Connect Google" }));
+
+    await waitFor(() => {
+      expect(mockConnectGoogle).toHaveBeenCalled();
+    });
+    expect(screen.getByText("Connected")).toBeInTheDocument();
+    expect(screen.getByText("Alice G")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Disconnect" }));
+    await waitFor(() => {
+      expect(mockDeleteGoogle).toHaveBeenCalled();
+    });
+    expect(vi.mocked(toast.success)).toHaveBeenCalledWith(
+      "Google disconnected",
+    );
+  });
+
+  it("UNIT-GOOGLE-010/011 shows copyable URL and cancel while waiting", async () => {
+    const user = userEvent.setup();
+    let resolveConnect!: (value: {
+      email: string;
+      name: string;
+      access_token: string;
+      refresh_token: string;
+      expiry: number;
+    }) => void;
+    mockConnectGoogle.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveConnect = resolve;
+        }),
+    );
+    let onOauthUrl: ((event: { payload: string }) => void) | undefined;
+    mockListen.mockImplementation(async (event, handler) => {
+      if (event === "google-oauth-url") {
+        onOauthUrl = handler as (event: { payload: string }) => void;
+      }
+      return () => {};
+    });
+    vi.spyOn(navigator.clipboard, "writeText").mockResolvedValue(undefined);
+
+    renderSettings();
+    await user.click(screen.getByRole("tab", { name: /Google/ }));
+    await user.click(screen.getByRole("button", { name: "Connect Google" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument();
+    });
+    expect(onOauthUrl).toBeTypeOf("function");
+    onOauthUrl!({
+      payload: "https://accounts.google.com/o/oauth2/v2/auth?x=1",
+    });
+    await waitFor(() => {
+      expect(screen.getByLabelText("Google sign-in URL")).toHaveValue(
+        "https://accounts.google.com/o/oauth2/v2/auth?x=1",
+      );
+    });
+    await user.click(screen.getByRole("button", { name: "Copy URL" }));
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+      "https://accounts.google.com/o/oauth2/v2/auth?x=1",
+    );
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(mockCancelGoogleConnect).toHaveBeenCalled();
+
+    resolveConnect({
+      email: "alice@gmail.com",
+      name: "Alice G",
+      access_token: "at",
+      refresh_token: "rt",
+      expiry: 1,
+    });
+    await waitFor(() => {
+      expect(screen.queryByRole("button", { name: "Cancel" })).not.toBeInTheDocument();
+    });
+  });
+
+  it("UNIT-GOOGLE-012 soft-toasts cancelled Google sign-in", async () => {
+    const user = userEvent.setup();
+    mockConnectGoogle.mockRejectedValueOnce(
+      new Error("Google sign-in cancelled"),
+    );
+    renderSettings();
+    await user.click(screen.getByRole("tab", { name: /Google/ }));
+    await user.click(screen.getByRole("button", { name: "Connect Google" }));
+    await waitFor(() => {
+      expect(vi.mocked(toast.message)).toHaveBeenCalledWith(
+        "Google sign-in cancelled",
+      );
+    });
+    expect(vi.mocked(toast.error)).not.toHaveBeenCalledWith(
+      expect.stringMatching(/sign-in cancelled/i),
+    );
   });
 
   it("creates, edits, and deletes templates", async () => {

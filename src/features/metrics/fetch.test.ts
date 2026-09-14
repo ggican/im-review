@@ -99,6 +99,8 @@ function reviewsWith(
         createdAt: item.submittedAt ?? "",
         htmlUrl: "u",
         reviewId: idx + 1,
+        inReplyToId: null,
+        isOwn: false,
       })),
     })),
     latestByUser: [],

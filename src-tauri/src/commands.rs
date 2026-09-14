@@ -8,7 +8,7 @@ use tauri::{AppHandle, Emitter, Manager};
 use tokio::io::AsyncWriteExt;
 use tokio::process::Command;
 
-const UA: &str = "im-review/0.1";
+pub(crate) const UA: &str = "im-review/0.1";
 const CURSOR_API: &str = "https://api.cursor.com/v1";
 const OPENAI_API: &str = "https://api.openai.com/v1";
 const ANTHROPIC_API: &str = "https://api.anthropic.com/v1";
@@ -26,6 +26,16 @@ pub enum Error {
     UnknownAiProvider(String),
     #[error("github error {status}: {message}")]
     Github { status: u16, message: String },
+    #[error("jira error {status}: {message}")]
+    Jira { status: u16, message: String },
+    #[error("no jira credentials stored")]
+    NoJira,
+    #[error("google error {status}: {message}")]
+    Google { status: u16, message: String },
+    #[error("no google calendar credentials stored")]
+    NoGoogle,
+    #[error("{0}")]
+    GoogleOauth(String),
     #[error("cursor error {status}: {message}")]
     Cursor { status: u16, message: String },
     #[error("ai provider error ({provider}) {status}: {message}")]
@@ -42,7 +52,7 @@ impl Serialize for Error {
     }
 }
 
-type Result<T> = std::result::Result<T, Error>;
+pub(crate) type Result<T> = std::result::Result<T, Error>;
 
 fn github_token_store() -> &'static Mutex<Option<String>> {
     static STORE: OnceLock<Mutex<Option<String>>> = OnceLock::new();
@@ -52,6 +62,18 @@ fn github_token_store() -> &'static Mutex<Option<String>> {
 fn ai_key_store() -> &'static Mutex<HashMap<String, String>> {
     static STORE: OnceLock<Mutex<HashMap<String, String>>> = OnceLock::new();
     STORE.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+#[derive(Clone, Default)]
+struct JiraCreds {
+    host: String,
+    email: String,
+    token: String,
+}
+
+fn jira_store() -> &'static Mutex<Option<JiraCreds>> {
+    static STORE: OnceLock<Mutex<Option<JiraCreds>>> = OnceLock::new();
+    STORE.get_or_init(|| Mutex::new(None))
 }
 
 fn known_ai_providers() -> &'static [&'static str] {
@@ -87,6 +109,31 @@ fn load_ai_key(provider: &str) -> Result<String> {
         })
 }
 
+fn normalize_jira_host(raw: &str) -> Result<String> {
+    let trimmed = raw.trim().trim_end_matches('/');
+    let url = if trimmed.starts_with("https://") || trimmed.starts_with("http://") {
+        trimmed.to_string()
+    } else {
+        format!("https://{trimmed}")
+    };
+    if !url.starts_with("https://") {
+        return Err(Error::Jira {
+            status: 400,
+            message: "Jira site must use https".into(),
+        });
+    }
+    Ok(url)
+}
+
+fn load_jira() -> Result<JiraCreds> {
+    jira_store()
+        .lock()
+        .ok()
+        .and_then(|g| g.clone())
+        .filter(|c| !c.host.is_empty() && !c.email.is_empty() && !c.token.is_empty())
+        .ok_or(Error::NoJira)
+}
+
 #[derive(Serialize)]
 pub struct GithubUser {
     login: String,
@@ -116,6 +163,16 @@ fn emit_progress(app: &AppHandle, step: &str, message: &str, detail: Option<Stri
 pub async fn hydrate_runtime_secrets(
     github_token: Option<String>,
     ai_keys: HashMap<String, String>,
+    jira_host: Option<String>,
+    jira_email: Option<String>,
+    jira_token: Option<String>,
+    google_client_id: Option<String>,
+    google_client_secret: Option<String>,
+    google_access_token: Option<String>,
+    google_refresh_token: Option<String>,
+    google_expiry: Option<i64>,
+    google_email: Option<String>,
+    google_name: Option<String>,
 ) -> Result<()> {
     {
         let mut slot = github_token_store()
@@ -138,6 +195,41 @@ pub async fn hydrate_runtime_secrets(
             }
         }
     }
+    {
+        let mut slot = jira_store().lock().expect("jira store poisoned");
+        let host = jira_host
+            .as_deref()
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .map(ToString::to_string);
+        let email = jira_email
+            .as_deref()
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .map(ToString::to_string);
+        let token = jira_token
+            .as_deref()
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .map(ToString::to_string);
+        *slot = match (host, email, token) {
+            (Some(host), Some(email), Some(token)) => Some(JiraCreds {
+                host: normalize_jira_host(&host)?,
+                email,
+                token,
+            }),
+            _ => None,
+        };
+    }
+    crate::google::hydrate(
+        google_client_id,
+        google_client_secret,
+        google_access_token,
+        google_refresh_token,
+        google_expiry,
+        google_email,
+        google_name,
+    );
     Ok(())
 }
 
@@ -339,6 +431,125 @@ pub async fn github_request(
     if !status.is_success() {
         let message = resp.text().await.unwrap_or_default();
         return Err(Error::Github {
+            status: status.as_u16(),
+            message,
+        });
+    }
+    let text = resp.text().await?;
+    if text.is_empty() {
+        return Ok(serde_json::Value::Null);
+    }
+    Ok(serde_json::from_str(&text).unwrap_or(serde_json::Value::String(text)))
+}
+
+#[derive(Serialize)]
+pub struct JiraUser {
+    account_id: String,
+    display_name: String,
+    email: String,
+    avatar_url: String,
+    host: String,
+}
+
+fn jira_url(creds: &JiraCreds, path: &str) -> String {
+    if path.starts_with("http://") || path.starts_with("https://") {
+        path.to_string()
+    } else if path.starts_with('/') {
+        format!("{}{path}", creds.host)
+    } else {
+        format!("{}/{path}", creds.host)
+    }
+}
+
+#[tauri::command]
+pub async fn validate_jira(
+    host: Option<String>,
+    email: Option<String>,
+    token: Option<String>,
+) -> Result<JiraUser> {
+    let creds = match (host, email, token) {
+        (Some(host), Some(email), Some(token)) => JiraCreds {
+            host: normalize_jira_host(&host)?,
+            email: email.trim().to_string(),
+            token: token.trim().to_string(),
+        },
+        _ => load_jira()?,
+    };
+    if creds.email.is_empty() || creds.token.is_empty() {
+        return Err(Error::NoJira);
+    }
+    let data = jira_request_with(
+        &creds,
+        "GET".into(),
+        "/rest/api/3/myself".into(),
+        None,
+    )
+    .await?;
+    let account_id = data
+        .get("accountId")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
+    let display_name = data
+        .get("displayName")
+        .and_then(|v| v.as_str())
+        .unwrap_or(&creds.email)
+        .to_string();
+    let avatar_url = data
+        .get("avatarUrls")
+        .and_then(|v| v.get("48x48").or_else(|| v.get("32x32")))
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
+    Ok(JiraUser {
+        account_id,
+        display_name,
+        email: creds.email,
+        avatar_url,
+        host: creds.host,
+    })
+}
+
+#[tauri::command]
+pub async fn jira_request(
+    method: String,
+    path: String,
+    body: Option<serde_json::Value>,
+) -> Result<serde_json::Value> {
+    let creds = load_jira()?;
+    jira_request_with(&creds, method, path, body).await
+}
+
+async fn jira_request_with(
+    creds: &JiraCreds,
+    method: String,
+    path: String,
+    body: Option<serde_json::Value>,
+) -> Result<serde_json::Value> {
+    let url = jira_url(creds, &path);
+    let client = reqwest::Client::new();
+    let method = method.parse::<reqwest::Method>().map_err(|e| Error::Jira {
+        status: 400,
+        message: format!("invalid method: {e}"),
+    })?;
+    let mut req = client
+        .request(method, &url)
+        .header("User-Agent", UA)
+        .header("Accept", "application/json")
+        .basic_auth(&creds.email, Some(&creds.token));
+    if let Some(body) = body {
+        req = req
+            .header("Content-Type", "application/json")
+            .json(&body);
+    }
+    let resp = req.send().await?;
+    let status = resp.status();
+    if status.as_u16() == 204 {
+        return Ok(serde_json::Value::Null);
+    }
+    if !status.is_success() {
+        let message = resp.text().await.unwrap_or_default();
+        return Err(Error::Jira {
             status: status.as_u16(),
             message,
         });

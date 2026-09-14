@@ -3,7 +3,13 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getSettings, saveSettings } from "@/lib/settings";
+import {
+  deleteSavedReview,
+  getSavedReviews,
+  getSettings,
+  saveReviewLocally,
+  saveSettings,
+} from "@/lib/settings";
 
 const mockNavigate = vi.fn();
 
@@ -40,18 +46,22 @@ vi.mock("@/lib/api", () => ({
   },
 }));
 
-vi.mock("@/features/pr/api", () => ({
-  fetchPrDetail: vi.fn(),
-  fetchPrReviews: vi.fn(),
-  fetchPrCiChecks: vi.fn(),
-  fetchIssueComments: vi.fn().mockResolvedValue([]),
-  postIssueComment: vi.fn(),
-  submitReview: vi.fn(),
-  closePullRequest: vi.fn(),
-  convertPullRequestToDraft: vi.fn(),
-  markPullRequestReady: vi.fn(),
-  reopenPullRequest: vi.fn(),
-}));
+vi.mock("@/features/pr/api", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/features/pr/api")>();
+  return {
+    ...actual,
+    fetchPrDetail: vi.fn(),
+    fetchPrReviews: vi.fn(),
+    fetchPrCiChecks: vi.fn(),
+    fetchIssueComments: vi.fn().mockResolvedValue([]),
+    postIssueComment: vi.fn(),
+    submitReview: vi.fn(),
+    closePullRequest: vi.fn(),
+    convertPullRequestToDraft: vi.fn(),
+    markPullRequestReady: vi.fn(),
+    reopenPullRequest: vi.fn(),
+  };
+});
 
 vi.mock("@/features/ai-review/generate", async (importOriginal) => {
   const actual =
@@ -230,6 +240,9 @@ describe("AiReviewPage", () => {
     mockConvertToDraft.mockResolvedValue(undefined);
     mockMarkReady.mockResolvedValue(undefined);
     mockReopenPullRequest.mockResolvedValue(undefined);
+    for (const r of [...getSavedReviews()]) {
+      deleteSavedReview(r.id);
+    }
   });
 
   it("loads PR detail and shows tabs after fetch", async () => {
@@ -240,6 +253,44 @@ describe("AiReviewPage", () => {
     expect(
       screen.getByRole("tab", { name: /Files \(1\)/ }),
     ).toBeInTheDocument();
+  });
+
+  it("shows your review status from local history on detail", async () => {
+    saveReviewLocally({
+      id: "rev-detail-1",
+      repo: "acme/app",
+      prNumber: 42,
+      prTitle: "Feature PR",
+      prUrl: "https://github.com/acme/app/pull/42",
+      event: "APPROVE",
+      summary: "LGTM",
+      body: "LGTM",
+      comments: [],
+      submittedAt: "2026-09-04T11:00:00.000Z",
+    });
+    renderAiReview();
+    await waitForLoaded();
+    expect(screen.getByTestId("your-review-banner")).toHaveTextContent(
+      /Already reviewed/,
+    );
+    expect(screen.getAllByTestId("review-status-badge")[0]).toHaveTextContent(
+      /Already reviewed/i,
+    );
+  });
+
+  it("shows your review status from GitHub when no local save", async () => {
+    mockFetchPrReviews.mockResolvedValue({
+      reviews: [],
+      latestByUser: [
+        { user: "alice", avatarUrl: "", state: "CHANGES_REQUESTED" },
+      ],
+      inlineCount: 0,
+    });
+    renderAiReview();
+    await waitForLoaded();
+    expect(screen.getByTestId("your-review-banner")).toHaveTextContent(
+      /Changes requested/,
+    );
   });
 
   it("shows load error when GitHub fetch fails", async () => {

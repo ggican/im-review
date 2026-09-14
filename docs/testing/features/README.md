@@ -7,6 +7,7 @@ See also existing matrices: [metrics](./metrics/unit.md), [ai-review](./ai-revie
 ## New / expanded feature matrices
 
 - [api/unit.md](./api/unit.md) — `lib/api`, `pr/api`, `repos/api`, `metrics/fetch`, `ci-watch`
+- [google/unit.md](./google/unit.md) — Google OAuth config, secrets, Settings Connect
 - [hooks/unit.md](./hooks/unit.md) — PR / metrics / repos / settings hooks
 - [desktop/unit.md](./desktop/unit.md) — tray / badge
 - [ui/unit.md](./ui/unit.md) — components, panels, routes, router, command palette

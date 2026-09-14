@@ -12,19 +12,29 @@ vi.mock("sonner", () => ({
 
 vi.mock("./api", () => ({
   postIssueComment: vi.fn(),
+  updateIssueComment: vi.fn(),
+  deleteIssueComment: vi.fn(),
 }));
 
 import { toast } from "sonner";
 
-import { postIssueComment } from "./api";
+import {
+  deleteIssueComment,
+  postIssueComment,
+  updateIssueComment,
+} from "./api";
 import { ConversationPanel } from "./ConversationPanel";
 import { PendingReviewBar } from "./PendingReviewBar";
 
 const mockPost = vi.mocked(postIssueComment);
+const mockUpdate = vi.mocked(updateIssueComment);
+const mockDelete = vi.mocked(deleteIssueComment);
 
 describe("ConversationPanel", () => {
   beforeEach(() => {
     mockPost.mockReset();
+    mockUpdate.mockReset();
+    mockDelete.mockReset();
   });
 
   it("lists comments, applies template, and posts", async () => {
@@ -60,6 +70,8 @@ describe("ConversationPanel", () => {
         error={null}
         templates={[{ id: "lgtm", name: "LGTM", body: "Looks good!" }]}
         onPosted={onPosted}
+        onUpdated={vi.fn()}
+        onDeleted={vi.fn()}
       />,
     );
 
@@ -77,6 +89,71 @@ describe("ConversationPanel", () => {
     expect(vi.mocked(toast.success)).toHaveBeenCalledWith("Comment posted");
   });
 
+  it("edits and deletes own comments", async () => {
+    const user = userEvent.setup();
+    const onUpdated = vi.fn();
+    const onDeleted = vi.fn();
+    mockUpdate.mockResolvedValue({
+      id: 2,
+      body: "Edited",
+      user: "alice",
+      avatarUrl: "",
+      createdAt: "2026-09-03T12:00:00.000Z",
+      updatedAt: "2026-09-04T12:00:00.000Z",
+      htmlUrl: "https://github.com/c/2",
+      isOwn: true,
+    });
+    mockDelete.mockResolvedValue(undefined);
+    vi.stubGlobal("confirm", vi.fn(() => true));
+
+    render(
+      <ConversationPanel
+        pr={{ repo: "acme/app", number: 1 }}
+        comments={[
+          {
+            id: 2,
+            body: "Mine",
+            user: "alice",
+            avatarUrl: "",
+            createdAt: "2026-09-03T12:00:00.000Z",
+            updatedAt: "2026-09-03T12:00:00.000Z",
+            htmlUrl: "https://github.com/c/2",
+            isOwn: true,
+          },
+        ]}
+        loading={false}
+        error={null}
+        templates={[]}
+        onPosted={vi.fn()}
+        onUpdated={onUpdated}
+        onDeleted={onDeleted}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+    const editBox = screen.getByLabelText("Edit comment");
+    await user.clear(editBox);
+    await user.type(editBox, "Edited");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() => {
+      expect(mockUpdate).toHaveBeenCalledWith(
+        { repo: "acme/app", number: 1 },
+        2,
+        "Edited",
+      );
+    });
+    expect(onUpdated).toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: "Delete" }));
+    await waitFor(() => {
+      expect(mockDelete).toHaveBeenCalledWith(
+        { repo: "acme/app", number: 1 },
+        2,
+      );
+    });
+    expect(onDeleted).toHaveBeenCalledWith(2);
+  });
+
   it("surfaces writeDisabled state in conversation compose", () => {
     render(
       <ConversationPanel
@@ -87,6 +164,8 @@ describe("ConversationPanel", () => {
         templates={[]}
         writeDisabled
         onPosted={vi.fn()}
+        onUpdated={vi.fn()}
+        onDeleted={vi.fn()}
       />,
     );
     expect(screen.getByText(/Loading comments/)).toBeInTheDocument();
@@ -107,6 +186,8 @@ describe("ConversationPanel", () => {
         error={null}
         templates={[]}
         onPosted={vi.fn()}
+        onUpdated={vi.fn()}
+        onDeleted={vi.fn()}
       />,
     );
     await user.type(screen.getByRole("textbox"), "hi");

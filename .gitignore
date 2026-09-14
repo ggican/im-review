@@ -38,3 +38,11 @@ coverage
 .impeccable/config.local.json
 .impeccable/live/inject-journal.json
 .impeccable/live/.cache/
+
+# Local / exported design drafts (not product source of truth)
+docs/design/
+
+# Local env (secrets) — keep .env.example tracked
+.env
+.env.*
+!.env.example

@@ -52,6 +52,11 @@ function readPersisted(): PersistedPrCache {
           ? (parsed.lists as { reviewed: PullRequest[] }).reviewed
           : [],
         mine: parsed.lists.mine ?? [],
+        people: Array.isArray(
+          (parsed.lists as { people?: unknown }).people,
+        )
+          ? (parsed.lists as { people: PullRequest[] }).people
+          : [],
       },
       updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : null,
       tabUpdatedAt:
@@ -133,6 +138,7 @@ export function flattenPrCache(lists: PrLists = cache): PullRequest[] {
     ...lists.reviewed,
     ...lists.assigned,
     ...lists.mine,
+    ...lists.people,
   ]) {
     const key = `${pr.repo}#${pr.number}`;
     if (seen.has(key)) continue;

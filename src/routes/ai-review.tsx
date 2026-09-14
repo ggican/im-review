@@ -59,6 +59,11 @@ import {
   isGithubRateLimitError,
   rateLimitUserMessage,
 } from "@/features/pr/rate-limit";
+import {
+  githubReviewStateLabel,
+  githubReviewStateToEvent,
+} from "@/features/pr/review-status";
+import { ReviewStatusBadge } from "@/features/pr/ReviewStatusBadge";
 import type {
   CiChecksSnapshot,
   IssueComment,
@@ -68,6 +73,7 @@ import type {
   PullRequest,
   ReviewEvent,
 } from "@/features/pr/types";
+import { latestReviewsByPr, prKey } from "@/features/pr/types";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import {
@@ -75,8 +81,10 @@ import {
   saveReviewLocally,
   toggleFavoriteBranch,
 } from "@/lib/settings";
+import { relativeTime } from "@/lib/time";
 import {
   useFavoriteBranches,
+  useSavedReviews,
   useSettings,
   useTemplates,
 } from "@/lib/use-settings";
@@ -182,6 +190,7 @@ export function AiReviewPage() {
     null,
   );
   const templates = useTemplates();
+  const savedReviews = useSavedReviews();
   const appSettings = useSettings();
   const aiProvider = appSettings.aiProvider;
   const aiProviderLabel =
@@ -194,6 +203,29 @@ export function AiReviewPage() {
   );
   const canManageOwnPr =
     isOwnPr && detail && detail.state !== "merged" && pr?.state !== "merged";
+
+  const localSavedReview = useMemo(() => {
+    if (!owner || !repo || !Number.isFinite(prNumber) || prNumber <= 0) {
+      return undefined;
+    }
+    return latestReviewsByPr(savedReviews).get(
+      prKey(`${owner}/${repo}`, prNumber),
+    );
+  }, [owner, repo, prNumber, savedReviews]);
+
+  const githubMyReview = useMemo(() => {
+    if (!viewerLogin || !reviews) return undefined;
+    return reviews.latestByUser.find(
+      (r) => r.user.toLowerCase() === viewerLogin.toLowerCase(),
+    );
+  }, [viewerLogin, reviews]);
+
+  /** Prefer local IM Review history; fall back to your latest GitHub review. */
+  const yourReviewEvent: ReviewEvent | undefined =
+    localSavedReview?.event ??
+    (githubMyReview
+      ? githubReviewStateToEvent(githubMyReview.state)
+      : undefined);
 
   const totals = useMemo(() => {
     return files.reduce(
@@ -356,14 +388,19 @@ export function AiReviewPage() {
     setReviewsLoading(true);
     setReviewsError(null);
     try {
-      const snap = await fetchPrReviews(pr);
+      const snap = await fetchPrReviews(pr, viewerLogin);
       setReviews(snap);
     } catch (err) {
       setReviewsError(String(err));
     } finally {
       setReviewsLoading(false);
     }
-  }, [pr]);
+  }, [pr, viewerLogin]);
+
+  useEffect(() => {
+    if (!pr || !viewerLogin) return;
+    void refreshReviews();
+  }, [viewerLogin, pr, refreshReviews]);
 
   const refreshCi = useCallback(async () => {
     if (!pr || !detail?.headSha) return;
@@ -781,6 +818,31 @@ export function AiReviewPage() {
             <h1 className="mt-1 text-xl leading-snug font-semibold tracking-tight text-neutral-900 dark:text-neutral-50">
               {detail?.title ?? pr?.title ?? "Loading PR…"}
             </h1>
+            {yourReviewEvent || githubMyReview || localSavedReview ? (
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                {yourReviewEvent ? (
+                  <ReviewStatusBadge event={yourReviewEvent} />
+                ) : githubMyReview ? (
+                  <span
+                    data-testid="review-status-badge"
+                    className="inline-flex items-center gap-1 rounded-sm bg-neutral-100 px-1.5 py-0.5 text-xs font-semibold tracking-wide text-neutral-600 uppercase dark:bg-neutral-900 dark:text-neutral-300"
+                  >
+                    <CheckCircle2 className="h-3 w-3" />
+                    {githubReviewStateLabel(githubMyReview.state)}
+                  </span>
+                ) : null}
+                {localSavedReview ? (
+                  <span className="text-xs text-neutral-500">
+                    Submitted from IM Review ·{" "}
+                    {relativeTime(localSavedReview.submittedAt)}
+                  </span>
+                ) : githubMyReview ? (
+                  <span className="text-xs text-neutral-500">
+                    Your review on GitHub
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
             {detail ? (
               <p className="mt-1 text-xs text-neutral-500">
                 {detail.author.login}
@@ -864,6 +926,33 @@ export function AiReviewPage() {
           </div>
         ) : null}
       </header>
+
+      {yourReviewEvent || localSavedReview || githubMyReview ? (
+        <div
+          data-testid="your-review-banner"
+          className="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-200"
+        >
+          <p className="font-medium">
+            Already reviewed
+            {yourReviewEvent ? (
+              <>
+                {" "}
+                —{" "}
+                {yourReviewEvent === "APPROVE"
+                  ? "Approved"
+                  : yourReviewEvent === "REQUEST_CHANGES"
+                    ? "Changes requested"
+                    : "Commented"}
+              </>
+            ) : null}
+          </p>
+          <p className="mt-1 text-xs text-sky-800/80 dark:text-sky-300/80">
+            You already reviewed this PR. It stays marked on the dashboard so
+            you don’t treat it as a fresh request. You can still submit another
+            review if needed.
+          </p>
+        </div>
+      ) : null}
 
       {phase === "loading" ? (
         <div className="flex items-center gap-2 text-sm text-neutral-500">
@@ -1192,6 +1281,14 @@ export function AiReviewPage() {
                   templates={templates}
                   writeDisabled={writesPaused}
                   onPosted={(c) => setIssueComments((prev) => [...prev, c])}
+                  onUpdated={(c) =>
+                    setIssueComments((prev) =>
+                      prev.map((row) => (row.id === c.id ? c : row)),
+                    )
+                  }
+                  onDeleted={(id) =>
+                    setIssueComments((prev) => prev.filter((row) => row.id !== id))
+                  }
                 />
               ) : null}
               <PendingReviewBar
@@ -1219,12 +1316,15 @@ export function AiReviewPage() {
             />
           ) : null}
 
-          {detailTab === "reviews" ? (
+          {detailTab === "reviews" && pr ? (
             <CurrentReviewsPanel
+              pr={pr}
               snapshot={reviews}
               loading={reviewsLoading}
               error={reviewsError}
+              writeDisabled={writesPaused}
               onRefresh={() => void refreshReviews()}
+              onMutated={() => void refreshReviews()}
             />
           ) : null}
 

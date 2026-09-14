@@ -1,7 +1,13 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getSettings, saveSettings } from "@/lib/settings";
+import {
+  getFavoriteUsers,
+  getSettings,
+  removeFavoriteUser,
+  saveSettings,
+  toggleFavoriteUser,
+} from "@/lib/settings";
 import { makePr } from "@/test/fixtures";
 
 vi.mock("./api", () => ({
@@ -10,12 +16,14 @@ vi.mock("./api", () => ({
   fetchReviewRequestedPrs: vi.fn(),
   fetchMyOpenPrs: vi.fn(),
   fetchOpenPullsForRepos: vi.fn(),
+  fetchOpenPrsByAuthors: vi.fn(),
 }));
 
 import {
   fetchAllOpenPrs,
   fetchAssignedPrs,
   fetchMyOpenPrs,
+  fetchOpenPrsByAuthors,
   fetchOpenPullsForRepos,
   fetchReviewRequestedPrs,
 } from "./api";
@@ -27,6 +35,7 @@ const mockAssigned = vi.mocked(fetchAssignedPrs);
 const mockReview = vi.mocked(fetchReviewRequestedPrs);
 const mockMine = vi.mocked(fetchMyOpenPrs);
 const mockFavorites = vi.mocked(fetchOpenPullsForRepos);
+const mockPeople = vi.mocked(fetchOpenPrsByAuthors);
 
 const favorites = [makePr({ repo: "tiket/TIX-HOTEL-NEXT-FE", number: 9 })];
 const assigned = [makePr({ repo: "acme/a", number: 1 })];
@@ -40,6 +49,10 @@ describe("useMyPRs", () => {
     mockReview.mockReset();
     mockMine.mockReset();
     mockFavorites.mockReset();
+    mockPeople.mockReset();
+    for (const u of [...getFavoriteUsers()]) {
+      removeFavoriteUser(u.login);
+    }
   });
 
   afterEach(() => {
@@ -195,6 +208,26 @@ describe("useMyPRs", () => {
       await result.current.refresh();
     });
     expect(mockFavorites).toHaveBeenCalledTimes(2);
+  });
+
+  it("loads people tab from favorite authors", async () => {
+    const peoplePrs = [makePr({ repo: "acme/p", number: 5, title: "From Bob" })];
+    toggleFavoriteUser({
+      login: "bob",
+      name: "Bob",
+      avatarUrl: "",
+      htmlUrl: "https://github.com/bob",
+    });
+    mockPeople.mockResolvedValue(peoplePrs);
+
+    const { result } = renderHook(() => useMyPRs(true, "people"));
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    expect(result.current.lists.people).toEqual(peoplePrs);
+    expect(mockPeople).toHaveBeenCalledWith(["bob"]);
   });
 
   it("refetches on refresh interval", async () => {

@@ -194,6 +194,50 @@ export async function fetchMyOpenPrs(): Promise<PullRequest[]> {
   return searchPrs("is:pr is:open author:@me", 2);
 }
 
+export async function fetchOpenPrsByAuthor(
+  login: string,
+): Promise<PullRequest[]> {
+  const safe = login.trim().replace(/^@+/, "");
+  return searchPrs(`is:pr is:open author:${safe}`, 2);
+}
+
+export const AUTHOR_SEARCH_BATCH_SIZE = 8;
+
+export function normalizeAuthorLogins(logins: readonly string[]): string[] {
+  return [
+    ...new Set(
+      logins.map((l) => l.trim().replace(/^@+/, "")).filter(Boolean),
+    ),
+  ];
+}
+
+/** GitHub Search query for open PRs by multiple authors (one batch, ≤8 logins). */
+export function buildAuthorsSearchQuery(logins: readonly string[]): string {
+  const normalized = normalizeAuthorLogins(logins);
+  const or = normalized.map((l) => `author:${l}`).join(" OR ");
+  return `is:pr is:open (${or})`;
+}
+
+export async function fetchOpenPrsByAuthors(
+  logins: string[],
+): Promise<PullRequest[]> {
+  const unique = normalizeAuthorLogins(logins);
+  if (unique.length === 0) return [];
+  const all: PullRequest[] = [];
+  const seen = new Set<number>();
+  for (let i = 0; i < unique.length; i += AUTHOR_SEARCH_BATCH_SIZE) {
+    const slice = unique.slice(i, i + AUTHOR_SEARCH_BATCH_SIZE);
+    const batch = await searchPrs(buildAuthorsSearchQuery(slice), 2);
+    for (const pr of batch) {
+      if (seen.has(pr.id)) continue;
+      seen.add(pr.id);
+      all.push(pr);
+    }
+  }
+  all.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  return all;
+}
+
 /** ISO date (YYYY-MM-DD) for metrics window start. `days=0` is today. */
 export function metricsWindowFrom(days = 7): string {
   const from = new Date();
@@ -269,6 +313,7 @@ type GhReview = {
 type GhReviewComment = {
   id: number;
   pull_request_review_id: number | null;
+  in_reply_to_id?: number | null;
   path: string;
   line: number | null;
   original_line?: number | null;
@@ -497,9 +542,11 @@ export async function fetchHeadBranch(
 /** Load submitted reviews + inline comments for the Current reviews tab. */
 export async function fetchPrReviews(
   pr: Pick<PullRequest, "repo" | "number">,
+  viewerLogin?: string | null,
 ): Promise<PrReviewsSnapshot> {
   const { owner, name } = splitRepo(pr.repo);
   const base = `/repos/${owner}/${name}/pulls/${pr.number}`;
+  const me = viewerLogin?.toLowerCase() ?? "";
 
   const [rawReviews, rawComments] = await Promise.all([
     api.githubGet<GhReview[]>(`${base}/reviews?per_page=100`),
@@ -510,16 +557,19 @@ export async function fetchPrReviews(
   let inlineCount = 0;
   for (const c of rawComments ?? []) {
     inlineCount += 1;
+    const login = c.user?.login ?? "unknown";
     const mapped: PrReviewComment = {
       id: c.id,
       path: c.path,
       line: c.line ?? c.original_line ?? null,
       body: c.body?.trim() || "",
-      user: c.user?.login ?? "unknown",
+      user: login,
       avatarUrl: c.user?.avatar_url ?? "",
       createdAt: c.created_at,
       htmlUrl: c.html_url,
       reviewId: c.pull_request_review_id,
+      inReplyToId: c.in_reply_to_id ?? null,
+      isOwn: Boolean(me && login.toLowerCase() === me),
     };
     if (c.pull_request_review_id == null) continue;
     const list = commentsByReview.get(c.pull_request_review_id) ?? [];
@@ -563,6 +613,31 @@ export async function fetchPrReviews(
   );
 
   return { reviews, latestByUser, inlineCount };
+}
+
+/** Group flat review comments into root + replies (F25). */
+export function threadReviewComments(
+  comments: PrReviewComment[],
+): Array<{ root: PrReviewComment; replies: PrReviewComment[] }> {
+  const byId = new Map(comments.map((c) => [c.id, c]));
+  const repliesByParent = new Map<number, PrReviewComment[]>();
+  const roots: PrReviewComment[] = [];
+  for (const c of comments) {
+    const parentId = c.inReplyToId;
+    if (parentId != null && byId.has(parentId)) {
+      const list = repliesByParent.get(parentId) ?? [];
+      list.push(c);
+      repliesByParent.set(parentId, list);
+    } else {
+      roots.push(c);
+    }
+  }
+  return roots.map((root) => ({
+    root,
+    replies: (repliesByParent.get(root.id) ?? []).sort((a, b) =>
+      a.createdAt.localeCompare(b.createdAt),
+    ),
+  }));
 }
 
 export async function submitReview(
@@ -647,6 +722,131 @@ export async function postIssueComment(
     htmlUrl: raw.html_url,
     isOwn: true,
   };
+}
+
+export async function updateIssueComment(
+  pr: Pick<PullRequest, "repo">,
+  commentId: number,
+  body: string,
+): Promise<IssueComment> {
+  const trimmed = body.trim();
+  if (!trimmed) throw new Error("Comment cannot be empty");
+  const { owner, name } = splitRepo(pr.repo);
+  const raw = await api.githubRequest<{
+    id: number;
+    body: string;
+    user: { login: string; avatar_url: string } | null;
+    created_at: string;
+    updated_at: string;
+    html_url: string;
+  }>("PATCH", `/repos/${owner}/${name}/issues/comments/${commentId}`, {
+    body: trimmed,
+  });
+  return {
+    id: raw.id,
+    body: raw.body,
+    user: raw.user?.login ?? "unknown",
+    avatarUrl: raw.user?.avatar_url ?? "",
+    createdAt: raw.created_at,
+    updatedAt: raw.updated_at,
+    htmlUrl: raw.html_url,
+    isOwn: true,
+  };
+}
+
+export async function deleteIssueComment(
+  pr: Pick<PullRequest, "repo">,
+  commentId: number,
+): Promise<void> {
+  const { owner, name } = splitRepo(pr.repo);
+  await api.githubRequest(
+    "DELETE",
+    `/repos/${owner}/${name}/issues/comments/${commentId}`,
+  );
+}
+
+export async function replyToReviewComment(
+  pr: Pick<PullRequest, "repo" | "number">,
+  inReplyToId: number,
+  body: string,
+): Promise<PrReviewComment> {
+  const trimmed = body.trim();
+  if (!trimmed) throw new Error("Reply cannot be empty");
+  const { owner, name } = splitRepo(pr.repo);
+  const raw = await api.githubRequest<GhReviewComment>(
+    "POST",
+    `/repos/${owner}/${name}/pulls/${pr.number}/comments`,
+    { body: trimmed, in_reply_to: inReplyToId },
+  );
+  const login = raw.user?.login ?? "unknown";
+  return {
+    id: raw.id,
+    path: raw.path,
+    line: raw.line ?? raw.original_line ?? null,
+    body: raw.body?.trim() || "",
+    user: login,
+    avatarUrl: raw.user?.avatar_url ?? "",
+    createdAt: raw.created_at,
+    htmlUrl: raw.html_url,
+    reviewId: raw.pull_request_review_id,
+    inReplyToId: raw.in_reply_to_id ?? inReplyToId,
+    isOwn: true,
+  };
+}
+
+export async function updateReviewComment(
+  pr: Pick<PullRequest, "repo">,
+  commentId: number,
+  body: string,
+): Promise<PrReviewComment> {
+  const trimmed = body.trim();
+  if (!trimmed) throw new Error("Comment cannot be empty");
+  const { owner, name } = splitRepo(pr.repo);
+  const raw = await api.githubRequest<GhReviewComment>(
+    "PATCH",
+    `/repos/${owner}/${name}/pulls/comments/${commentId}`,
+    { body: trimmed },
+  );
+  const login = raw.user?.login ?? "unknown";
+  return {
+    id: raw.id,
+    path: raw.path,
+    line: raw.line ?? raw.original_line ?? null,
+    body: raw.body?.trim() || "",
+    user: login,
+    avatarUrl: raw.user?.avatar_url ?? "",
+    createdAt: raw.created_at,
+    htmlUrl: raw.html_url,
+    reviewId: raw.pull_request_review_id,
+    inReplyToId: raw.in_reply_to_id ?? null,
+    isOwn: true,
+  };
+}
+
+export async function deleteReviewComment(
+  pr: Pick<PullRequest, "repo">,
+  commentId: number,
+): Promise<void> {
+  const { owner, name } = splitRepo(pr.repo);
+  await api.githubRequest(
+    "DELETE",
+    `/repos/${owner}/${name}/pulls/comments/${commentId}`,
+  );
+}
+
+export async function dismissReview(
+  pr: Pick<PullRequest, "repo" | "number">,
+  reviewId: number,
+  message: string,
+): Promise<void> {
+  const trimmed = message.trim();
+  if (!trimmed) throw new Error("Dismiss message is required");
+  const { owner, name } = splitRepo(pr.repo);
+  await api.githubRequest(
+    "PUT",
+    `/repos/${owner}/${name}/pulls/${pr.number}/reviews/${reviewId}/dismissals`,
+    { message: trimmed, event: "DISMISS" },
+  );
 }
 
 type GhIssueComment = {

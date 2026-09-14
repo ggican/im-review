@@ -10,40 +10,41 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { sameGithubLogin } from "@/features/people/login";
 import { fetchHeadBranch } from "@/features/pr/api";
 import { cn } from "@/lib/cn";
-import { toggleFavoriteBranch } from "@/lib/settings";
+import {
+  getFavoriteUsers,
+  MAX_FAVORITE_USERS,
+  toggleFavoriteBranch,
+  toggleFavoriteUser,
+} from "@/lib/settings";
 import { relativeTime } from "@/lib/time";
-import { useFavoriteBranches } from "@/lib/use-settings";
+import { useFavoriteBranches, useFavoriteUsers } from "@/lib/use-settings";
 
-import type { PullRequest, ReviewEvent } from "./types";
+import { NotReviewedBadge, ReviewStatusBadge } from "./ReviewStatusBadge";
+import type { PullRequest } from "./types";
 
 type Props = {
   pr: PullRequest;
   onSelect: (pr: PullRequest) => void;
   /** Updated since last “mark seen” watermark. */
   isNew?: boolean;
+  onFilterAuthor?: (login: string) => void;
 };
 
-function reviewStatusLabel(event: ReviewEvent): string {
-  switch (event) {
-    case "APPROVE":
-      return "Reviewed · Approved";
-    case "REQUEST_CHANGES":
-      return "Reviewed · Changes requested";
-    default:
-      return "Reviewed · Commented";
-  }
-}
-
-export function PRRow({ pr, onSelect, isNew = false }: Props) {
+export function PRRow({ pr, onSelect, isNew = false, onFilterAuthor }: Props) {
   const favoriteBranches = useFavoriteBranches();
+  const favoriteUsers = useFavoriteUsers();
   const [busyStar, setBusyStar] = useState(false);
   const reviewed = Boolean(pr.localReviewEvent);
   const starred = favoriteBranches.some(
     (b) =>
       b.repo === pr.repo &&
       (pr.headBranch ? b.branch === pr.headBranch : b.prNumber === pr.number),
+  );
+  const personStarred = favoriteUsers.some((u) =>
+    sameGithubLogin(u.login, pr.author.login),
   );
 
   async function openInBrowser() {
@@ -85,6 +86,25 @@ export function PRRow({ pr, onSelect, isNew = false }: Props) {
     }
   }
 
+  function onTogglePersonFavorite() {
+    if (!personStarred && getFavoriteUsers().length >= MAX_FAVORITE_USERS) {
+      toast.error(`Favorite people limit is ${MAX_FAVORITE_USERS}`);
+      return;
+    }
+    const next = toggleFavoriteUser({
+      login: pr.author.login,
+      name: null,
+      avatarUrl: pr.author.avatarUrl,
+      htmlUrl: `https://github.com/${pr.author.login}`,
+    });
+    const nowOn = next.some((u) => sameGithubLogin(u.login, pr.author.login));
+    toast.success(
+      nowOn
+        ? `Favorited @${pr.author.login}`
+        : `Removed @${pr.author.login} from people`,
+    );
+  }
+
   return (
     <li
       className={cn(
@@ -92,24 +112,31 @@ export function PRRow({ pr, onSelect, isNew = false }: Props) {
         reviewed && "bg-sky-50/50 dark:bg-sky-950/20",
       )}
     >
-      <button
-        type="button"
-        onClick={() => onSelect(pr)}
-        className="flex min-w-0 flex-1 items-start gap-3 text-left"
-      >
-        {reviewed ? (
-          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-sky-600 dark:text-sky-400" />
-        ) : (
-          <GitPullRequest
-            className={`mt-0.5 h-4 w-4 shrink-0 ${
-              pr.isDraft
-                ? "text-neutral-400"
-                : "text-emerald-600 dark:text-emerald-400"
-            }`}
-          />
-        )}
+      <div className="flex min-w-0 flex-1 items-start gap-3 text-left">
+        <button
+          type="button"
+          onClick={() => onSelect(pr)}
+          className="mt-0.5 shrink-0"
+          aria-label="Open pull request"
+        >
+          {reviewed ? (
+            <CheckCircle2 className="h-4 w-4 text-sky-600 dark:text-sky-400" />
+          ) : (
+            <GitPullRequest
+              className={`h-4 w-4 ${
+                pr.isDraft
+                  ? "text-neutral-400"
+                  : "text-emerald-600 dark:text-emerald-400"
+              }`}
+            />
+          )}
+        </button>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+          <button
+            type="button"
+            onClick={() => onSelect(pr)}
+            className="flex w-full flex-wrap items-baseline gap-x-2 gap-y-0.5 text-left"
+          >
             <span
               className={cn(
                 "truncate text-sm font-medium",
@@ -134,31 +161,16 @@ export function PRRow({ pr, onSelect, isNew = false }: Props) {
               </span>
             ) : null}
             {pr.localReviewEvent ? (
-              <span
-                className={cn(
-                  "inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-xs font-semibold tracking-wide uppercase",
-                  pr.localReviewEvent === "APPROVE" &&
-                    "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
-                  pr.localReviewEvent === "REQUEST_CHANGES" &&
-                    "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300",
-                  pr.localReviewEvent === "COMMENT" &&
-                    "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300",
-                )}
-              >
-                <CheckCircle2 className="h-3 w-3" />
-                {reviewStatusLabel(pr.localReviewEvent)}
-              </span>
+              <ReviewStatusBadge event={pr.localReviewEvent} compact />
             ) : (
-              <span className="rounded-sm bg-neutral-100 px-1.5 py-0.5 text-xs font-medium tracking-wide text-neutral-500 uppercase dark:bg-neutral-900 dark:text-neutral-400">
-                Not reviewed
-              </span>
+              <NotReviewedBadge />
             )}
             {starred ? (
               <span className="rounded-sm bg-amber-100 px-1.5 py-0.5 text-xs font-medium tracking-wide text-amber-800 uppercase dark:bg-amber-950 dark:text-amber-200">
                 Branch favorite
               </span>
             ) : null}
-          </div>
+          </button>
           <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-neutral-500">
             <span className="font-mono">{pr.repo}</span>
             {pr.headBranch ? (
@@ -178,21 +190,56 @@ export function PRRow({ pr, onSelect, isNew = false }: Props) {
               </>
             ) : null}
             <span aria-hidden>·</span>
-            <span className="inline-flex items-center gap-1">
-              {pr.author.avatarUrl ? (
-                <img
-                  src={pr.author.avatarUrl}
-                  alt=""
-                  className="h-3.5 w-3.5 rounded-full"
+            <span className="inline-flex items-center gap-0.5">
+              {onFilterAuthor ? (
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1 hover:text-neutral-800 dark:hover:text-neutral-200"
+                  onClick={() => onFilterAuthor(pr.author.login)}
+                >
+                  {pr.author.avatarUrl ? (
+                    <img
+                      src={pr.author.avatarUrl}
+                      alt=""
+                      className="h-3.5 w-3.5 rounded-full"
+                    />
+                  ) : null}
+                  {pr.author.login}
+                </button>
+              ) : (
+                <span className="inline-flex items-center gap-1">
+                  {pr.author.avatarUrl ? (
+                    <img
+                      src={pr.author.avatarUrl}
+                      alt=""
+                      className="h-3.5 w-3.5 rounded-full"
+                    />
+                  ) : null}
+                  {pr.author.login}
+                </span>
+              )}
+              <button
+                type="button"
+                className="rounded p-0.5 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                aria-label={
+                  personStarred ? "Remove favorite person" : "Favorite person"
+                }
+                aria-pressed={personStarred}
+                onClick={onTogglePersonFavorite}
+              >
+                <Star
+                  className={cn(
+                    "h-3 w-3",
+                    personStarred && "fill-amber-400 text-amber-500",
+                  )}
                 />
-              ) : null}
-              {pr.author.login}
+              </button>
             </span>
             <span aria-hidden>·</span>
             <span>{relativeTime(pr.updatedAt)}</span>
           </div>
         </div>
-      </button>
+      </div>
       <div className="flex shrink-0 gap-1 opacity-70 transition-opacity group-hover:opacity-100">
         <Button
           type="button"

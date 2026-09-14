@@ -74,6 +74,7 @@ describe("DashboardPage", () => {
       refreshIntervalMin: 0,
       favoritesOnly: false,
       showFavoriteOpen: false,
+      showFavoritePeople: false,
     });
     mockNavigate.mockReset();
     mockValidateToken.mockResolvedValue({
@@ -90,6 +91,7 @@ describe("DashboardPage", () => {
         reviewed: [],
         mine: [minePr],
         favorites: [],
+        people: [],
       },
       loading: false,
       error: null,
@@ -182,6 +184,7 @@ describe("DashboardPage", () => {
         review: [],
         reviewed: [],
         mine: [],
+        people: [],
       },
       loading: false,
       error: null,

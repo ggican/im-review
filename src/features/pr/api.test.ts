@@ -12,8 +12,13 @@ vi.mock("@/lib/api", () => ({
 import { api } from "@/lib/api";
 
 import {
+  AUTHOR_SEARCH_BATCH_SIZE,
+  buildAuthorsSearchQuery,
   closePullRequest,
   convertPullRequestToDraft,
+  deleteIssueComment,
+  deleteReviewComment,
+  dismissReview,
   fetchAllOpenPrs,
   fetchAssignedPrs,
   fetchAuthoredPrsInWindow,
@@ -21,6 +26,8 @@ import {
   fetchIssueComments,
   fetchMergedPrsInWindow,
   fetchMyOpenPrs,
+  fetchOpenPrsByAuthor,
+  fetchOpenPrsByAuthors,
   fetchOpenPullsForRepo,
   fetchOpenPullsForRepos,
   fetchPrCiChecks,
@@ -31,9 +38,14 @@ import {
   fetchReviewRequestedPrs,
   markPullRequestReady,
   metricsWindowFrom,
+  normalizeAuthorLogins,
   postIssueComment,
   reopenPullRequest,
+  replyToReviewComment,
   submitReview,
+  threadReviewComments,
+  updateIssueComment,
+  updateReviewComment,
 } from "./api";
 
 const githubGet = vi.mocked(api.githubGet);
@@ -77,6 +89,47 @@ describe("UNIT-API pr/api", () => {
     await fetchReviewedPrsInWindow("2026-09-01");
     await fetchMergedPrsInWindow("2026-09-01");
     expect(githubGet.mock.calls.length).toBeGreaterThanOrEqual(6);
+  });
+
+  it("searches PRs by author and batches authors", async () => {
+    githubGet.mockResolvedValue({ items: [searchItem], total_count: 1 });
+    const one = await fetchOpenPrsByAuthor("alice");
+    expect(one[0]?.author.login).toBe("alice");
+    expect(String(githubGet.mock.calls[0]?.[0])).toContain("author%3Aalice");
+    githubGet.mockResolvedValue({ items: [searchItem], total_count: 1 });
+    const many = await fetchOpenPrsByAuthors(["alice", "bob"]);
+    expect(many).toHaveLength(1);
+    expect(String(githubGet.mock.calls[1]?.[0])).toContain("author%3Aalice");
+  });
+
+  it("buildAuthorsSearchQuery OR-joins normalized logins", () => {
+    expect(normalizeAuthorLogins([" @alice ", "bob", "@bob"])).toEqual([
+      "alice",
+      "bob",
+    ]);
+    expect(buildAuthorsSearchQuery(["alice", "bob"])).toBe(
+      "is:pr is:open (author:alice OR author:bob)",
+    );
+    expect(AUTHOR_SEARCH_BATCH_SIZE).toBe(8);
+  });
+
+  it("fetchOpenPrsByAuthors batches more than 8 logins sequentially", async () => {
+    const logins = Array.from({ length: 9 }, (_, i) => `user${i + 1}`);
+    githubGet.mockResolvedValue({ items: [searchItem], total_count: 1 });
+    await fetchOpenPrsByAuthors(logins);
+    expect(githubGet).toHaveBeenCalledTimes(2);
+    const q1 = String(githubGet.mock.calls[0]?.[0]);
+    const q2 = String(githubGet.mock.calls[1]?.[0]);
+    expect(q1).toContain("author%3Auser1");
+    expect(q1).toContain("author%3Auser8");
+    expect(q1).not.toContain("author%3Auser9");
+    expect(q2).toContain("author%3Auser9");
+  });
+
+  it("fetchOpenPrsByAuthors returns empty for no logins", async () => {
+    const result = await fetchOpenPrsByAuthors([]);
+    expect(result).toEqual([]);
+    expect(githubGet).not.toHaveBeenCalled();
   });
 
   it("UNIT-API-007b searchPrs paginates until exhausted", async () => {
@@ -657,5 +710,81 @@ describe("UNIT-API pr/api", () => {
     await expect(
       fetchPrCommitCount(makePr({ repo: "acme/web", number: 1 })),
     ).resolves.toBe(2);
+  });
+
+  it("threads replies and mutates issue/review comments", async () => {
+    const threads = threadReviewComments([
+      {
+        id: 1,
+        path: "a.ts",
+        line: 1,
+        body: "root",
+        user: "a",
+        avatarUrl: "",
+        createdAt: "2026-09-01T00:00:00Z",
+        htmlUrl: "u",
+        reviewId: 1,
+        inReplyToId: null,
+        isOwn: false,
+      },
+      {
+        id: 2,
+        path: "a.ts",
+        line: 1,
+        body: "reply",
+        user: "b",
+        avatarUrl: "",
+        createdAt: "2026-09-01T01:00:00Z",
+        htmlUrl: "u2",
+        reviewId: 1,
+        inReplyToId: 1,
+        isOwn: true,
+      },
+    ]);
+    expect(threads).toHaveLength(1);
+    expect(threads[0]?.replies).toHaveLength(1);
+
+    githubRequest.mockResolvedValueOnce({
+      id: 2,
+      body: "edited",
+      user: { login: "alice", avatar_url: "" },
+      created_at: "t",
+      updated_at: "t2",
+      html_url: "u",
+    });
+    await updateIssueComment(makePr({ repo: "acme/web", number: 1 }), 2, "edited");
+    githubRequest.mockResolvedValueOnce(undefined);
+    await deleteIssueComment(makePr({ repo: "acme/web", number: 1 }), 2);
+
+    githubRequest.mockResolvedValueOnce({
+      id: 20,
+      pull_request_review_id: 1,
+      in_reply_to_id: 10,
+      path: "a.ts",
+      line: 1,
+      body: "ok",
+      user: { login: "alice", avatar_url: "" },
+      created_at: "t",
+      html_url: "u",
+    });
+    await replyToReviewComment(makePr({ repo: "acme/web", number: 1 }), 10, "ok");
+    githubRequest.mockResolvedValueOnce({
+      id: 20,
+      pull_request_review_id: 1,
+      path: "a.ts",
+      line: 1,
+      body: "edited",
+      user: { login: "alice", avatar_url: "" },
+      created_at: "t",
+      html_url: "u",
+    });
+    await updateReviewComment(makePr({ repo: "acme/web", number: 1 }), 20, "edited");
+    githubRequest.mockResolvedValueOnce(undefined);
+    await deleteReviewComment(makePr({ repo: "acme/web", number: 1 }), 20);
+    githubRequest.mockResolvedValueOnce({});
+    await dismissReview(makePr({ repo: "acme/web", number: 1 }), 9, "outdated");
+    await expect(
+      dismissReview(makePr({ repo: "acme/web", number: 1 }), 9, "  "),
+    ).rejects.toThrow(/required/i);
   });
 });

@@ -1,17 +1,35 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("@/lib/google-oauth", () => ({
+  GOOGLE_OAUTH_CLIENT_ID: "unit-id.apps.googleusercontent.com",
+  GOOGLE_OAUTH_CLIENT_SECRET: "unit-secret",
+  isGoogleOAuthConfigured: () => true,
+  isValidGoogleOAuthClientId: (id: string) =>
+    id.includes(".apps.googleusercontent.com"),
+  hasGoogleOAuthClientSecret: (s: string) => s.trim().length > 0,
+  isGoogleOAuthPairConfigured: (id: string, secret: string) =>
+    id.includes(".apps.googleusercontent.com") && secret.trim().length > 0,
+}));
+
 import { cn } from "@/lib/cn";
 import {
   clearAiKey,
   clearGithubToken,
+  clearGoogleCreds,
+  ensureGoogleOAuthClient,
   getAiKey,
   getGithubToken,
+  getGoogleClientId,
+  getGoogleClientSecret,
+  getGoogleRefreshToken,
   hasAiKeyLocal,
   hasGithubToken,
+  hasGoogleCreds,
   listAiKeysLocal,
   secretsHydratePayload,
   setAiKey,
   setGithubToken,
+  setGoogleTokens,
 } from "@/lib/secrets";
 import {
   countNewPrs,
@@ -126,6 +144,38 @@ describe("UNIT-LIB-007..010 secrets", () => {
   it("treats whitespace as absent", () => {
     setGithubToken("   ");
     expect(getGithubToken()).toBeNull();
+  });
+});
+
+describe("UNIT-GOOGLE-004/005 google secrets", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    clearGoogleCreds();
+  });
+
+  it("UNIT-GOOGLE-004 persists OAuth client and hydrate prefers env", () => {
+    ensureGoogleOAuthClient();
+    expect(getGoogleClientId()).toBe("unit-id.apps.googleusercontent.com");
+    expect(getGoogleClientSecret()).toBe("unit-secret");
+    const payload = secretsHydratePayload();
+    expect(payload.googleClientId).toBe("unit-id.apps.googleusercontent.com");
+    expect(payload.googleClientSecret).toBe("unit-secret");
+  });
+
+  it("UNIT-GOOGLE-005 stores and clears Google tokens", () => {
+    expect(hasGoogleCreds()).toBe(false);
+    setGoogleTokens({
+      accessToken: "at",
+      refreshToken: "rt",
+      expiry: 123,
+    });
+    expect(hasGoogleCreds()).toBe(true);
+    expect(getGoogleRefreshToken()).toBe("rt");
+    clearGoogleCreds();
+    expect(hasGoogleCreds()).toBe(false);
+    expect(getGoogleRefreshToken()).toBeNull();
+    expect(getGoogleClientId()).toBeNull();
+    expect(getGoogleClientSecret()).toBeNull();
   });
 });
 

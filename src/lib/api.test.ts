@@ -6,10 +6,17 @@ vi.mock("@tauri-apps/api/core", () => ({
   invoke: (...args: unknown[]) => invoke(...args),
 }));
 
+vi.mock("@/lib/google-oauth", () => ({
+  GOOGLE_OAUTH_CLIENT_ID: "desktop-id.apps.googleusercontent.com",
+  GOOGLE_OAUTH_CLIENT_SECRET: "desktop-secret",
+  isGoogleOAuthConfigured: () => true,
+}));
+
 import { api, hydrateRuntimeSecrets } from "./api";
 import {
   clearAiKey,
   clearGithubToken,
+  clearGoogleCreds,
   setAiKey,
   setGithubToken,
 } from "./secrets";
@@ -19,6 +26,7 @@ describe("UNIT-API lib/api", () => {
     localStorage.clear();
     clearGithubToken();
     clearAiKey("cursor");
+    clearGoogleCreds();
     invoke.mockReset();
     invoke.mockResolvedValue(undefined);
   });
@@ -30,6 +38,16 @@ describe("UNIT-API lib/api", () => {
     expect(invoke).toHaveBeenCalledWith("hydrate_runtime_secrets", {
       githubToken: "ghp_x",
       aiKeys: expect.objectContaining({ cursor: "ck_1" }),
+      jiraHost: null,
+      jiraEmail: null,
+      jiraToken: null,
+      googleClientId: "desktop-id.apps.googleusercontent.com",
+      googleClientSecret: "desktop-secret",
+      googleAccessToken: null,
+      googleRefreshToken: null,
+      googleExpiry: null,
+      googleEmail: null,
+      googleName: null,
     });
   });
 
@@ -91,5 +109,30 @@ describe("UNIT-API lib/api", () => {
       instruction: "x",
     });
     expect(invoke).toHaveBeenCalled();
+  });
+
+  it("connects and disconnects Google Calendar", async () => {
+    invoke.mockResolvedValueOnce({
+      email: "alice@gmail.com",
+      name: "Alice",
+      access_token: "at",
+      refresh_token: "rt",
+      expiry: 99,
+    });
+    invoke.mockResolvedValue(undefined);
+    const account = await api.connectGoogle();
+    expect(account.email).toBe("alice@gmail.com");
+    expect(invoke).toHaveBeenCalledWith("google_oauth_connect", {
+      clientId: "desktop-id.apps.googleusercontent.com",
+      clientSecret: "desktop-secret",
+    });
+    expect(await api.hasGoogle()).toBe(true);
+    invoke.mockResolvedValueOnce({ items: [] });
+    await api.googleCalendarEvents();
+    expect(invoke).toHaveBeenCalledWith("google_calendar_events");
+    await api.cancelGoogleConnect();
+    expect(invoke).toHaveBeenCalledWith("google_oauth_cancel");
+    await api.deleteGoogle();
+    expect(await api.hasGoogle()).toBe(false);
   });
 });

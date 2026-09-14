@@ -43,4 +43,4 @@ pnpm check
 ## Feature matrices
 
 - [features/README.md](./features/README.md) — index
-- metrics · ai-review · pr · lib · settings · api · hooks · desktop · ui
+- metrics · ai-review · pr · lib · settings · api · hooks · desktop · ui · [google](./features/google/unit.md)

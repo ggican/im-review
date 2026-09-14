@@ -1,4 +1,5 @@
 import { defaultWindowIcon } from "@tauri-apps/api/app";
+import { invoke } from "@tauri-apps/api/core";
 import { Menu, MenuItem, PredefinedMenuItem } from "@tauri-apps/api/menu";
 import { TrayIcon } from "@tauri-apps/api/tray";
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -49,6 +50,20 @@ async function ensureNotificationPermission(): Promise<boolean> {
   return permissionWarmup;
 }
 
+/** Prefer native macOS path (app logo); fall back to plugin (Terminal icon in dev). */
+async function sendAppNotification(title: string, body: string): Promise<void> {
+  try {
+    const usedNative = await invoke<boolean>("send_app_notification", {
+      title,
+      body,
+    });
+    if (usedNative) return;
+  } catch (err) {
+    console.warn("Native notification unavailable", err);
+  }
+  sendNotification({ title, body });
+}
+
 async function notifyIfIncreased(input: {
   newCount: number;
   ciFailCount: number;
@@ -78,10 +93,7 @@ async function notifyIfIncreased(input: {
   }
 
   try {
-    sendNotification({
-      title: "IM Review",
-      body: parts.join(" · "),
-    });
+    await sendAppNotification("IM Review", parts.join(" · "));
   } catch (err) {
     console.warn("Notification unavailable", err);
   }

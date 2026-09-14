@@ -3,6 +3,13 @@ import {
   DEFAULT_AI_PROVIDER,
   isAiProviderId,
 } from "@/features/ai-review/providers";
+import type { GoogleConnectionPublic } from "@/features/calendar/types";
+import type {
+  JiraConnectionPublic,
+  JiraSavedFilter,
+} from "@/features/jira/types";
+import { sameGithubLogin } from "@/features/people/login";
+import type { FavoriteUser } from "@/features/people/types";
 import type { FavoriteBranch, SavedReview } from "@/features/pr/types";
 
 export type ThemeMode = "system" | "light" | "dark";
@@ -16,6 +23,11 @@ export type AppSettings = {
    * in favorite repos (not limited to assigned / review-requested / authored).
    */
   showFavoriteOpen: boolean;
+  /**
+   * When true, dashboard shows a "People" tab with open PRs from all
+   * favorite authors (GitHub Search batched OR query).
+   */
+  showFavoritePeople: boolean;
   /** Active AI backend for draft reviews. */
   aiProvider: AiProviderId;
 };
@@ -34,6 +46,12 @@ const FAVORITES_SEED_KEY = "im-review:favorites-seed-version";
 const FAVORITES_SEED_VERSION = "2";
 const FAVORITE_BRANCHES_KEY = "im-review:favorite-branches";
 const SAVED_REVIEWS_KEY = "im-review:saved-reviews";
+const FAVORITE_USERS_KEY = "im-review:favorite-users";
+const JIRA_PUBLIC_KEY = "im-review:jira-public";
+const JIRA_FILTERS_KEY = "im-review:jira-saved-filters";
+const GOOGLE_PUBLIC_KEY = "im-review:google-public";
+
+export const MAX_FAVORITE_USERS = 50;
 
 function migrateStorageKey(from: string, to: string): void {
   try {
@@ -64,6 +82,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   theme: "system",
   favoritesOnly: true,
   showFavoriteOpen: true,
+  showFavoritePeople: false,
   aiProvider: DEFAULT_AI_PROVIDER,
 };
 
@@ -361,6 +380,187 @@ export function restoreDefaultFavorites(): string[] {
   localStorage.setItem(FAVORITES_SEED_KEY, FAVORITES_SEED_VERSION);
   saveFavorites(next);
   return next;
+}
+
+function isFavoriteUserRecord(value: unknown): value is FavoriteUser {
+  if (value == null || typeof value !== "object") return false;
+  const u = value as FavoriteUser;
+  return (
+    typeof u.login === "string" &&
+    u.login.length > 0 &&
+    (u.name === null || typeof u.name === "string") &&
+    typeof u.avatarUrl === "string" &&
+    typeof u.htmlUrl === "string" &&
+    typeof u.favoritedAt === "string"
+  );
+}
+
+function loadFavoriteUsers(): FavoriteUser[] {
+  const raw = readJson<unknown>(FAVORITE_USERS_KEY, []);
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(isFavoriteUserRecord);
+}
+
+let favoriteUsersCache: FavoriteUser[] = loadFavoriteUsers();
+
+export function getFavoriteUsers(): FavoriteUser[] {
+  return favoriteUsersCache;
+}
+
+export function isFavoriteUser(login: string): boolean {
+  return favoriteUsersCache.some((u) => sameGithubLogin(u.login, login));
+}
+
+function saveFavoriteUsers(next: FavoriteUser[]): void {
+  favoriteUsersCache = [...next].sort((a, b) =>
+    a.favoritedAt < b.favoritedAt ? 1 : -1,
+  );
+  localStorage.setItem(FAVORITE_USERS_KEY, JSON.stringify(favoriteUsersCache));
+  emit();
+}
+
+export function toggleFavoriteUser(
+  user: Omit<FavoriteUser, "favoritedAt"> & { favoritedAt?: string },
+): FavoriteUser[] {
+  const existing = favoriteUsersCache.find((u) =>
+    sameGithubLogin(u.login, user.login),
+  );
+  if (existing) {
+    saveFavoriteUsers(
+      favoriteUsersCache.filter((u) => !sameGithubLogin(u.login, user.login)),
+    );
+    return favoriteUsersCache;
+  }
+  if (favoriteUsersCache.length >= MAX_FAVORITE_USERS) {
+    return favoriteUsersCache;
+  }
+  saveFavoriteUsers([
+    {
+      login: user.login,
+      name: user.name,
+      avatarUrl: user.avatarUrl,
+      htmlUrl: user.htmlUrl,
+      favoritedAt: user.favoritedAt ?? new Date().toISOString(),
+    },
+    ...favoriteUsersCache,
+  ]);
+  return favoriteUsersCache;
+}
+
+export function removeFavoriteUser(login: string): FavoriteUser[] {
+  saveFavoriteUsers(
+    favoriteUsersCache.filter((u) => !sameGithubLogin(u.login, login)),
+  );
+  return favoriteUsersCache;
+}
+
+function isJiraPublic(value: unknown): value is JiraConnectionPublic {
+  if (value == null || typeof value !== "object") return false;
+  const c = value as JiraConnectionPublic;
+  return (
+    typeof c.host === "string" &&
+    typeof c.email === "string" &&
+    typeof c.displayName === "string" &&
+    typeof c.accountId === "string" &&
+    typeof c.avatarUrl === "string"
+  );
+}
+
+let jiraPublicCache: JiraConnectionPublic | null = (() => {
+  const raw = readJson<unknown>(JIRA_PUBLIC_KEY, null);
+  return isJiraPublic(raw) ? raw : null;
+})();
+
+export function getJiraPublic(): JiraConnectionPublic | null {
+  return jiraPublicCache;
+}
+
+export function saveJiraPublic(next: JiraConnectionPublic | null): void {
+  jiraPublicCache = next;
+  if (next) localStorage.setItem(JIRA_PUBLIC_KEY, JSON.stringify(next));
+  else localStorage.removeItem(JIRA_PUBLIC_KEY);
+  emit();
+}
+
+function isJiraSavedFilter(value: unknown): value is JiraSavedFilter {
+  if (value == null || typeof value !== "object") return false;
+  const f = value as JiraSavedFilter;
+  return (
+    typeof f.id === "string" &&
+    typeof f.name === "string" &&
+    typeof f.jql === "string" &&
+    Array.isArray(f.typeIds) &&
+    Array.isArray(f.labels) &&
+    typeof f.extraJql === "string" &&
+    typeof f.includeDone === "boolean"
+  );
+}
+
+function loadJiraSavedFilters(): JiraSavedFilter[] {
+  const raw = readJson<unknown>(JIRA_FILTERS_KEY, []);
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(isJiraSavedFilter).map((f) => ({
+    ...f,
+    typeNames: Array.isArray(f.typeNames) ? f.typeNames : [],
+    groupBy: f.groupBy === "statusCategory" ? "statusCategory" : "status",
+  }));
+}
+
+let jiraSavedFiltersCache: JiraSavedFilter[] = loadJiraSavedFilters();
+
+export function getJiraSavedFilters(): JiraSavedFilter[] {
+  return jiraSavedFiltersCache;
+}
+
+export function saveJiraSavedFilters(next: JiraSavedFilter[]): void {
+  jiraSavedFiltersCache = [...next].sort((a, b) =>
+    a.updatedAt < b.updatedAt ? 1 : -1,
+  );
+  localStorage.setItem(JIRA_FILTERS_KEY, JSON.stringify(jiraSavedFiltersCache));
+  emit();
+}
+
+export function upsertJiraSavedFilter(
+  filter: JiraSavedFilter,
+): JiraSavedFilter[] {
+  const i = jiraSavedFiltersCache.findIndex((f) => f.id === filter.id);
+  const next =
+    i >= 0
+      ? jiraSavedFiltersCache.map((f, idx) => (idx === i ? filter : f))
+      : [filter, ...jiraSavedFiltersCache];
+  saveJiraSavedFilters(next);
+  return jiraSavedFiltersCache;
+}
+
+export function deleteJiraSavedFilter(id: string): JiraSavedFilter[] {
+  saveJiraSavedFilters(jiraSavedFiltersCache.filter((f) => f.id !== id));
+  return jiraSavedFiltersCache;
+}
+
+export function newJiraFilterId(): string {
+  return `jf_${Date.now().toString(36)}`;
+}
+
+function isGooglePublic(value: unknown): value is GoogleConnectionPublic {
+  if (value == null || typeof value !== "object") return false;
+  const c = value as GoogleConnectionPublic;
+  return typeof c.email === "string" && typeof c.name === "string";
+}
+
+let googlePublicCache: GoogleConnectionPublic | null = (() => {
+  const raw = readJson<unknown>(GOOGLE_PUBLIC_KEY, null);
+  return isGooglePublic(raw) ? raw : null;
+})();
+
+export function getGooglePublic(): GoogleConnectionPublic | null {
+  return googlePublicCache;
+}
+
+export function saveGooglePublic(next: GoogleConnectionPublic | null): void {
+  googlePublicCache = next;
+  if (next) localStorage.setItem(GOOGLE_PUBLIC_KEY, JSON.stringify(next));
+  else localStorage.removeItem(GOOGLE_PUBLIC_KEY);
+  emit();
 }
 
 export function applyTheme(theme: ThemeMode): void {

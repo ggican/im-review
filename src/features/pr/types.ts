@@ -70,7 +70,13 @@ export type PullRequest = {
 };
 
 export type PrTab =
-  "all" | "favorites" | "assigned" | "review" | "reviewed" | "mine";
+  | "all"
+  | "favorites"
+  | "assigned"
+  | "review"
+  | "reviewed"
+  | "mine"
+  | "people";
 
 export type PrLists = Record<PrTab, PullRequest[]>;
 
@@ -81,6 +87,7 @@ export const EMPTY_PR_LISTS: PrLists = {
   review: [],
   reviewed: [],
   mine: [],
+  people: [],
 };
 
 export type PrDetail = PullRequest & {
@@ -133,6 +140,8 @@ export type PrReviewComment = {
   createdAt: string;
   htmlUrl: string;
   reviewId: number | null;
+  inReplyToId: number | null;
+  isOwn: boolean;
 };
 
 /** One submitted GitHub review (may include inline comments). */

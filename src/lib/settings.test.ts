@@ -6,6 +6,8 @@ import {
   deleteTemplate,
   getFavoriteBranches,
   getFavorites,
+  getFavoriteUsers,
+  getGooglePublic,
   getSavedReviews,
   getSettings,
   getTemplates,
@@ -14,12 +16,15 @@ import {
   newTemplateId,
   removeFavorite,
   removeFavoriteBranch,
+  removeFavoriteUser,
   restoreDefaultFavorites,
+  saveGooglePublic,
   saveReviewLocally,
   saveSettings,
   subscribeSettings,
   toggleFavorite,
   toggleFavoriteBranch,
+  toggleFavoriteUser,
   upsertTemplate,
 } from "@/lib/settings";
 
@@ -32,6 +37,7 @@ describe("UNIT-SETTINGS store", () => {
       theme: "system",
       favoritesOnly: true,
       showFavoriteOpen: true,
+      showFavoritePeople: false,
       aiProvider: "cursor",
     });
     // Clear favorites then restore defaults for predictable set.
@@ -42,6 +48,10 @@ describe("UNIT-SETTINGS store", () => {
     for (const b of [...getFavoriteBranches()]) {
       removeFavoriteBranch(b.id);
     }
+    for (const u of [...getFavoriteUsers()]) {
+      removeFavoriteUser(u.login);
+    }
+    saveGooglePublic(null);
     for (const r of [...getSavedReviews()]) {
       deleteSavedReview(r.id);
     }
@@ -53,11 +63,27 @@ describe("UNIT-SETTINGS store", () => {
       refreshIntervalMin: 15,
       favoritesOnly: false,
       showFavoriteOpen: true,
+      showFavoritePeople: true,
       theme: "dark",
     });
     expect(getSettings().refreshIntervalMin).toBe(15);
     expect(getSettings().favoritesOnly).toBe(false);
     expect(getSettings().theme).toBe("dark");
+    expect(getSettings().showFavoritePeople).toBe(true);
+  });
+
+  it("defaults showFavoritePeople to off", () => {
+    expect(getSettings().showFavoritePeople).toBe(false);
+  });
+
+  it("persists google calendar public profile", () => {
+    saveGooglePublic({ email: "alice@gmail.com", name: "Alice" });
+    expect(getGooglePublic()).toEqual({
+      email: "alice@gmail.com",
+      name: "Alice",
+    });
+    saveGooglePublic(null);
+    expect(getGooglePublic()).toBeNull();
   });
 
   it("UNIT-SETTINGS-003 templates upsert/delete", () => {
@@ -96,6 +122,25 @@ describe("UNIT-SETTINGS store", () => {
     const id = next.find((b) => b.branch === "feat/x")!.id;
     removeFavoriteBranch(id);
     expect(isFavoriteBranch("acme/web", "feat/x")).toBe(false);
+  });
+
+  it("favorite people toggle/remove and cap", () => {
+    toggleFavoriteUser({
+      login: "bob",
+      name: "Bob",
+      avatarUrl: "",
+      htmlUrl: "https://github.com/bob",
+    });
+    expect(getFavoriteUsers().some((u) => u.login === "bob")).toBe(true);
+    toggleFavoriteUser({
+      login: "Bob",
+      name: null,
+      avatarUrl: "",
+      htmlUrl: "https://github.com/Bob",
+    });
+    expect(
+      getFavoriteUsers().some((u) => u.login.toLowerCase() === "bob"),
+    ).toBe(false);
   });
 
   it("UNIT-SETTINGS-006/007 saved reviews cap and delete", () => {
