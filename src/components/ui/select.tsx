@@ -15,7 +15,7 @@ export const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex h-8 w-full items-center justify-between gap-2 rounded-md border border-neutral-300 bg-white px-3 text-xs font-medium text-neutral-900 outline-none hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-neutral-400 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:hover:bg-neutral-900",
+      "inline-flex h-8 w-full items-center justify-between gap-2 rounded-md border border-border bg-surface-container-lowest px-3 text-xs font-medium text-on-surface outline-none hover:bg-surface-container-low focus-visible:ring-2 focus-visible:ring-primary-container/70 disabled:cursor-not-allowed disabled:opacity-50",
       className,
     )}
     {...props}
@@ -37,7 +37,7 @@ export const SelectContent = React.forwardRef<
       ref={ref}
       position={position}
       className={cn(
-        "z-50 min-w-[12rem] overflow-hidden rounded-md border border-neutral-200 bg-white text-neutral-900 shadow-md dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100",
+        "z-50 min-w-[12rem] overflow-hidden rounded-md border border-border bg-surface-container-lowest text-on-surface shadow-md",
         className,
       )}
       {...props}
@@ -57,7 +57,7 @@ export const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex cursor-pointer items-center rounded-sm py-2 pr-8 pl-2 text-xs outline-none select-none data-[highlighted]:bg-neutral-100 data-[state=checked]:font-medium dark:data-[highlighted]:bg-neutral-900",
+      "relative flex cursor-pointer items-center rounded-sm py-2 pr-8 pl-2 text-xs outline-none select-none data-[highlighted]:bg-surface-container-low data-[state=checked]:font-medium",
       className,
     )}
     {...props}
@@ -77,7 +77,7 @@ export const SelectLabel = React.forwardRef<
   <SelectPrimitive.Label
     ref={ref}
     className={cn(
-      "px-2 py-1.5 text-xs font-semibold tracking-wide text-neutral-500 uppercase",
+      "px-2 py-1.5 text-xs font-semibold tracking-wide text-on-surface-variant uppercase",
       className,
     )}
     {...props}

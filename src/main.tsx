@@ -24,7 +24,26 @@ async function boot() {
   ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <React.StrictMode>
       <RouterProvider router={router} />
-      <Toaster richColors position="top-right" />
+      <Toaster
+        theme="system"
+        position="top-right"
+        closeButton
+        gap={10}
+        toastOptions={{
+          classNames: {
+            toast: "im-toast",
+            title: "im-toast-title",
+            description: "im-toast-description",
+            success: "im-toast-success",
+            error: "im-toast-error",
+            warning: "im-toast-warning",
+            info: "im-toast-info",
+            closeButton: "im-toast-close",
+            actionButton: "im-toast-action",
+            cancelButton: "im-toast-cancel",
+          },
+        }}
+      />
     </React.StrictMode>,
   );
 }

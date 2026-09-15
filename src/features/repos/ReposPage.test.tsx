@@ -95,21 +95,26 @@ describe("ReposPage", () => {
   it("opens repo detail with active branches / open PRs", async () => {
     const user = userEvent.setup();
     renderReposPage();
-    await user.click(screen.getByText("acme/alpha"));
+    await user.click(screen.getByText("alpha"));
     expect(
       await screen.findByText(/Open PRs \/ active head branches/),
     ).toBeInTheDocument();
     expect(await screen.findByText("feat/alpha-1")).toBeInTheDocument();
     expect(screen.getByText("Add feature")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /Back to repos/ }));
-    expect(screen.getByRole("heading", { name: "Repos" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Repositories" }),
+    ).toBeInTheDocument();
   });
 
   it("renders favorites tab with favorite repo row", () => {
     renderReposPage();
-    expect(screen.getByRole("heading", { name: "Repos" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Repositories" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("Favorite repos")).toBeInTheDocument();
-    expect(screen.getByText("acme/alpha")).toBeInTheDocument();
+    expect(screen.getByText("alpha")).toBeInTheDocument();
+    expect(screen.getByText("acme")).toBeInTheDocument();
     expect(screen.getByText(/1 favorite/)).toBeInTheDocument();
   });
 
@@ -129,7 +134,7 @@ describe("ReposPage", () => {
     renderReposPage();
     await user.click(screen.getByRole("tab", { name: /All repos/ }));
     expect(screen.getByText("All repos")).toBeInTheDocument();
-    expect(screen.getByText("acme/beta")).toBeInTheDocument();
+    expect(screen.getByText("beta")).toBeInTheDocument();
 
     await user.type(screen.getByPlaceholderText("Search repos…"), "beta");
     expect(setQuery).toHaveBeenCalled();

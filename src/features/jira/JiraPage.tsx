@@ -11,7 +11,16 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 import { PageHeader, PageShell } from "@/components/layout/PageShell";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Button, IconButton } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ErrorBlock, LoadingBlock } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -22,8 +31,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { TabsList, TabsPanel, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/cn";
 import {
   deleteJiraSavedFilter,
   newJiraFilterId,
@@ -59,6 +68,7 @@ export function JiraPage() {
   const [labels, setLabels] = useState<string[]>([]);
   const [labelDraft, setLabelDraft] = useState("");
   const [labelHints, setLabelHints] = useState<string[]>([]);
+  const [assigneeDraft, setAssigneeDraft] = useState("");
   const [extraJql, setExtraJql] = useState("");
   const [includeDone, setIncludeDone] = useState(false);
   const [rawJql, setRawJql] = useState<string | null>(null);
@@ -84,20 +94,38 @@ export function JiraPage() {
   const assigneeWarn = extraJqlHasAssignee(extraJql);
 
   const grouped = useMemo(() => groupIssuesByStatus(issues), [issues]);
+  const assigneeNeedle = assigneeDraft.trim().toLowerCase();
+  const filteredGrouped = useMemo(() => {
+    if (!assigneeNeedle) return grouped;
+    return grouped
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((issue) => {
+          const name = issue.assignee?.displayName?.toLowerCase() ?? "";
+          if (assigneeNeedle === "unassigned") return !issue.assignee;
+          return name.includes(assigneeNeedle);
+        }),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [grouped, assigneeNeedle]);
   const visibleGrouped = useMemo(
     () =>
       statusTab === "all"
-        ? grouped
-        : grouped.filter((group) => group.status === statusTab),
-    [grouped, statusTab],
+        ? filteredGrouped
+        : filteredGrouped.filter((group) => group.status === statusTab),
+    [filteredGrouped, statusTab],
+  );
+  const visibleCount = useMemo(
+    () => visibleGrouped.reduce((n, g) => n + g.items.length, 0),
+    [visibleGrouped],
   );
 
   useEffect(() => {
     if (statusTab === "all") return;
-    if (!grouped.some((group) => group.status === statusTab)) {
+    if (!filteredGrouped.some((group) => group.status === statusTab)) {
       setStatusTab("all");
     }
-  }, [grouped, statusTab]);
+  }, [filteredGrouped, statusTab]);
 
   useEffect(() => {
     document.title = "Jira · IM Review";
@@ -157,6 +185,7 @@ export function JiraPage() {
     setTypeId("all");
     setLabels([]);
     setLabelDraft("");
+    setAssigneeDraft("");
     setExtraJql("");
     setIncludeDone(false);
     setActiveId(MY_WORK_ID);
@@ -258,12 +287,19 @@ export function JiraPage() {
           title="Jira"
           subtitle="Connect your Atlassian site"
         />
-        <p className="text-sm text-neutral-500">
-          No Jira account connected.{" "}
-          <Link to="/settings" className="underline underline-offset-2">
-            Connect in Settings
-          </Link>
-        </p>
+        <Card padding="default" variant="streamJira">
+          <CardHeader className="mb-2">
+            <CardTitle className="text-title-md">No connected account</CardTitle>
+            <CardDescription className="text-stream-jira-fg/80">
+              Link your Jira site to triage assigned issues beside PR review.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild size="sm" variant="accent">
+              <Link to="/settings">Connect in Settings</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </PageShell>
     );
   }
@@ -273,7 +309,12 @@ export function JiraPage() {
       <PageHeader
         backTo="/"
         title="Jira"
-        subtitle={`${connected.displayName} · ${connected.host.replace(/^https:\/\//, "")}`}
+        subtitle={`Engineering issues · ${connected.displayName} · ${connected.host.replace(/^https:\/\//, "")}`}
+        leading={
+          <Badge variant="jira" className="mt-1">
+            Jira
+          </Badge>
+        }
         actions={
           <Button
             type="button"
@@ -292,336 +333,361 @@ export function JiraPage() {
         }
       />
 
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <Select
-            value={filterValue}
-            onValueChange={(value) => {
-              if (value === MY_WORK_ID) {
-                resetToMyWork();
-                return;
-              }
-              const local = saved.find((f) => f.id === value);
-              if (local) {
-                applyLocal(local);
-                return;
-              }
-              const remoteId = value.startsWith("remote-")
-                ? value.slice("remote-".length)
-                : "";
-              const fromJira = remote.find((f) => f.id === remoteId);
-              if (fromJira) applyRemote(fromJira);
-            }}
-          >
-            <SelectTrigger className="w-52" aria-label="Saved filter">
-              <SelectValue placeholder="Filter" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={MY_WORK_ID}>My work</SelectItem>
-              {saved.length > 0 ? (
-                <SelectGroup>
-                  <SelectLabel>Saved</SelectLabel>
-                  {saved.map((filter) => (
-                    <SelectItem key={filter.id} value={filter.id}>
-                      {filter.name}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              ) : null}
-              {remote.length > 0 ? (
-                <SelectGroup>
-                  <SelectLabel>From Jira</SelectLabel>
-                  {remote.map((filter) => (
-                    <SelectItem key={filter.id} value={`remote-${filter.id}`}>
-                      {filter.name}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              ) : null}
-            </SelectContent>
-          </Select>
-          {isDefaultView ? null : (
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              className="h-8 w-8"
-              aria-label="Clear filter"
-              title="Clear filter"
-              onClick={resetToMyWork}
+      <Card padding="default" className="border-stream-jira-border/70">
+        <CardHeader className="mb-3">
+          <CardTitle className="text-title-md font-semibold">
+            Issue workspace
+          </CardTitle>
+          <CardDescription>
+            Filter with saved views, type, labels, and JQL. Status tabs stay
+            grounded in the live result set.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Select
+              value={filterValue}
+              onValueChange={(value) => {
+                if (value === MY_WORK_ID) {
+                  resetToMyWork();
+                  return;
+                }
+                const local = saved.find((f) => f.id === value);
+                if (local) {
+                  applyLocal(local);
+                  return;
+                }
+                const remoteId = value.startsWith("remote-")
+                  ? value.slice("remote-".length)
+                  : "";
+                const fromJira = remote.find((f) => f.id === remoteId);
+                if (fromJira) applyRemote(fromJira);
+              }}
             >
-              <X className="h-3.5 w-3.5" />
-            </Button>
-          )}
-          <Select
-            value={typeId}
-            onValueChange={(value) => {
-              setTypeId(value);
-              onControlChange();
-            }}
-          >
-            <SelectTrigger className="w-36" aria-label="Issue type">
-              <SelectValue placeholder="Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All types</SelectItem>
-              {types.map((type) => (
-                <SelectItem key={type.name} value={type.name}>
-                  <span className="flex items-center gap-2">
-                    {type.iconUrl ? (
-                      <img src={type.iconUrl} alt="" className="h-3.5 w-3.5" />
-                    ) : null}
-                    {type.name}
-                  </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <form
-            className="w-36"
-            onSubmit={(e) => {
-              e.preventDefault();
-              const next = labelDraft.trim();
-              if (!next || labels.includes(next)) return;
-              setLabels([...labels, next]);
-              setLabelDraft("");
-              onControlChange();
-            }}
-          >
-            <Input
-              value={labelDraft}
-              onChange={(e) => setLabelDraft(e.target.value)}
-              placeholder="Label…"
-              aria-label="Filter by label"
-              className="h-8 text-xs"
-            />
-          </form>
-          <Button
-            type="button"
-            size="sm"
-            variant={includeDone ? "default" : "outline"}
-            onClick={() => {
-              setIncludeDone((v) => !v);
-              onControlChange();
-            }}
-          >
-            Include done
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant={configureOpen ? "default" : "outline"}
-            aria-expanded={configureOpen}
-            aria-label="Configure filter"
-            onClick={() => setConfigureOpen((open) => !open)}
-          >
-            <SlidersHorizontal className="h-3.5 w-3.5" />
-            Configure
-          </Button>
-        </div>
-        {labels.length > 0 ? (
-          <div className="flex flex-wrap gap-1">
-            {labels.map((label) => (
-              <button
-                key={label}
+              <SelectTrigger className="w-52" aria-label="Saved filter">
+                <SelectValue placeholder="Filter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={MY_WORK_ID}>My work</SelectItem>
+                {saved.length > 0 ? (
+                  <SelectGroup>
+                    <SelectLabel>Saved</SelectLabel>
+                    {saved.map((filter) => (
+                      <SelectItem key={filter.id} value={filter.id}>
+                        {filter.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                ) : null}
+                {remote.length > 0 ? (
+                  <SelectGroup>
+                    <SelectLabel>From Jira</SelectLabel>
+                    {remote.map((filter) => (
+                      <SelectItem key={filter.id} value={`remote-${filter.id}`}>
+                        {filter.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                ) : null}
+              </SelectContent>
+            </Select>
+            {isDefaultView ? null : (
+              <IconButton
                 type="button"
-                className="rounded-full border border-neutral-200 px-2 py-0.5 text-xs dark:border-neutral-800"
-                onClick={() => {
-                  setLabels(labels.filter((l) => l !== label));
-                  onControlChange();
-                }}
-              >
-                {label} ×
-              </button>
-            ))}
-          </div>
-        ) : null}
-        {labelDraft && labelHints.length > 0 ? (
-          <div className="flex flex-wrap gap-1">
-            {labelHints.slice(0, 8).map((hint) => (
-              <button
-                key={hint}
-                type="button"
-                className="rounded-md bg-neutral-100 px-2 py-0.5 text-xs dark:bg-neutral-900"
-                onClick={() => {
-                  if (!labels.includes(hint)) setLabels([...labels, hint]);
-                  setLabelDraft("");
-                  onControlChange();
-                }}
-              >
-                {hint}
-              </button>
-            ))}
-          </div>
-        ) : null}
-        {configureOpen ? (
-          <div className="space-y-2 rounded-lg border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-800 dark:bg-neutral-900/50">
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-xs font-medium">Filter configuration</p>
-              <Button
-                type="button"
-                size="icon"
+                size="icon-sm"
                 variant="ghost"
-                className="h-7 w-7"
-                aria-label="Close configuration"
-                onClick={() => setConfigureOpen(false)}
+                aria-label="Clear filter"
+                title="Clear filter"
+                onClick={resetToMyWork}
               >
                 <X className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-            <Textarea
-              value={extraJql}
-              onChange={(e) => {
-                setExtraJql(e.target.value);
+              </IconButton>
+            )}
+            <Select
+              value={typeId}
+              onValueChange={(value) => {
+                setTypeId(value);
                 onControlChange();
               }}
-              placeholder={`assignee IN (currentUser(), accountId) AND labels = ttd-fe-88\nORDER BY created DESC`}
-              aria-label="Extra JQL"
-              className="min-h-[5.5rem] font-mono text-xs"
-            />
-            {assigneeWarn ? (
-              <p className="text-xs text-neutral-500">
-                Your assignee clause is used as written — not limited to
-                currentUser() only.
-              </p>
-            ) : null}
-            <p className="font-mono text-xs break-all text-neutral-500">
-              {jql}
-            </p>
-            <div className="flex flex-wrap items-center gap-2">
-              <Input
-                value={saveName}
-                onChange={(e) => setSaveName(e.target.value)}
-                placeholder="Save as…"
-                aria-label="Save filter as"
-                className="h-8 w-44 text-xs"
-              />
-              <Button type="button" size="sm" onClick={saveCurrent}>
-                Save filter
-              </Button>
-              {activeLocal ? (
-                <>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => void pushToJira(activeLocal)}
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    Save to Jira
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    aria-label={`Delete ${activeLocal.name}`}
-                    onClick={() => {
-                      deleteJiraSavedFilter(activeLocal.id);
-                      resetToMyWork();
-                    }}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Delete
-                  </Button>
-                </>
-              ) : null}
-            </div>
-          </div>
-        ) : null}
-        {jqlError ? (
-          <p className="text-xs text-red-600 dark:text-red-400">{jqlError}</p>
-        ) : null}
-
-        {issues.length > 0 ? (
-          <div className="overflow-x-auto">
-            <div
-              role="tablist"
-              aria-label="Jira workflow"
-              className="inline-flex rounded-lg border border-neutral-200 bg-neutral-100 p-0.5 whitespace-nowrap dark:border-neutral-800 dark:bg-neutral-900"
             >
-              <button
-                type="button"
-                role="tab"
-                aria-selected={statusTab === "all"}
-                onClick={() => setStatusTab("all")}
-                className={cn(
-                  "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                  statusTab === "all"
-                    ? "bg-white text-neutral-900 shadow-sm dark:bg-neutral-800 dark:text-neutral-50"
-                    : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200",
-                )}
-              >
-                All
-                <span className="ml-1.5 text-neutral-400 tabular-nums">
-                  {issues.length}
-                </span>
-              </button>
-              {grouped.map((group) => {
-                const selected = statusTab === group.status;
-                return (
-                  <button
-                    key={group.status}
-                    type="button"
-                    role="tab"
-                    aria-selected={selected}
-                    onClick={() => setStatusTab(group.status)}
-                    className={cn(
-                      "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                      selected
-                        ? "bg-white text-neutral-900 shadow-sm dark:bg-neutral-800 dark:text-neutral-50"
-                        : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200",
-                    )}
-                  >
-                    {group.status}
-                    <span className="ml-1.5 text-neutral-400 tabular-nums">
-                      {group.items.length}
+              <SelectTrigger className="w-36" aria-label="Issue type">
+                <SelectValue placeholder="Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All types</SelectItem>
+                {types.map((type) => (
+                  <SelectItem key={type.name} value={type.name}>
+                    <span className="flex items-center gap-2">
+                      {type.iconUrl ? (
+                        <img src={type.iconUrl} alt="" className="h-3.5 w-3.5" />
+                      ) : null}
+                      {type.name}
                     </span>
-                  </button>
-                );
-              })}
-            </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <form
+              className="w-36"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const next = labelDraft.trim();
+                if (!next || labels.includes(next)) return;
+                setLabels([...labels, next]);
+                setLabelDraft("");
+                onControlChange();
+              }}
+            >
+              <Input
+                value={labelDraft}
+                onChange={(e) => setLabelDraft(e.target.value)}
+                placeholder="Label…"
+                aria-label="Filter by label"
+                className="h-8 text-xs"
+              />
+            </form>
+            <Input
+              value={assigneeDraft}
+              onChange={(e) => setAssigneeDraft(e.target.value)}
+              placeholder="Assignee…"
+              aria-label="Filter by assignee"
+              className="h-8 w-36 text-xs"
+            />
+            <Button
+              type="button"
+              size="sm"
+              variant={includeDone ? "default" : "outline"}
+              onClick={() => {
+                setIncludeDone((v) => !v);
+                onControlChange();
+              }}
+            >
+              Include done
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={configureOpen ? "default" : "outline"}
+              aria-expanded={configureOpen}
+              aria-label="Configure filter"
+              onClick={() => setConfigureOpen((open) => !open)}
+            >
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              Configure
+            </Button>
           </div>
-        ) : null}
 
-        <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
-          {loading && issues.length === 0 ? (
-            <div className="flex items-center justify-center gap-2 px-4 py-16 text-sm text-neutral-500">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Loading Jira issues…
+          <Input
+            value={extraJql}
+            onChange={(e) => {
+              setExtraJql(e.target.value);
+              onControlChange();
+            }}
+            placeholder="Search / extra JQL — e.g. labels = ttd-fe-88"
+            aria-label="Search or JQL"
+            className="font-mono text-xs"
+          />
+
+          {labels.length > 0 ? (
+            <div className="flex flex-wrap gap-1">
+              {labels.map((label) => (
+                <button
+                  key={label}
+                  type="button"
+                  className="rounded-full border border-stream-jira-border bg-stream-jira px-2 py-0.5 text-xs text-stream-jira-fg"
+                  onClick={() => {
+                    setLabels(labels.filter((l) => l !== label));
+                    onControlChange();
+                  }}
+                >
+                  {label} ×
+                </button>
+              ))}
             </div>
-          ) : visibleGrouped.length === 0 ? (
-            <p className="px-4 py-16 text-center text-sm text-neutral-500">
-              No issues match this filter.
-            </p>
-          ) : (
-            visibleGrouped.map((group) => (
-              <div key={group.status}>
-                {statusTab === "all" ? (
-                  <div className="bg-neutral-50 px-3 py-2 text-xs font-semibold tracking-wide text-neutral-500 uppercase dark:bg-neutral-900/80">
-                    {group.status} ({group.items.length})
-                  </div>
-                ) : null}
-                <ul>
-                  {group.items.map((issue) => (
-                    <JiraIssueRow key={issue.id} issue={issue} />
-                  ))}
-                </ul>
+          ) : null}
+          {labelDraft && labelHints.length > 0 ? (
+            <div className="flex flex-wrap gap-1">
+              {labelHints.slice(0, 8).map((hint) => (
+                <button
+                  key={hint}
+                  type="button"
+                  className="rounded-md border border-border bg-surface-container-low px-2 py-0.5 text-xs text-on-surface"
+                  onClick={() => {
+                    if (!labels.includes(hint)) setLabels([...labels, hint]);
+                    setLabelDraft("");
+                    onControlChange();
+                  }}
+                >
+                  {hint}
+                </button>
+              ))}
+            </div>
+          ) : null}
+
+          {configureOpen ? (
+            <div className="space-y-2 rounded-lg border border-border bg-surface-container-low/50 p-3">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-label-sm font-semibold tracking-wide text-on-surface-variant uppercase">
+                  Filter configuration
+                </p>
+                <IconButton
+                  type="button"
+                  size="icon-sm"
+                  variant="ghost"
+                  aria-label="Close configuration"
+                  onClick={() => setConfigureOpen(false)}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </IconButton>
               </div>
-            ))
-          )}
-        </div>
-        {nextToken ? (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={loading}
-            onClick={() => void load(false, nextToken)}
+              <Textarea
+                value={extraJql}
+                onChange={(e) => {
+                  setExtraJql(e.target.value);
+                  onControlChange();
+                }}
+                placeholder={`assignee IN (currentUser(), accountId) AND labels = ttd-fe-88\nORDER BY created DESC`}
+                aria-label="Extra JQL"
+                className="min-h-[5.5rem] font-mono text-xs"
+              />
+              {assigneeWarn ? (
+                <p className="text-body-sm text-on-surface-variant">
+                  Your assignee clause is used as written — not limited to
+                  currentUser() only.
+                </p>
+              ) : null}
+              <p className="font-mono text-xs break-all text-on-surface-variant">
+                {jql}
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <Input
+                  value={saveName}
+                  onChange={(e) => setSaveName(e.target.value)}
+                  placeholder="Save as…"
+                  aria-label="Save filter as"
+                  className="h-8 w-44 text-xs"
+                />
+                <Button type="button" size="sm" onClick={saveCurrent}>
+                  Save filter
+                </Button>
+                {activeLocal ? (
+                  <>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => void pushToJira(activeLocal)}
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Save to Jira
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      aria-label={`Delete ${activeLocal.name}`}
+                      onClick={() => {
+                        deleteJiraSavedFilter(activeLocal.id);
+                        resetToMyWork();
+                      }}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Delete
+                    </Button>
+                  </>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+
+          {jqlError ? <ErrorBlock tone="warning">{jqlError}</ErrorBlock> : null}
+        </CardContent>
+      </Card>
+
+      {issues.length > 0 ? (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <TabsList
+            aria-label="Jira workflow"
+            className="h-auto max-w-full flex-wrap justify-start overflow-x-auto"
           >
-            Load more
-          </Button>
-        ) : null}
-      </div>
+            <TabsTrigger
+              id="jira-tab-all"
+              aria-controls="jira-tab-panel"
+              active={statusTab === "all"}
+              onClick={() => setStatusTab("all")}
+            >
+              All
+              <span className="tabular-nums text-on-surface-variant">
+                {assigneeNeedle ? visibleCount : issues.length}
+              </span>
+            </TabsTrigger>
+            {filteredGrouped.map((group) => {
+              const selected = statusTab === group.status;
+              return (
+                <TabsTrigger
+                  key={group.status}
+                  id={`jira-tab-${group.status}`}
+                  aria-controls="jira-tab-panel"
+                  active={selected}
+                  onClick={() => setStatusTab(group.status)}
+                >
+                  {group.status}
+                  <span className="tabular-nums text-on-surface-variant">
+                    {group.items.length}
+                  </span>
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+          <p className="font-keycap text-body-sm text-on-surface-variant">
+            {visibleCount} result{visibleCount === 1 ? "" : "s"}
+          </p>
+        </div>
+      ) : null}
+
+      <TabsPanel
+        id="jira-tab-panel"
+        aria-labelledby={
+          statusTab === "all" ? "jira-tab-all" : `jira-tab-${statusTab}`
+        }
+      >
+      <Card padding="none" className="overflow-hidden">
+        {loading && issues.length === 0 ? (
+          <LoadingBlock embedded>Loading Jira issues…</LoadingBlock>
+        ) : visibleGrouped.length === 0 ? (
+          <p className="px-4 py-12 text-center text-body-md text-on-surface-variant">
+            No issues match this filter.
+          </p>
+        ) : (
+          visibleGrouped.map((group) => (
+            <div key={group.status}>
+              {statusTab === "all" ? (
+                <div className="border-b border-border bg-surface-container-low/60 px-3 py-2 text-label-sm font-semibold tracking-wide text-on-surface-variant uppercase">
+                  {group.status} ({group.items.length})
+                </div>
+              ) : null}
+              <ul>
+                {group.items.map((issue) => (
+                  <JiraIssueRow key={issue.id} issue={issue} />
+                ))}
+              </ul>
+            </div>
+          ))
+        )}
+      </Card>
+
+      {nextToken ? (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={loading}
+          onClick={() => void load(false, nextToken)}
+        >
+          Load more
+        </Button>
+      ) : null}
+      </TabsPanel>
     </PageShell>
   );
 }

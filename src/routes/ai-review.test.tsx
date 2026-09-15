@@ -249,7 +249,7 @@ describe("AiReviewPage", () => {
     renderAiReview();
     await waitForLoaded();
     expect(screen.getByText("Adds feature")).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "PR detail" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Detail" })).toBeInTheDocument();
     expect(
       screen.getByRole("tab", { name: /Files \(1\)/ }),
     ).toBeInTheDocument();
@@ -366,7 +366,7 @@ describe("AiReviewPage", () => {
     renderAiReview();
     await waitForLoaded();
     await user.click(screen.getByRole("tab", { name: /Files/ }));
-    expect(await screen.findByText(/Tidak auto-retry/)).toBeInTheDocument();
+    expect(await screen.findByText(/No auto-retry/)).toBeInTheDocument();
     expect(
       screen.getByText(/Writes paused after a GitHub rate limit/),
     ).toBeInTheDocument();

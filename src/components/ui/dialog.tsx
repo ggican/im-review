@@ -35,17 +35,17 @@ export const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed z-50 flex flex-col bg-white shadow-xl outline-none dark:bg-neutral-950",
+        "fixed z-50 flex flex-col bg-surface-container-lowest text-on-surface shadow-xl outline-none",
         side === "right"
-          ? "inset-y-0 right-0 h-full w-full max-w-md border-l border-neutral-200 dark:border-neutral-800"
-          : "top-1/2 left-1/2 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-lg border border-neutral-200 dark:border-neutral-800",
+          ? "inset-y-0 right-0 h-full w-full max-w-md border-l border-border"
+          : "top-1/2 left-1/2 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border",
         className,
       )}
       {...props}
     >
       {children}
       <DialogPrimitive.Close
-        className="absolute top-3 right-3 rounded-md p-1 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+        className="absolute top-3 right-3 rounded-md p-1 text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface"
         aria-label="Close"
       >
         <X className="h-4 w-4" />
@@ -62,7 +62,7 @@ export function DialogHeader({
   return (
     <div
       className={cn(
-        "flex flex-col gap-1 border-b border-neutral-200 px-5 py-4 pr-12 dark:border-neutral-800",
+        "flex flex-col gap-1 border-b border-border px-5 py-4 pr-12",
         className,
       )}
       {...props}
@@ -76,7 +76,10 @@ export function DialogTitle({
 }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>) {
   return (
     <DialogPrimitive.Title
-      className={cn("text-base leading-snug font-semibold", className)}
+      className={cn(
+        "font-headline text-title-md leading-snug font-semibold text-on-surface",
+        className,
+      )}
       {...props}
     />
   );
@@ -88,7 +91,7 @@ export function DialogDescription({
 }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>) {
   return (
     <DialogPrimitive.Description
-      className={cn("text-xs text-neutral-500", className)}
+      className={cn("text-xs text-on-surface-variant", className)}
       {...props}
     />
   );

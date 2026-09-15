@@ -1,6 +1,5 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import {
-  CheckCircle2,
   Copy,
   ExternalLink,
   GitPullRequest,
@@ -9,10 +8,12 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Button, IconButton } from "@/components/ui/button";
 import { sameGithubLogin } from "@/features/people/login";
 import { fetchHeadBranch } from "@/features/pr/api";
 import { cn } from "@/lib/cn";
+import { favoriteStarClass } from "@/lib/favorite-styles";
 import {
   getFavoriteUsers,
   MAX_FAVORITE_USERS,
@@ -22,7 +23,10 @@ import {
 import { relativeTime } from "@/lib/time";
 import { useFavoriteBranches, useFavoriteUsers } from "@/lib/use-settings";
 
-import { NotReviewedBadge, ReviewStatusBadge } from "./ReviewStatusBadge";
+import {
+  NeedsReviewBadge,
+  ReviewStatusBadge,
+} from "./ReviewStatusBadge";
 import type { PullRequest } from "./types";
 
 type Props = {
@@ -31,9 +35,17 @@ type Props = {
   /** Updated since last “mark seen” watermark. */
   isNew?: boolean;
   onFilterAuthor?: (login: string) => void;
+  /** Optional CI failure description from mine-PR scan. */
+  ciFailure?: string | null;
 };
 
-export function PRRow({ pr, onSelect, isNew = false, onFilterAuthor }: Props) {
+export function PRRow({
+  pr,
+  onSelect,
+  isNew = false,
+  onFilterAuthor,
+  ciFailure = null,
+}: Props) {
   const favoriteBranches = useFavoriteBranches();
   const favoriteUsers = useFavoriteUsers();
   const [busyStar, setBusyStar] = useState(false);
@@ -105,96 +117,93 @@ export function PRRow({ pr, onSelect, isNew = false, onFilterAuthor }: Props) {
     );
   }
 
+  const branchLabel = pr.headBranch
+    ? `${pr.headBranch}${pr.baseBranch ? ` → ${pr.baseBranch}` : ""}`
+    : pr.baseBranch
+      ? `→ ${pr.baseBranch}`
+      : null;
+
   return (
     <li
       className={cn(
-        "group flex items-start gap-3 border-b border-neutral-200 px-3 py-3 last:border-b-0 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900/60",
-        reviewed && "bg-sky-50/50 dark:bg-sky-950/20",
+        "group flex flex-col gap-2 border-b border-border px-3 py-3 last:border-b-0 sm:flex-row sm:items-start sm:gap-3",
+        "hover:bg-surface-container-low/80",
+        reviewed && "bg-stream-ai/40",
+        pr.isDraft && !reviewed && "opacity-90",
       )}
     >
-      <div className="flex min-w-0 flex-1 items-start gap-3 text-left">
+      <div className="flex min-w-0 flex-1 items-start gap-2.5">
+        <IconButton
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          aria-label={starred ? "Remove favorite branch" : "Favorite branch"}
+          aria-pressed={starred}
+          disabled={busyStar}
+          className="mt-0.5 shrink-0 text-on-surface-variant focus-visible:ring-2 focus-visible:ring-primary-container/70"
+          onClick={() => void onToggleBranchFavorite()}
+        >
+          <Star
+            className={cn("h-4 w-4", favoriteStarClass(starred))}
+          />
+        </IconButton>
+
         <button
           type="button"
           onClick={() => onSelect(pr)}
-          className="mt-0.5 shrink-0"
+          className="mt-0.5 shrink-0 rounded-md text-stream-github-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-container"
           aria-label="Open pull request"
         >
-          {reviewed ? (
-            <CheckCircle2 className="h-4 w-4 text-sky-600 dark:text-sky-400" />
-          ) : (
-            <GitPullRequest
-              className={`h-4 w-4 ${
-                pr.isDraft
-                  ? "text-neutral-400"
-                  : "text-emerald-600 dark:text-emerald-400"
-              }`}
-            />
-          )}
+          <GitPullRequest className="h-4 w-4" aria-hidden />
         </button>
+
         <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="font-keycap rounded-md border border-stream-github-border bg-stream-github px-1.5 py-0.5 text-body-sm text-stream-github-fg">
+              {pr.repo} #{pr.number}
+            </span>
+            {isNew ? <Badge variant="accent">New</Badge> : null}
+            {pr.isDraft ? <Badge variant="outline">Draft</Badge> : null}
+            {ciFailure ? (
+              <Badge variant="error">CI failed</Badge>
+            ) : null}
+            {pr.localReviewEvent ? (
+              <ReviewStatusBadge event={pr.localReviewEvent} />
+            ) : (
+              <NeedsReviewBadge />
+            )}
+            {starred ? (
+              <Badge variant="warning">Branch favorite</Badge>
+            ) : null}
+          </div>
+
           <button
             type="button"
             onClick={() => onSelect(pr)}
-            className="flex w-full flex-wrap items-baseline gap-x-2 gap-y-0.5 text-left"
-          >
-            <span
-              className={cn(
-                "truncate text-sm font-medium",
-                reviewed
-                  ? "text-neutral-700 dark:text-neutral-300"
-                  : "text-neutral-900 dark:text-neutral-100",
-              )}
-            >
-              {pr.title}
-            </span>
-            <span className="shrink-0 font-mono text-xs text-neutral-400">
-              #{pr.number}
-            </span>
-            {isNew ? (
-              <span className="rounded-sm bg-sky-100 px-1.5 py-0.5 text-xs font-semibold tracking-wide text-sky-800 uppercase dark:bg-sky-950 dark:text-sky-300">
-                New
-              </span>
-            ) : null}
-            {pr.isDraft ? (
-              <span className="rounded-sm bg-neutral-200 px-1.5 py-0.5 text-xs font-medium tracking-wide text-neutral-600 uppercase dark:bg-neutral-800 dark:text-neutral-400">
-                draft
-              </span>
-            ) : null}
-            {pr.localReviewEvent ? (
-              <ReviewStatusBadge event={pr.localReviewEvent} compact />
-            ) : (
-              <NotReviewedBadge />
+            className={cn(
+              "mt-1 w-full text-left text-title-md font-semibold tracking-tight",
+              reviewed || pr.isDraft
+                ? "text-on-surface-variant"
+                : "text-on-surface",
             )}
-            {starred ? (
-              <span className="rounded-sm bg-amber-100 px-1.5 py-0.5 text-xs font-medium tracking-wide text-amber-800 uppercase dark:bg-amber-950 dark:text-amber-200">
-                Branch favorite
-              </span>
-            ) : null}
+          >
+            {pr.title}
           </button>
-          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-neutral-500">
-            <span className="font-mono">{pr.repo}</span>
-            {pr.headBranch ? (
-              <>
-                <span aria-hidden>·</span>
-                <span className="font-mono text-neutral-400">
-                  {pr.headBranch}
-                  {pr.baseBranch ? ` → ${pr.baseBranch}` : ""}
-                </span>
-              </>
-            ) : pr.baseBranch ? (
-              <>
-                <span aria-hidden>·</span>
-                <span className="font-mono text-neutral-400">
-                  → {pr.baseBranch}
-                </span>
-              </>
+
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-body-sm text-on-surface-variant">
+            {ciFailure ? (
+              <Badge variant="error" className="font-normal normal-case">
+                {ciFailure}
+              </Badge>
             ) : null}
-            <span aria-hidden>·</span>
-            <span className="inline-flex items-center gap-0.5">
+            {branchLabel ? (
+              <span className="font-keycap">{branchLabel}</span>
+            ) : null}
+            <span className="inline-flex items-center gap-1">
               {onFilterAuthor ? (
                 <button
                   type="button"
-                  className="inline-flex items-center gap-1 hover:text-neutral-800 dark:hover:text-neutral-200"
+                  className="inline-flex items-center gap-1 hover:text-on-surface"
                   onClick={() => onFilterAuthor(pr.author.login)}
                 >
                   {pr.author.avatarUrl ? (
@@ -220,7 +229,7 @@ export function PRRow({ pr, onSelect, isNew = false, onFilterAuthor }: Props) {
               )}
               <button
                 type="button"
-                className="rounded p-0.5 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                className="rounded p-0.5 hover:bg-surface-container-high"
                 aria-label={
                   personStarred ? "Remove favorite person" : "Favorite person"
                 }
@@ -230,50 +239,44 @@ export function PRRow({ pr, onSelect, isNew = false, onFilterAuthor }: Props) {
                 <Star
                   className={cn(
                     "h-3 w-3",
-                    personStarred && "fill-amber-400 text-amber-500",
+                    favoriteStarClass(personStarred),
                   )}
                 />
               </button>
             </span>
             <span aria-hidden>·</span>
-            <span>{relativeTime(pr.updatedAt)}</span>
+            <span>Updated {relativeTime(pr.updatedAt)}</span>
           </div>
         </div>
       </div>
-      <div className="flex shrink-0 gap-1 opacity-70 transition-opacity group-hover:opacity-100">
+
+      <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:pt-0.5">
         <Button
           type="button"
-          variant="ghost"
-          size="icon"
-          aria-label="Favorite branch"
-          disabled={busyStar}
-          onClick={() => void onToggleBranchFavorite()}
+          size="sm"
+          variant={reviewed ? "outline" : "accent"}
+          onClick={() => onSelect(pr)}
         >
-          <Star
-            className={cn(
-              "h-4 w-4",
-              starred && "fill-amber-400 text-amber-500",
-            )}
-          />
+          {pr.isDraft ? "View Draft Diff" : "Review Diff"}
         </Button>
-        <Button
+        <IconButton
           type="button"
           variant="ghost"
-          size="icon"
+          size="icon-sm"
           aria-label="Copy link"
           onClick={copyLink}
         >
           <Copy className="h-4 w-4" />
-        </Button>
-        <Button
+        </IconButton>
+        <IconButton
           type="button"
           variant="ghost"
-          size="icon"
+          size="icon-sm"
           aria-label="Open in browser"
           onClick={openInBrowser}
         >
           <ExternalLink className="h-4 w-4" />
-        </Button>
+        </IconButton>
       </div>
     </li>
   );

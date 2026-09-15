@@ -1,10 +1,10 @@
 import { Loader2, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { ReviewEvent } from "@/features/pr/types";
-import { cn } from "@/lib/cn";
 
 import type { AiFinding, AiReviewDraft, AiSeverity } from "./types";
 
@@ -14,14 +14,16 @@ const EVENTS: { id: ReviewEvent; label: string }[] = [
   { id: "APPROVE", label: "Approve" },
 ];
 
-function severityClass(s: AiSeverity): string {
+function severityVariant(
+  s: AiSeverity,
+): "error" | "warning" | "default" {
   switch (s) {
     case "critical":
-      return "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300";
+      return "error";
     case "warning":
-      return "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300";
+      return "warning";
     default:
-      return "bg-neutral-100 text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300";
+      return "default";
   }
 }
 
@@ -63,12 +65,12 @@ export function AiReviewPanel({
     const secs = elapsedSec % 60;
     const clock = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
     return (
-      <div className="space-y-3 rounded-lg border border-violet-200 bg-violet-50/60 p-4 dark:border-violet-900 dark:bg-violet-950/30">
-        <div className="flex items-center gap-2 text-sm font-medium text-violet-900 dark:text-violet-200">
+      <div className="space-y-3 rounded-lg border border-stream-ai-border bg-stream-ai/40 p-4">
+        <div className="flex items-center gap-2 text-body-sm font-medium text-stream-ai-fg">
           <Loader2 className="h-4 w-4 animate-spin" />
           Cursor AI is reviewing… {clock}
         </div>
-        <p className="text-xs text-violet-800/80 dark:text-violet-300/80">
+        <p className="text-body-sm text-stream-ai-fg/80">
           Cursor SDK reviews pasted GitHub patches — no cloud VM clone (needs
           Node.js 22.13+). Usually much faster than Cloud Agents. Nothing is
           posted until you confirm.
@@ -85,16 +87,16 @@ export function AiReviewPanel({
   const included = draft.findings.filter((f) => f.included).length;
 
   return (
-    <div className="space-y-3 rounded-lg border border-violet-200 bg-violet-50/40 p-4 dark:border-violet-900 dark:bg-violet-950/20">
-      <div className="flex items-center gap-2 text-sm font-medium">
-        <Sparkles className="h-4 w-4 text-violet-600 dark:text-violet-300" />
+    <div className="space-y-3 rounded-lg border border-stream-ai-border bg-stream-ai/30 p-4">
+      <div className="flex items-center gap-2 text-body-sm font-medium text-on-surface">
+        <Sparkles className="h-4 w-4 text-stream-ai-fg" />
         AI review draft
       </div>
 
       <div className="space-y-1">
         <label
           htmlFor="ai-draft-summary"
-          className="text-xs font-medium tracking-wide text-neutral-400 uppercase"
+          className="text-label-sm font-medium tracking-wide text-on-surface-variant uppercase"
         >
           Summary
         </label>
@@ -108,11 +110,13 @@ export function AiReviewPanel({
       </div>
 
       <div className="space-y-2">
-        <div className="text-xs font-medium tracking-wide text-neutral-400 uppercase">
+        <div className="text-label-sm font-medium tracking-wide text-on-surface-variant uppercase">
           Findings ({included}/{draft.findings.length} selected)
         </div>
         {draft.findings.length === 0 ? (
-          <p className="text-xs text-neutral-500">No findings returned.</p>
+          <p className="text-body-sm text-on-surface-variant">
+            No findings returned.
+          </p>
         ) : (
           <ul className="max-h-56 space-y-2 overflow-y-auto">
             {draft.findings.map((f) => (
@@ -128,7 +132,7 @@ export function AiReviewPanel({
       </div>
 
       <div className="space-y-1">
-        <div className="text-xs font-medium tracking-wide text-neutral-400 uppercase">
+        <div className="text-label-sm font-medium tracking-wide text-on-surface-variant uppercase">
           Post as
         </div>
         <div className="flex flex-wrap gap-1.5">
@@ -176,7 +180,7 @@ function FindingRow({
   disabled: boolean;
 }) {
   return (
-    <li className="flex gap-2 rounded-md border border-neutral-200 bg-white p-2 dark:border-neutral-800 dark:bg-neutral-950">
+    <li className="flex gap-2 rounded-md border border-border bg-surface-container-lowest p-2">
       <input
         type="checkbox"
         className="mt-1"
@@ -187,23 +191,23 @@ function FindingRow({
       />
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-1.5">
-          <span
-            className={cn(
-              "rounded px-1.5 py-0.5 text-xs font-medium uppercase",
-              severityClass(finding.severity),
-            )}
+          <Badge
+            variant={severityVariant(finding.severity)}
+            className="uppercase"
           >
             {finding.severity}
+          </Badge>
+          <span className="text-body-sm font-medium text-on-surface">
+            {finding.title}
           </span>
-          <span className="text-xs font-medium">{finding.title}</span>
         </div>
         {finding.path ? (
-          <div className="mt-0.5 font-mono text-xs text-neutral-400">
+          <div className="mt-0.5 font-mono text-xs text-on-surface-variant">
             {finding.path}
             {finding.line != null ? `:${finding.line}` : ""}
           </div>
         ) : null}
-        <p className="mt-1 text-xs whitespace-pre-wrap text-neutral-600 dark:text-neutral-300">
+        <p className="mt-1 text-body-sm whitespace-pre-wrap text-on-surface-variant">
           {finding.body}
         </p>
       </div>

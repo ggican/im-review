@@ -1,13 +1,13 @@
 import {
-  ChevronDown,
-  ChevronRight,
   FileCode2,
   MessageSquarePlus,
   X,
 } from "lucide-react";
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import type { ChangedFile } from "@/features/ai-review/generate";
 import { cn } from "@/lib/cn";
@@ -91,6 +91,38 @@ function statusLabel(status: string): string {
   }
 }
 
+function statusBadgeVariant(
+  status: string,
+): "success" | "error" | "warning" | "github" | "outline" {
+  switch (status) {
+    case "added":
+      return "success";
+    case "removed":
+      return "error";
+    case "renamed":
+      return "warning";
+    case "modified":
+      return "github";
+    default:
+      return "outline";
+  }
+}
+
+function statusLetter(status: string): string {
+  switch (status) {
+    case "added":
+      return "A";
+    case "removed":
+      return "D";
+    case "renamed":
+      return "R";
+    case "modified":
+      return "M";
+    default:
+      return status.slice(0, 1).toUpperCase() || "?";
+  }
+}
+
 function newPendingId(): string {
   return `pending-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -99,12 +131,10 @@ type ComposeTarget = { path: string; line: number };
 
 function FileDiff({
   file,
-  open,
   pendingForFile,
   onAddPending,
 }: {
   file: ChangedFile;
-  open: boolean;
   pendingForFile: PendingInlineComment[];
   onAddPending?: (comment: PendingInlineComment) => void;
 }) {
@@ -115,11 +145,9 @@ function FileDiff({
   const [compose, setCompose] = useState<ComposeTarget | null>(null);
   const [draftBody, setDraftBody] = useState("");
 
-  if (!open) return null;
-
   if (!file.patch) {
     return (
-      <p className="border-t border-neutral-200 px-3 py-4 text-xs text-neutral-500 dark:border-neutral-800">
+      <p className="px-4 py-8 text-center text-body-sm text-on-surface-variant">
         No patch available (binary file, or diff too large for the GitHub API).
       </p>
     );
@@ -147,7 +175,7 @@ function FileDiff({
   }
 
   return (
-    <div className="max-h-96 overflow-auto border-t border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/40">
+    <div className="max-h-[min(32rem,60vh)] overflow-auto bg-surface-container-low/40 dark:bg-chrome/40">
       <table className="w-full min-w-[40rem] border-collapse font-mono text-xs leading-5">
         <tbody>
           {lines.map((line, i) => {
@@ -169,37 +197,39 @@ function FileDiff({
                   className={cn(
                     "group",
                     line.kind === "add" &&
-                      "bg-emerald-50 text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-100",
+                      "bg-success-container/50 text-on-success-container dark:bg-emerald-950/45 dark:text-emerald-100",
                     line.kind === "del" &&
-                      "bg-red-50 text-red-950 dark:bg-red-950/40 dark:text-red-100",
+                      "bg-error-container/60 text-on-error-container dark:bg-red-950/40 dark:text-red-100",
                     line.kind === "hunk" &&
-                      "bg-sky-50 text-sky-800 dark:bg-sky-950/50 dark:text-sky-200",
-                    line.kind === "meta" && "text-neutral-400 italic",
+                      "bg-stream-github/70 text-stream-github-fg",
+                    line.kind === "meta" &&
+                      "text-on-surface-variant italic opacity-80",
+                    line.kind === "ctx" && "text-on-surface",
                   )}
                 >
-                  <td className="w-8 px-1 text-center align-top">
+                  <td className="w-8 border-r border-border/60 px-1 text-center align-top">
                     {commentable ? (
                       <button
                         type="button"
                         aria-label={`Add comment on line ${line.newLine}`}
-                        className="mt-0.5 rounded p-0.5 text-neutral-400 opacity-0 group-hover:opacity-100 hover:bg-neutral-200 hover:text-sky-700 dark:hover:bg-neutral-800"
+                        className="mt-0.5 rounded p-0.5 text-on-surface-variant opacity-0 transition-opacity group-hover:opacity-100 hover:bg-primary-container/30 hover:text-on-primary-container focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-container"
                         onClick={() => startCompose(line.newLine!)}
                       >
                         <MessageSquarePlus className="h-3.5 w-3.5" />
                       </button>
                     ) : null}
                   </td>
-                  <td className="w-10 px-2 text-right text-neutral-400 tabular-nums select-none">
+                  <td className="w-10 border-r border-border/40 px-2 text-right text-on-surface-variant/70 tabular-nums select-none">
                     {line.oldLine ?? ""}
                   </td>
-                  <td className="w-10 px-2 text-right text-neutral-400 tabular-nums select-none">
+                  <td className="w-10 border-r border-border/40 px-2 text-right text-on-surface-variant/70 tabular-nums select-none">
                     {line.newLine ?? ""}
                   </td>
                   <td
                     className={cn(
                       "w-4 px-1 text-center font-semibold select-none",
-                      line.kind === "add" && "text-emerald-600",
-                      line.kind === "del" && "text-red-600",
+                      line.kind === "add" && "text-success",
+                      line.kind === "del" && "text-error",
                     )}
                   >
                     {line.kind === "add" ? "+" : line.kind === "del" ? "−" : ""}
@@ -211,21 +241,21 @@ function FileDiff({
                 {pendingHere.map((p) => (
                   <tr
                     key={p.id}
-                    className="bg-amber-50/80 dark:bg-amber-950/30"
+                    className="bg-warning-container/70 dark:bg-amber-950/35"
                   >
                     <td
                       colSpan={5}
-                      className="px-3 py-2 text-xs text-amber-900 dark:text-amber-200"
+                      className="px-3 py-2 text-body-sm text-on-warning-container"
                     >
                       Pending · L{p.line}: {p.body}
                     </td>
                   </tr>
                 ))}
                 {composingHere ? (
-                  <tr className="bg-sky-50 dark:bg-sky-950/40">
-                    <td colSpan={5} className="px-3 py-2">
+                  <tr className="bg-stream-github/40">
+                    <td colSpan={5} className="px-3 py-3">
                       <div className="space-y-2">
-                        <p className="text-xs font-medium text-sky-800 dark:text-sky-200">
+                        <p className="text-label-md text-stream-github-fg">
                           Draft comment on {file.filename}:{compose.line}{" "}
                           (RIGHT)
                         </p>
@@ -240,6 +270,7 @@ function FileDiff({
                           <Button
                             type="button"
                             size="sm"
+                            variant="accent"
                             disabled={!draftBody.trim()}
                             onClick={addToPending}
                           >
@@ -282,114 +313,191 @@ export function ChangedFilesPanel({
   pendingComments?: PendingInlineComment[];
   onAddPending?: (comment: PendingInlineComment) => void;
 }) {
-  const [openFiles, setOpenFiles] = useState<Set<string>>(() => new Set());
+  const [selected, setSelected] = useState<string | null>(null);
 
-  function toggle(filename: string) {
-    setOpenFiles((prev) => {
-      const next = new Set(prev);
-      if (next.has(filename)) next.delete(filename);
-      else next.add(filename);
-      return next;
-    });
+  useEffect(() => {
+    if (files.length === 0) {
+      setSelected(null);
+      return;
+    }
+    setSelected((prev) =>
+      prev && files.some((f) => f.filename === prev)
+        ? prev
+        : (files[0]?.filename ?? null),
+    );
+  }, [files]);
+
+  const active = files.find((f) => f.filename === selected) ?? null;
+  const pendingForActive = active
+    ? pendingComments.filter((p) => p.path === active.filename)
+    : [];
+
+  function selectFile(filename: string) {
+    setSelected(filename);
+  }
+
+  function collapse() {
+    setSelected(null);
   }
 
   function expandAll() {
-    setOpenFiles(new Set(files.map((f) => f.filename)));
-  }
-
-  function collapseAll() {
-    setOpenFiles(new Set());
+    setSelected(files[0]?.filename ?? null);
   }
 
   return (
-    <section className="space-y-3 rounded-lg border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-950">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-sm font-semibold">
-          Changed files ({files.length})
-        </h2>
-        <div className="flex flex-wrap items-center gap-3">
-          <p className="font-mono text-xs tabular-nums">
-            <span className="text-emerald-600">+{totals.add}</span>{" "}
-            <span className="text-red-600">−{totals.del}</span>
+    <section className="overflow-hidden rounded-xl border border-border bg-surface-container-lowest shadow-card">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3">
+        <div>
+          <h2 className="font-headline text-title-md font-semibold text-on-surface">
+            Changed files ({files.length})
+          </h2>
+          <p className="mt-0.5 font-keycap text-body-sm tabular-nums text-on-surface-variant">
+            <span className="text-success">+{totals.add}</span>{" "}
+            <span className="text-error">−{totals.del}</span>
           </p>
-          {files.length > 0 ? (
-            <div className="flex gap-2 text-xs">
-              <button
-                type="button"
-                className="text-neutral-500 underline underline-offset-2 hover:text-neutral-800 dark:hover:text-neutral-200"
-                onClick={expandAll}
-              >
-                Expand all
-              </button>
-              <button
-                type="button"
-                className="text-neutral-500 underline underline-offset-2 hover:text-neutral-800 dark:hover:text-neutral-200"
-                onClick={collapseAll}
-              >
-                Collapse
-              </button>
-            </div>
-          ) : null}
         </div>
+        {files.length > 0 ? (
+          <div className="flex gap-2 text-body-sm">
+            <button
+              type="button"
+              className="text-on-surface-variant underline underline-offset-2 hover:text-on-surface"
+              onClick={expandAll}
+            >
+              Expand all
+            </button>
+            <button
+              type="button"
+              className="text-on-surface-variant underline underline-offset-2 hover:text-on-surface"
+              onClick={collapse}
+            >
+              Collapse
+            </button>
+          </div>
+        ) : null}
       </div>
 
       {files.length === 0 ? (
-        <p className="py-8 text-center text-sm text-neutral-500">
+        <p className="px-4 py-12 text-center text-body-md text-on-surface-variant">
           No changed files loaded.
         </p>
       ) : (
-        <ul className="overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800">
-          {files.map((f) => {
-            const open = openFiles.has(f.filename);
-            const pendingForFile = pendingComments.filter(
-              (p) => p.path === f.filename,
-            );
-            return (
-              <li
-                key={f.filename}
-                className="border-b border-neutral-200 last:border-b-0 dark:border-neutral-800"
-              >
-                <button
-                  type="button"
-                  onClick={() => toggle(f.filename)}
-                  aria-expanded={open}
-                  className="flex w-full items-center gap-2 px-3 py-2.5 text-left hover:bg-neutral-50 dark:hover:bg-neutral-900/60"
-                >
-                  {open ? (
-                    <ChevronDown className="h-3.5 w-3.5 shrink-0 text-neutral-400" />
-                  ) : (
-                    <ChevronRight className="h-3.5 w-3.5 shrink-0 text-neutral-400" />
-                  )}
-                  <FileCode2 className="h-3.5 w-3.5 shrink-0 text-neutral-400" />
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate font-mono text-xs text-neutral-900 dark:text-neutral-100">
-                      {f.filename}
-                      {pendingForFile.length > 0 ? (
-                        <span className="ml-2 text-amber-700 dark:text-amber-300">
-                          · {pendingForFile.length} pending
-                        </span>
-                      ) : null}
-                    </div>
-                    <div className="text-xs text-neutral-400">
-                      {statusLabel(f.status)}
-                      {!f.patch ? " · no patch" : ""}
-                    </div>
-                  </div>
-                  <div className="shrink-0 font-mono text-xs tabular-nums">
-                    <span className="text-emerald-600">+{f.additions}</span>{" "}
-                    <span className="text-red-600">−{f.deletions}</span>
-                  </div>
-                </button>
+        <div className="grid lg:grid-cols-12">
+          <nav
+            aria-label="Changed files"
+            className="border-b border-border lg:col-span-4 lg:max-h-[min(36rem,70vh)] lg:overflow-y-auto lg:border-r lg:border-b-0"
+          >
+            <ul>
+              {files.map((f) => {
+                const isActive = selected === f.filename;
+                const pendingCount = pendingComments.filter(
+                  (p) => p.path === f.filename,
+                ).length;
+                return (
+                  <li key={f.filename} className="border-b border-border/70 last:border-b-0">
+                    <button
+                      type="button"
+                      onClick={() => selectFile(f.filename)}
+                      aria-current={isActive ? "true" : undefined}
+                      aria-expanded={isActive}
+                      className={cn(
+                        "flex w-full items-start gap-2 px-3 py-2.5 text-left transition-colors",
+                        isActive
+                          ? "bg-stream-github/60 ring-1 ring-inset ring-primary-container/40"
+                          : "hover:bg-surface-container-low",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded font-keycap text-[10px] font-bold",
+                          f.status === "added" &&
+                            "bg-success-container text-on-success-container",
+                          f.status === "removed" &&
+                            "bg-error-container text-on-error-container",
+                          f.status === "modified" &&
+                            "bg-stream-github text-stream-github-fg",
+                          f.status === "renamed" &&
+                            "bg-warning-container text-on-warning-container",
+                          !["added", "removed", "modified", "renamed"].includes(
+                            f.status,
+                          ) &&
+                            "bg-surface-container-high text-on-surface-variant",
+                        )}
+                        aria-hidden
+                      >
+                        {statusLetter(f.status)}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate font-keycap text-body-sm text-on-surface">
+                          {f.filename}
+                        </div>
+                        <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+                          <Badge
+                            variant={statusBadgeVariant(f.status)}
+                            className="px-1.5 py-0 text-[10px]"
+                          >
+                            {statusLabel(f.status)}
+                          </Badge>
+                          {!f.patch ? (
+                            <span className="text-[10px] text-on-surface-variant">
+                              no patch
+                            </span>
+                          ) : null}
+                          {pendingCount > 0 ? (
+                            <Badge variant="warning" className="px-1.5 py-0 text-[10px]">
+                              {pendingCount} pending
+                            </Badge>
+                          ) : null}
+                        </div>
+                      </div>
+                      <div className="shrink-0 font-keycap text-body-sm tabular-nums">
+                        <span className="text-success">+{f.additions}</span>{" "}
+                        <span className="text-error">−{f.deletions}</span>
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+
+          <div className="lg:col-span-8">
+            {active ? (
+              <>
+                <div className="flex flex-wrap items-center gap-2 border-b border-border bg-surface-container-low/50 px-3 py-2">
+                  <FileCode2
+                    className="h-3.5 w-3.5 text-on-surface-variant"
+                    aria-hidden
+                  />
+                  <span className="font-keycap text-body-sm text-on-surface">
+                    {active.filename}
+                  </span>
+                  <Badge variant={statusBadgeVariant(active.status)}>
+                    {statusLabel(active.status)}
+                  </Badge>
+                  <span className="ml-auto font-keycap text-body-sm tabular-nums">
+                    <span className="text-success">+{active.additions}</span>{" "}
+                    <span className="text-error">−{active.deletions}</span>
+                  </span>
+                </div>
                 <FileDiff
-                  file={f}
-                  open={open}
-                  pendingForFile={pendingForFile}
+                  file={active}
+                  pendingForFile={pendingForActive}
                   onAddPending={onAddPending}
                 />
-              </li>
-            );
-          })}
-        </ul>
+              </>
+            ) : (
+              <Card
+                padding="default"
+                variant="ghost"
+                className="m-4 border border-dashed border-border"
+              >
+                <p className="text-center text-body-md text-on-surface-variant">
+                  Select a file to review the diff.
+                </p>
+              </Card>
+            )}
+          </div>
+        </div>
       )}
     </section>
   );

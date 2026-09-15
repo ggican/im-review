@@ -149,9 +149,11 @@ describe("PRRow", () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
     render(<PRRow pr={pendingPr} onSelect={onSelect} isNew />);
-    expect(screen.getByText("Needs review")).toBeInTheDocument();
+    expect(screen.getByTestId("needs-review-badge")).toHaveTextContent(
+      "Needs review",
+    );
     expect(screen.getByText("New")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /Needs review/ }));
+    await user.click(screen.getByRole("button", { name: "Review Diff" }));
     expect(onSelect).toHaveBeenCalledWith(pendingPr);
   });
 
@@ -221,7 +223,7 @@ describe("PRRow", () => {
       />,
     );
     expect(screen.getByText(/Already reviewed/)).toBeInTheDocument();
-    expect(screen.getByText("draft")).toBeInTheDocument();
+    expect(screen.getByText("Draft")).toBeInTheDocument();
   });
 
   it("shows commented review label and handles copy/favorite failures", async () => {
@@ -294,7 +296,7 @@ describe("PRList", () => {
     ).toHaveAttribute("aria-selected", "true");
     await user.click(screen.getByRole("tab", { name: /My open/ }));
     expect(onTabChange).toHaveBeenCalledWith("mine");
-    await user.click(screen.getByRole("button", { name: /Needs review/ }));
+    await user.click(screen.getByRole("button", { name: "Review Diff" }));
     expect(onSelect).toHaveBeenCalledWith(pendingPr);
   });
 
@@ -427,7 +429,7 @@ describe("PRList", () => {
     await user.click(screen.getByRole("button", { name: /Mark seen/ }));
   });
 
-  it("UNIT-PRLIST-001 keeps Mark seen on toolbar; Refresh on its own row", async () => {
+  it("UNIT-PRLIST-001 keeps Mark seen on toolbar; Refresh with tabs row", async () => {
     const { markAllSeen } = await import("@/lib/seen");
     markAllSeen("2020-01-01T00:00:00.000Z");
     render(
@@ -463,7 +465,6 @@ describe("PRList", () => {
     const toolbar = screen.getByTestId("pr-list-toolbar");
     const actions = screen.getByTestId("pr-list-actions");
     const refreshRow = screen.getByTestId("pr-list-refresh-row");
-    expect(toolbar).toHaveClass("flex-nowrap");
     expect(actions).toHaveClass("flex-nowrap", "shrink-0");
     expect(actions).not.toHaveClass("flex-wrap");
 
@@ -473,9 +474,12 @@ describe("PRList", () => {
     expect(actions).not.toContainElement(refresh);
     expect(refreshRow).toContainElement(refresh);
     expect(refreshRow).toHaveTextContent(/Updated/);
+    expect(toolbar).toContainElement(
+      screen.getByRole("searchbox", { name: "Search pull requests" }),
+    );
     expect(screen.getByRole("tab", { name: /Favorites/ })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /All open/ })).toBeInTheDocument();
-    expect(toolbar).toContainElement(
+    expect(refreshRow).toContainElement(
       screen.getByRole("tablist", { name: "Pull request lists" }),
     );
     expect(toolbar).toContainElement(actions);
@@ -515,7 +519,7 @@ describe("PRList", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText(/Menampilkan list tersimpan/)).toBeInTheDocument();
+    expect(screen.getByText(/Showing a cached list/)).toBeInTheDocument();
     expect(screen.getByText(/1–25 of 27/)).toBeInTheDocument();
     const next = screen.getByRole("button", { name: "Next page" });
     const prev = screen.getByRole("button", { name: "Previous page" });
@@ -551,7 +555,9 @@ describe("PRList", () => {
         />
       </MemoryRouter>,
     );
-    expect(screen.getByText(/GitHub rate limit/)).toHaveClass("text-amber-900");
+    expect(screen.getByText(/GitHub rate limit/)).toHaveClass(
+      "text-on-warning-container",
+    );
   });
 });
 
@@ -574,7 +580,7 @@ describe("ChangedFilesPanel", () => {
       />,
     );
     expect(screen.getByText("Changed files (1)")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /src\/a.ts/ }));
+    // First file is selected by default in the sidebar layout.
     expect(screen.getByText("new")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Collapse" }));
     expect(screen.queryByText("new")).not.toBeInTheDocument();
@@ -601,7 +607,6 @@ describe("ChangedFilesPanel", () => {
         ]}
       />,
     );
-    await user.click(screen.getByRole("button", { name: /src\/a.ts/ }));
     await user.click(
       screen.getByRole("button", { name: /Add comment on line 1/ }),
     );
@@ -647,7 +652,6 @@ describe("ChangedFilesPanel", () => {
         ]}
       />,
     );
-    await user.click(screen.getByRole("button", { name: /src\/a.ts/ }));
     expect(screen.getByText(/Pending · L1/)).toBeInTheDocument();
     await user.click(
       screen.getByRole("button", { name: /Add comment on line 1/ }),
@@ -701,7 +705,7 @@ describe("ChangedFilesPanel", () => {
         ]}
       />,
     );
-    expect(screen.getByText("Added")).toBeInTheDocument();
+    expect(screen.getAllByText("Added").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Removed")).toBeInTheDocument();
     expect(screen.getByText("Renamed")).toBeInTheDocument();
     expect(screen.getByText(/copied/)).toBeInTheDocument();
@@ -739,6 +743,7 @@ describe("CiChecksPanel", () => {
         onRefresh={vi.fn()}
       />,
     );
+    expect(screen.getAllByText("Running").length).toBeGreaterThan(0);
     expect(screen.getByText("Checks in progress")).toBeInTheDocument();
   });
 
@@ -761,6 +766,9 @@ describe("CiChecksPanel", () => {
               targetUrl: "https://ci.example/ok",
               source: "check_run",
               updatedAt: "2026-09-04T12:00:00.000Z",
+              startedAt: "2026-09-04T11:59:00.000Z",
+              completedAt: "2026-09-04T12:00:00.000Z",
+              conclusion: "success",
             },
             {
               id: "none",
@@ -776,9 +784,13 @@ describe("CiChecksPanel", () => {
         loading={false}
         error={null}
         onRefresh={vi.fn()}
+        headBranch="feat/ci"
       />,
     );
+    expect(screen.getAllByText("Passing").length).toBeGreaterThan(0);
     expect(screen.getByText("All checks passed")).toBeInTheDocument();
+    expect(screen.getByText("feat/ci")).toBeInTheDocument();
+    expect(screen.getByText(/Duration 1m/)).toBeInTheDocument();
 
     rerender(
       <CiChecksPanel
@@ -795,6 +807,7 @@ describe("CiChecksPanel", () => {
         onRefresh={vi.fn()}
       />,
     );
+    expect(screen.getByText("No checks")).toBeInTheDocument();
     expect(screen.getByText("No CI checks reported")).toBeInTheDocument();
     expect(
       screen.getByText("No CI statuses or check runs on this commit yet."),
@@ -851,10 +864,45 @@ describe("CiChecksPanel", () => {
       />,
     );
     expect(screen.getByText("ci down")).toBeInTheDocument();
+    expect(screen.getAllByText("Failing").length).toBeGreaterThan(0);
     expect(screen.getByText("Some checks failed")).toBeInTheDocument();
     expect(screen.getByText("build")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Refresh" }));
     expect(onRefresh).toHaveBeenCalledOnce();
+  });
+
+  it("emphasizes cancelled checks without inventing metrics", () => {
+    render(
+      <CiChecksPanel
+        snapshot={{
+          overall: "failure",
+          sha: "cafe123",
+          failedCount: 1,
+          pendingCount: 0,
+          successCount: 0,
+          items: [
+            {
+              id: "c1",
+              name: "deploy-prod",
+              state: "failure",
+              description: "cancelled",
+              targetUrl: null,
+              source: "check_run",
+              updatedAt: "2026-09-04T12:00:00.000Z",
+              startedAt: "2026-09-04T11:50:00.000Z",
+              completedAt: "2026-09-04T12:00:00.000Z",
+              conclusion: "cancelled",
+            },
+          ],
+        }}
+        loading={false}
+        error={null}
+        onRefresh={vi.fn()}
+      />,
+    );
+    expect(screen.getAllByText("Cancelled").length).toBeGreaterThan(0);
+    expect(screen.getByText("deploy-prod")).toBeInTheDocument();
+    expect(screen.getByText(/Duration 10m/)).toBeInTheDocument();
   });
 });
 
@@ -922,7 +970,7 @@ describe("CurrentReviewsPanel", () => {
     expect(openUrl).toHaveBeenCalledWith("https://github.com/review/2");
   });
 
-  it("renders review cards and refresh", async () => {
+  it("renders review cards, summary counts, and refresh", async () => {
     const user = userEvent.setup();
     const onRefresh = vi.fn();
     render(
@@ -934,9 +982,13 @@ describe("CurrentReviewsPanel", () => {
         onRefresh={onRefresh}
       />,
     );
+    expect(screen.getByText("Reviews")).toBeInTheDocument();
+    expect(screen.getByText("Current status")).toBeInTheDocument();
+    expect(screen.getAllByText("Approved").length).toBeGreaterThan(0);
     expect(screen.getAllByText("bob").length).toBeGreaterThan(0);
     expect(screen.getByText("Nice work")).toBeInTheDocument();
     expect(screen.getByText("src/a.ts")).toBeInTheDocument();
+    expect(screen.getByText("Timeline")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Refresh" }));
     expect(onRefresh).toHaveBeenCalledOnce();
   });
@@ -998,6 +1050,11 @@ describe("CurrentReviewsPanel", () => {
               avatarUrl: "https://avatar.example/dave.png",
               state: "CHANGES_REQUESTED",
             },
+            {
+              user: "erin",
+              avatarUrl: "",
+              state: "COMMENTED",
+            },
           ],
           inlineCount: 1,
         }}
@@ -1007,7 +1064,7 @@ describe("CurrentReviewsPanel", () => {
       />,
     );
     expect(screen.getAllByText("Changes requested").length).toBeGreaterThan(0);
-    expect(screen.getByText("Commented")).toBeInTheDocument();
+    expect(screen.getAllByText("Commented").length).toBeGreaterThan(0);
     expect(screen.getByText("UNKNOWN_STATE")).toBeInTheDocument();
     rerender(
       <CurrentReviewsPanel
@@ -1018,7 +1075,50 @@ describe("CurrentReviewsPanel", () => {
         onRefresh={vi.fn()}
       />,
     );
+    expect(screen.getByText("No review")).toBeInTheDocument();
     expect(screen.getByText("No reviews yet on this PR.")).toBeInTheDocument();
+  });
+
+  it("shows pending and dismissed reviewer states in summary", () => {
+    render(
+      <CurrentReviewsPanel
+        {...panelProps}
+        snapshot={{
+          reviews: [
+            {
+              id: 10,
+              user: "gina",
+              avatarUrl: "",
+              state: "PENDING",
+              body: "",
+              submittedAt: null,
+              htmlUrl: "https://github.com/review/10",
+              comments: [],
+            },
+            {
+              id: 11,
+              user: "hank",
+              avatarUrl: "",
+              state: "DISMISSED",
+              body: "stale",
+              submittedAt: "2026-09-03T10:00:00.000Z",
+              htmlUrl: "https://github.com/review/11",
+              comments: [],
+            },
+          ],
+          latestByUser: [
+            { user: "gina", avatarUrl: "", state: "PENDING" },
+            { user: "hank", avatarUrl: "", state: "DISMISSED" },
+          ],
+          inlineCount: 0,
+        }}
+        loading={false}
+        error={null}
+        onRefresh={vi.fn()}
+      />,
+    );
+    expect(screen.getAllByText("Pending").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Dismissed").length).toBeGreaterThan(0);
   });
 });
 

@@ -91,7 +91,7 @@ describe("useMyPRs", () => {
 
     expect(result.current.lists.favorites).toEqual(favorites);
     expect(result.current.stale).toBe(true);
-    expect(result.current.error).toMatch(/list tersimpan/i);
+    expect(result.current.error).toMatch(/cached list/i);
   });
 
   it("loads assigned when that tab is active", async () => {
@@ -141,7 +141,7 @@ describe("useMyPRs", () => {
 
     expect(result.current.lists.favorites).toEqual(favorites);
     expect(result.current.stale).toBe(true);
-    expect(result.current.error).toMatch(/Gagal update/i);
+    expect(result.current.error).toMatch(/Could not refresh from GitHub/i);
   });
 
   it("surfaces rate-limit and generic errors without cache", async () => {
@@ -160,7 +160,7 @@ describe("useMyPRs", () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.stale).toBe(false);
-    expect(result.current.error).toMatch(/Belum ada cache/i);
+    expect(result.current.error).toMatch(/No cache for this tab/i);
 
     clearPrCacheForTests();
     rerender({ tab: "favorites" });

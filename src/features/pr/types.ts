@@ -10,6 +10,12 @@ export type CiCheckItem = {
   source: "status" | "check_run";
   /** Optional ISO timestamp when known. */
   updatedAt: string | null;
+  /** Check-run start time when known. */
+  startedAt?: string | null;
+  /** Check-run completion time when known. */
+  completedAt?: string | null;
+  /** Raw check-run conclusion (e.g. cancelled) when known. */
+  conclusion?: string | null;
 };
 
 export type CiChecksSnapshot = {

@@ -106,17 +106,17 @@ export function useMyPRs(enabled: boolean, activeTab: PrTab) {
           loadedRef.current.add(tab);
           if (isGithubRateLimitError(err)) {
             setError(
-              "GitHub rate limit — menampilkan list tersimpan. Tunggu beberapa menit lalu Refresh.",
+              "GitHub rate limit — showing cached list. Wait a few minutes, then Refresh.",
             );
           } else {
             setError(
-              `Gagal update dari GitHub — menampilkan list tersimpan. (${String(err)})`,
+              `Could not refresh from GitHub — showing cached list. (${String(err)})`,
             );
           }
         } else if (isGithubRateLimitError(err)) {
           setStale(false);
           setError(
-            "GitHub secondary rate limit — tunggu beberapa menit, lalu Refresh. Belum ada cache untuk tab ini.",
+            "GitHub secondary rate limit — wait a few minutes, then Refresh. No cache for this tab yet.",
           );
         } else {
           setStale(false);

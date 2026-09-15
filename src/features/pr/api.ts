@@ -416,6 +416,9 @@ export async function fetchPrCiChecks(
         targetUrl: s.target_url,
         source: "status",
         updatedAt: s.updated_at ?? null,
+        startedAt: null,
+        completedAt: null,
+        conclusion: null,
       });
     }
   }
@@ -434,6 +437,9 @@ export async function fetchPrCiChecks(
         targetUrl: run.details_url || run.html_url,
         source: "check_run",
         updatedAt: run.completed_at ?? run.started_at,
+        startedAt: run.started_at,
+        completedAt: run.completed_at,
+        conclusion: run.conclusion,
       });
     }
   }

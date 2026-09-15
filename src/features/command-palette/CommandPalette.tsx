@@ -36,6 +36,12 @@ import { cn } from "@/lib/cn";
 import { getLastSeenSnapshot, isPrNew, subscribeLastSeen } from "@/lib/seen";
 import { getFavorites, getFavoriteUsers } from "@/lib/settings";
 
+const OPEN_EVENT = "im-review:open-command-palette";
+
+export function openCommandPalette(): void {
+  window.dispatchEvent(new Event(OPEN_EVENT));
+}
+
 type PaletteItem = {
   id: string;
   label: string;
@@ -71,8 +77,15 @@ export function CommandPalette() {
         setOpen((v) => !v);
       }
     }
+    function onOpenEvent() {
+      setOpen(true);
+    }
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener(OPEN_EVENT, onOpenEvent);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener(OPEN_EVENT, onOpenEvent);
+    };
   }, []);
 
   useEffect(() => {
@@ -90,8 +103,8 @@ export function CommandPalette() {
     const nav: PaletteItem[] = [
       {
         id: "nav-home",
-        label: "Dashboard",
-        hint: "PR lists",
+        label: "Today",
+        hint: "Work desk",
         group: "Navigate",
         icon: GitPullRequest,
         run: () => navigate("/"),
@@ -243,25 +256,28 @@ export function CommandPalette() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent
         side="center"
-        className="max-h-[min(32rem,80vh)] gap-0 overflow-hidden p-0"
+        className="max-h-[min(32rem,80vh)] gap-0 overflow-hidden border-border p-0 shadow-xl"
       >
-        <DialogHeader className="border-b border-neutral-200 px-4 py-3 pr-12 dark:border-neutral-800">
+        <DialogHeader className="border-b border-border bg-chrome px-4 py-3 pr-12 text-chrome-foreground">
           <DialogTitle className="sr-only">Command palette</DialogTitle>
           <DialogDescription className="sr-only">
             Jump to pages, pull requests, or favorite repos
           </DialogDescription>
           <div className="flex items-center gap-2">
-            <Search className="h-4 w-4 shrink-0 text-neutral-400" />
+            <Search
+              className="h-4 w-4 shrink-0 text-chrome-muted"
+              aria-hidden
+            />
             <input
               ref={inputRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={onKeyDown}
               placeholder="Jump to PR, repo, or page…"
-              className="w-full bg-transparent text-sm outline-none placeholder:text-neutral-400"
+              className="w-full bg-transparent text-body-md text-chrome-foreground outline-none placeholder:text-chrome-muted"
               aria-label="Search commands"
             />
-            <kbd className="hidden rounded border border-neutral-200 px-1.5 py-0.5 font-mono text-xs text-neutral-400 sm:inline dark:border-neutral-700">
+            <kbd className="hidden rounded border border-chrome-recessed bg-chrome-recessed px-1.5 py-0.5 font-keycap text-chrome-muted sm:inline">
               esc
             </kbd>
           </div>
@@ -270,10 +286,10 @@ export function CommandPalette() {
         <div
           role="listbox"
           aria-label="Commands"
-          className="max-h-[min(24rem,60vh)] overflow-y-auto p-2"
+          className="max-h-[min(24rem,60vh)] overflow-y-auto bg-surface-container-lowest p-2"
         >
           {items.length === 0 ? (
-            <p className="px-3 py-8 text-center text-sm text-neutral-500">
+            <p className="px-3 py-8 text-center text-body-md text-on-surface-variant">
               No matches.
             </p>
           ) : (
@@ -285,7 +301,7 @@ export function CommandPalette() {
               return (
                 <div key={item.id}>
                   {showGroup ? (
-                    <div className="px-2 pt-2 pb-1 text-xs font-semibold tracking-wide text-neutral-400 uppercase">
+                    <div className="px-2 pt-2 pb-1 text-label-sm tracking-wide text-on-surface-variant uppercase">
                       {item.group}
                     </div>
                   ) : null}
@@ -296,16 +312,16 @@ export function CommandPalette() {
                     onMouseEnter={() => setActive(index)}
                     onClick={() => runItem(item)}
                     className={cn(
-                      "flex w-full items-center gap-3 rounded-md px-2 py-2 text-left text-sm",
+                      "flex w-full items-center gap-3 rounded-md px-2 py-2 text-left text-body-md",
                       selected
-                        ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
-                        : "text-neutral-800 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-900",
+                        ? "bg-primary text-on-primary"
+                        : "text-on-surface hover:bg-surface-container-low",
                     )}
                   >
                     <Icon
                       className={cn(
                         "h-4 w-4 shrink-0",
-                        selected ? "opacity-90" : "text-neutral-400",
+                        selected ? "opacity-90" : "text-on-surface-variant",
                       )}
                     />
                     <span className="min-w-0 flex-1 truncate font-medium">
@@ -314,8 +330,8 @@ export function CommandPalette() {
                     {item.hint ? (
                       <span
                         className={cn(
-                          "hidden max-w-[40%] truncate text-xs sm:inline",
-                          selected ? "opacity-70" : "text-neutral-400",
+                          "hidden max-w-[40%] truncate text-body-sm sm:inline",
+                          selected ? "opacity-80" : "text-on-surface-variant",
                         )}
                       >
                         {item.hint}
@@ -328,9 +344,9 @@ export function CommandPalette() {
           )}
         </div>
 
-        <div className="border-t border-neutral-200 px-4 py-2 text-xs text-neutral-400 dark:border-neutral-800">
-          <span className="font-mono">⌘K</span> /{" "}
-          <span className="font-mono">Ctrl+K</span> · ↑↓ · Enter
+        <div className="border-t border-border bg-surface-container-low/50 px-4 py-2 text-body-sm text-on-surface-variant">
+          <span className="font-keycap">⌘K</span> /{" "}
+          <span className="font-keycap">Ctrl+K</span> · ↑↓ · Enter
         </div>
       </DialogContent>
     </Dialog>

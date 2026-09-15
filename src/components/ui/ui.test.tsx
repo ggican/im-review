@@ -1,8 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import { Button } from "./button";
+import { Badge } from "./badge";
+import { Button, IconButton } from "./button";
+import { Card, CardDescription, CardHeader, CardTitle } from "./card";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +22,40 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./select";
+import { TabsList, TabsPanel, TabsTrigger } from "./tabs";
 import { Textarea } from "./textarea";
+
+function TabsDemo() {
+  const [tab, setTab] = useState("a");
+  return (
+    <>
+      <TabsList>
+        <TabsTrigger
+          id="demo-tab-a"
+          aria-controls="demo-tab-panel"
+          active={tab === "a"}
+          onClick={() => setTab("a")}
+        >
+          Alpha
+        </TabsTrigger>
+        <TabsTrigger
+          id="demo-tab-b"
+          aria-controls="demo-tab-panel"
+          active={tab === "b"}
+          onClick={() => setTab("b")}
+        >
+          Beta
+        </TabsTrigger>
+      </TabsList>
+      <TabsPanel
+        id="demo-tab-panel"
+        aria-labelledby={tab === "a" ? "demo-tab-a" : "demo-tab-b"}
+      >
+        Panel {tab}
+      </TabsPanel>
+    </>
+  );
+}
 
 describe("ui components", () => {
   it("renders Button variants and handles click", async () => {
@@ -28,6 +64,7 @@ describe("ui components", () => {
     render(
       <>
         <Button onClick={onClick}>Default</Button>
+        <Button variant="accent">Accent</Button>
         <Button variant="outline">Outline</Button>
         <Button variant="ghost" size="sm">
           Ghost
@@ -39,9 +76,84 @@ describe("ui components", () => {
     );
     await user.click(screen.getByRole("button", { name: "Default" }));
     expect(onClick).toHaveBeenCalledOnce();
+    expect(screen.getByRole("button", { name: "Accent" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Outline" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Ghost" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Delete" })).toBeInTheDocument();
+  });
+
+  it("renders IconButton with accessible name", async () => {
+    const user = userEvent.setup();
+    const onClick = vi.fn();
+    render(
+      <IconButton aria-label="Refresh" onClick={onClick}>
+        R
+      </IconButton>,
+    );
+    await user.click(screen.getByRole("button", { name: "Refresh" }));
+    expect(onClick).toHaveBeenCalledOnce();
+  });
+
+  it("renders Badge variants", () => {
+    render(
+      <>
+        <Badge>Default</Badge>
+        <Badge variant="github">GitHub</Badge>
+        <Badge variant="error">Error</Badge>
+      </>,
+    );
+    expect(screen.getByText("Default")).toBeInTheDocument();
+    expect(screen.getByText("GitHub")).toBeInTheDocument();
+    expect(screen.getByText("Error")).toBeInTheDocument();
+  });
+
+  it("renders Tabs and toggles active trigger", async () => {
+    const user = userEvent.setup();
+    render(<TabsDemo />);
+    expect(screen.getByRole("tab", { name: "Alpha" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    expect(screen.getByRole("tab", { name: "Alpha" })).toHaveAttribute(
+      "aria-controls",
+      "demo-tab-panel",
+    );
+    expect(screen.getByRole("tabpanel")).toHaveAttribute(
+      "aria-labelledby",
+      "demo-tab-a",
+    );
+    await user.click(screen.getByRole("tab", { name: "Beta" }));
+    expect(screen.getByRole("tab", { name: "Beta" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    expect(screen.getByRole("tabpanel")).toHaveTextContent("Panel b");
+  });
+
+  it("moves focus between tabs with arrow keys", async () => {
+    const user = userEvent.setup();
+    render(<TabsDemo />);
+    const alpha = screen.getByRole("tab", { name: "Alpha" });
+    alpha.focus();
+    await user.keyboard("{ArrowRight}");
+    expect(screen.getByRole("tab", { name: "Beta" })).toHaveFocus();
+    expect(screen.getByRole("tab", { name: "Beta" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+  });
+
+  it("renders Card surface", () => {
+    render(
+      <Card>
+        <CardHeader>
+          <CardTitle>Title</CardTitle>
+          <CardDescription>Subtitle</CardDescription>
+        </CardHeader>
+      </Card>,
+    );
+    expect(screen.getByText("Title")).toBeInTheDocument();
+    expect(screen.getByText("Subtitle")).toBeInTheDocument();
   });
 
   it("renders Input and Textarea with user input", async () => {

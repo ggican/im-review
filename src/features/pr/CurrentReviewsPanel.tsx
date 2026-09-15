@@ -1,14 +1,24 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import {
+  CheckCircle2,
   ExternalLink,
   Loader2,
   MessageSquareText,
   RefreshCw,
+  XCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/cn";
@@ -49,24 +59,82 @@ function stateLabel(state: string): string {
       return "Commented";
     case "DISMISSED":
       return "Dismissed";
+    case "PENDING":
+      return "Pending";
     default:
       return state;
   }
 }
 
-function stateClass(state: string): string {
+function stateBadgeVariant(
+  state: string,
+): "success" | "error" | "secondary" | "warning" | "outline" | "default" {
   switch (state) {
     case "APPROVED":
-      return "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300";
+      return "success";
     case "CHANGES_REQUESTED":
-      return "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300";
+      return "error";
     case "COMMENTED":
-      return "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300";
+      return "secondary";
     case "DISMISSED":
-      return "bg-neutral-100 text-neutral-600 dark:bg-neutral-900 dark:text-neutral-400";
+      return "outline";
+    case "PENDING":
+      return "warning";
     default:
-      return "bg-neutral-100 text-neutral-600 dark:bg-neutral-900 dark:text-neutral-400";
+      return "default";
   }
+}
+
+function overallStatus(latest: PrReviewsSnapshot["latestByUser"]): {
+  label: string;
+  state: string;
+} {
+  if (latest.length === 0) {
+    return { label: "No review", state: "NONE" };
+  }
+  if (latest.some((u) => u.state === "CHANGES_REQUESTED")) {
+    return { label: "Changes requested", state: "CHANGES_REQUESTED" };
+  }
+  if (latest.some((u) => u.state === "APPROVED")) {
+    return { label: "Approved", state: "APPROVED" };
+  }
+  if (latest.some((u) => u.state === "PENDING")) {
+    return { label: "Pending", state: "PENDING" };
+  }
+  if (latest.some((u) => u.state === "COMMENTED")) {
+    return { label: "Commented", state: "COMMENTED" };
+  }
+  if (latest.every((u) => u.state === "DISMISSED")) {
+    return { label: "Dismissed", state: "DISMISSED" };
+  }
+  return { label: "No review", state: "NONE" };
+}
+
+function countByState(
+  latest: PrReviewsSnapshot["latestByUser"],
+  state: string,
+): number {
+  return latest.filter((u) => u.state === state).length;
+}
+
+function ReviewStateBadge({
+  state,
+  className,
+}: {
+  state: string;
+  className?: string;
+}) {
+  return (
+    <Badge variant={stateBadgeVariant(state)} className={className}>
+      {state === "APPROVED" ? (
+        <CheckCircle2 className="h-3 w-3" aria-hidden />
+      ) : null}
+      {state === "CHANGES_REQUESTED" ? (
+        <XCircle className="h-3 w-3" aria-hidden />
+      ) : null}
+      {stateLabel(state)}
+    </Badge>
+  );
 }
 
 function InlineCommentBlock({
@@ -147,15 +215,21 @@ function InlineCommentBlock({
   return (
     <li
       className={cn(
-        "rounded-md border border-neutral-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-950",
-        indent && "ml-4 border-l-2 border-l-sky-300 dark:border-l-sky-800",
+        "rounded-lg border border-border bg-surface-container-lowest p-3",
+        indent && "ml-4 border-l-2 border-l-primary-container/50",
       )}
     >
-      <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xs text-neutral-500">
-        <span className="truncate">{comment.path}</span>
-        {comment.line != null ? <span>:{comment.line}</span> : null}
-        <span className="font-sans text-neutral-400">· {comment.user}</span>
-        <span className="font-sans">{relativeTime(comment.createdAt)}</span>
+      <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-keycap text-on-surface-variant">
+        <span className="truncate font-mono text-xs">{comment.path}</span>
+        {comment.line != null ? (
+          <span className="font-mono text-xs">:{comment.line}</span>
+        ) : null}
+        <span className="font-sans text-body-sm text-on-surface-variant">
+          · {comment.user}
+        </span>
+        <span className="font-sans text-body-sm">
+          {relativeTime(comment.createdAt)}
+        </span>
       </div>
       {editing ? (
         <div className="space-y-2">
@@ -189,7 +263,7 @@ function InlineCommentBlock({
           </div>
         </div>
       ) : (
-        <pre className="text-xs leading-relaxed whitespace-pre-wrap text-neutral-800 dark:text-neutral-200">
+        <pre className="text-body-sm leading-relaxed whitespace-pre-wrap text-on-surface">
           {comment.body || "(empty comment)"}
         </pre>
       )}
@@ -242,7 +316,7 @@ function InlineCommentBlock({
         </div>
       ) : null}
       {replying ? (
-        <div className="mt-2 space-y-2 border-t border-neutral-200 pt-2 dark:border-neutral-800">
+        <div className="mt-2 space-y-2 border-t border-border pt-2">
           <Textarea
             rows={2}
             value={replyBody}
@@ -316,31 +390,31 @@ function ReviewCard({
   }
 
   return (
-    <article className="space-y-3 border-b border-neutral-200 px-4 py-4 last:border-b-0 dark:border-neutral-800">
+    <article className="space-y-3 border-b border-border px-4 py-3 last:border-b-0">
       <header className="flex flex-wrap items-start justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2.5">
           {review.avatarUrl ? (
             <img
               src={review.avatarUrl}
               alt=""
-              className="h-7 w-7 rounded-full border border-neutral-200 dark:border-neutral-800"
+              className="h-8 w-8 rounded-full border border-border"
             />
           ) : (
-            <div className="h-7 w-7 rounded-full bg-neutral-200 dark:bg-neutral-800" />
+            <div
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-container-high font-keycap text-on-surface-variant"
+              aria-hidden
+            >
+              {(review.user.slice(0, 2) || "?").toUpperCase()}
+            </div>
           )}
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-medium">{review.user}</span>
-              <span
-                className={cn(
-                  "rounded px-1.5 py-0.5 text-xs font-semibold tracking-wide uppercase",
-                  stateClass(review.state),
-                )}
-              >
-                {stateLabel(review.state)}
+              <span className="text-body-md font-medium text-on-surface">
+                {review.user}
               </span>
+              <ReviewStateBadge state={review.state} />
             </div>
-            <p className="text-xs text-neutral-500">
+            <p className="text-body-sm text-on-surface-variant">
               {review.submittedAt
                 ? relativeTime(review.submittedAt)
                 : "Unknown time"}
@@ -375,7 +449,7 @@ function ReviewCard({
       </header>
 
       {dismissOpen ? (
-        <div className="space-y-2 rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950/30">
+        <div className="space-y-2 rounded-lg border border-warning/40 bg-warning-container/80 p-3">
           <Input
             value={dismissMsg}
             onChange={(e) => setDismissMsg(e.target.value)}
@@ -406,11 +480,11 @@ function ReviewCard({
       ) : null}
 
       {review.body ? (
-        <pre className="rounded-md bg-neutral-50 p-3 text-xs leading-relaxed whitespace-pre-wrap text-neutral-800 dark:bg-neutral-900 dark:text-neutral-200">
+        <pre className="rounded-lg border border-border bg-surface-container-low/60 p-3 text-body-sm leading-relaxed whitespace-pre-wrap text-on-surface">
           {review.body}
         </pre>
       ) : (
-        <p className="text-xs text-neutral-400 italic">
+        <p className="text-body-sm text-on-surface-variant italic">
           No review summary body.
         </p>
       )}
@@ -458,92 +532,178 @@ export function CurrentReviewsPanel({
   onRefresh,
   onMutated,
 }: Props) {
+  const summary = useMemo(() => {
+    if (!snapshot) return null;
+    const latest = snapshot.latestByUser;
+    return {
+      overall: overallStatus(latest),
+      approved: countByState(latest, "APPROVED"),
+      changes: countByState(latest, "CHANGES_REQUESTED"),
+      commented: countByState(latest, "COMMENTED"),
+      dismissed: countByState(latest, "DISMISSED"),
+      pending: countByState(latest, "PENDING"),
+    };
+  }, [snapshot]);
+
   return (
-    <section className="space-y-4 rounded-lg border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-950">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="flex items-center gap-2 text-sm font-semibold">
-            <MessageSquareText className="h-4 w-4 text-neutral-600" />
-            Current reviews
-          </h2>
-          <p className="mt-1 text-xs text-neutral-500">
-            Who already reviewed this PR on GitHub, including their summary and
-            inline comments. Reply, edit, or dismiss from here.
-          </p>
-        </div>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          disabled={loading}
-          onClick={onRefresh}
-        >
-          {loading ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <RefreshCw className="h-3.5 w-3.5" />
-          )}
-          Refresh
-        </Button>
-      </div>
+    <section className="space-y-4">
+      <Card padding="default">
+        <CardHeader className="mb-3 flex-row flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0 space-y-1">
+            <CardTitle className="flex items-center gap-2 text-title-md font-semibold">
+              <MessageSquareText
+                className="h-4 w-4 text-on-surface-variant"
+                aria-hidden
+              />
+              Reviews
+            </CardTitle>
+            <CardDescription>
+              GitHub review activity for this PR — status, timeline, and inline
+              threads.
+            </CardDescription>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={loading}
+            onClick={onRefresh}
+          >
+            {loading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <RefreshCw className="h-3.5 w-3.5" />
+            )}
+            Refresh
+          </Button>
+        </CardHeader>
 
-      {error ? (
-        <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
-          {error}
-        </div>
-      ) : null}
-
-      {loading && !snapshot ? (
-        <div className="flex items-center gap-2 py-8 text-sm text-neutral-500">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Loading reviews from GitHub…
-        </div>
-      ) : null}
-
-      {snapshot ? (
-        <>
-          {snapshot.latestByUser.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {snapshot.latestByUser.map((u) => (
-                <div
-                  key={u.user}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-neutral-50 py-1 pr-2.5 pl-1 dark:border-neutral-800 dark:bg-neutral-900"
-                >
-                  {u.avatarUrl ? (
-                    <img
-                      src={u.avatarUrl}
-                      alt=""
-                      className="h-5 w-5 rounded-full"
-                    />
-                  ) : (
-                    <div className="h-5 w-5 rounded-full bg-neutral-200 dark:bg-neutral-800" />
-                  )}
-                  <span className="text-xs font-medium">{u.user}</span>
-                  <span
-                    className={cn(
-                      "rounded px-1.5 py-0.5 text-xs font-semibold tracking-wide uppercase",
-                      stateClass(u.state),
-                    )}
-                  >
-                    {stateLabel(u.state)}
-                  </span>
-                </div>
-              ))}
+        <CardContent className="space-y-4">
+          {error ? (
+            <div
+              role="alert"
+              className="rounded-lg border border-warning/30 bg-warning-container px-3 py-2 text-body-sm text-on-warning-container"
+            >
+              {error}
             </div>
           ) : null}
 
-          <p className="text-xs text-neutral-500">
-            {snapshot.reviews.length} review submission
-            {snapshot.reviews.length === 1 ? "" : "s"} · {snapshot.inlineCount}{" "}
-            inline comment{snapshot.inlineCount === 1 ? "" : "s"}
-          </p>
+          {loading && !snapshot ? (
+            <div className="flex items-center gap-2 py-8 text-body-md text-on-surface-variant">
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+              Loading reviews from GitHub…
+            </div>
+          ) : null}
 
+          {snapshot && summary ? (
+            <>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+                  Current status
+                </span>
+                {summary.overall.state === "NONE" ? (
+                  <Badge variant="outline">No review</Badge>
+                ) : (
+                  <ReviewStateBadge state={summary.overall.state} />
+                )}
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-3">
+                <div className="rounded-lg border border-border bg-surface-container-low/50 px-3 py-2">
+                  <p className="text-label-sm text-on-surface-variant uppercase">
+                    Approved
+                  </p>
+                  <p className="mt-0.5 font-headline text-headline-sm text-success tabular-nums">
+                    {summary.approved}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-border bg-surface-container-low/50 px-3 py-2">
+                  <p className="text-label-sm text-on-surface-variant uppercase">
+                    Changes requested
+                  </p>
+                  <p className="mt-0.5 font-headline text-headline-sm text-error tabular-nums">
+                    {summary.changes}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-border bg-surface-container-low/50 px-3 py-2">
+                  <p className="text-label-sm text-on-surface-variant uppercase">
+                    Comments
+                  </p>
+                  <p className="mt-0.5 font-headline text-headline-sm text-on-surface tabular-nums">
+                    {summary.commented}
+                    <span className="ml-1 text-body-sm font-normal text-on-surface-variant">
+                      · {snapshot.inlineCount} inline
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              {snapshot.latestByUser.length > 0 ? (
+                <div>
+                  <p className="mb-2 text-label-sm tracking-wide text-on-surface-variant uppercase">
+                    Reviewers
+                  </p>
+                  <ul className="space-y-1.5">
+                    {snapshot.latestByUser.map((u) => (
+                      <li
+                        key={u.user}
+                        className="flex items-center justify-between gap-2 rounded-lg border border-border/70 bg-surface-container-lowest px-2.5 py-1.5"
+                      >
+                        <span className="inline-flex min-w-0 items-center gap-2">
+                          {u.avatarUrl ? (
+                            <img
+                              src={u.avatarUrl}
+                              alt=""
+                              className="h-6 w-6 rounded-full border border-border"
+                            />
+                          ) : (
+                            <span
+                              className="flex h-6 w-6 items-center justify-center rounded-full bg-surface-container-high font-keycap text-on-surface-variant"
+                              aria-hidden
+                            >
+                              {(u.user.slice(0, 2) || "?").toUpperCase()}
+                            </span>
+                          )}
+                          <span className="truncate text-body-sm font-medium text-on-surface">
+                            {u.user}
+                          </span>
+                        </span>
+                        <ReviewStateBadge state={u.state} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+
+              <p className="font-keycap text-body-sm text-on-surface-variant">
+                {snapshot.reviews.length} review submission
+                {snapshot.reviews.length === 1 ? "" : "s"}
+                {summary.dismissed > 0
+                  ? ` · ${summary.dismissed} dismissed`
+                  : ""}
+                {summary.pending > 0 ? ` · ${summary.pending} pending` : ""}
+              </p>
+            </>
+          ) : null}
+        </CardContent>
+      </Card>
+
+      {snapshot ? (
+        <Card padding="none" className="overflow-hidden">
+          <div className="border-b border-border px-4 py-3">
+            <h3 className="font-headline text-title-md font-semibold text-on-surface">
+              Timeline
+            </h3>
+            <p className="mt-0.5 text-body-sm text-on-surface-variant">
+              Newest submissions first. Reply, edit, or dismiss from each row.
+            </p>
+          </div>
           {snapshot.reviews.length === 0 ? (
-            <p className="py-6 text-center text-sm text-neutral-500">
+            <p className="px-4 py-10 text-center text-body-md text-on-surface-variant">
               No reviews yet on this PR.
             </p>
           ) : (
-            <div className="overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800">
+            <div>
               {snapshot.reviews.map((r) => (
                 <ReviewCard
                   key={r.id}
@@ -555,7 +715,7 @@ export function CurrentReviewsPanel({
               ))}
             </div>
           )}
-        </>
+        </Card>
       ) : null}
     </section>
   );

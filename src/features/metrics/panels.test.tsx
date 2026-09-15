@@ -336,6 +336,7 @@ describe("metrics panels", () => {
     expect(
       screen.getByText(/No CI checks found on authored PRs/),
     ).toBeInTheDocument();
+    expect(screen.getByText("Unavailable")).toBeInTheDocument();
 
     rerender(
       <CiHealthPanel
@@ -347,6 +348,13 @@ describe("metrics panels", () => {
     expect(screen.getByText("Passing")).toBeInTheDocument();
     expect(screen.getByText("build")).toBeInTheDocument();
     expect(screen.getByText(/acme\/app #42/)).toBeInTheDocument();
+
+    rerender(
+      <CiHealthPanel summary={null} loading={false} windowLabel="7 days" />,
+    );
+    expect(
+      screen.getByText(/No CI data available for this window/),
+    ).toBeInTheDocument();
   });
 
   it("MetricsCharts renders score comparison and daily activity", () => {

@@ -1,10 +1,19 @@
-import { Loader2 } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 import { PageHeader, PageShell } from "@/components/layout/PageShell";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ErrorBlock, LoadingBlock } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -13,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/cn";
+import { TabsList, TabsPanel, TabsTrigger } from "@/components/ui/tabs";
 import { useGooglePublic } from "@/lib/use-settings";
 
 import {
@@ -21,10 +30,10 @@ import {
   fetchCalendarEvents,
   fetchCalendarList,
   filterEvents,
-  formatEventWhen,
   groupEventsByDay,
   windowForTab,
 } from "./api";
+import { CalendarEventRow } from "./CalendarEventRow";
 import type { CalendarEvent, CalendarSource, CalendarTab } from "./types";
 
 const TABS: Array<{ id: CalendarTab; label: string }> = [
@@ -33,6 +42,20 @@ const TABS: Array<{ id: CalendarTab; label: string }> = [
   { id: "week", label: "This week" },
   { id: "allday", label: "All-day" },
 ];
+
+function emptyCopy(tab: CalendarTab, query: string): string {
+  if (query.trim()) return "No search results.";
+  switch (tab) {
+    case "upcoming":
+      return "No upcoming events.";
+    case "allday":
+      return "No all-day events.";
+    case "week":
+      return "No events this week.";
+    default:
+      return "No events on the agenda.";
+  }
+}
 
 export function CalendarPage() {
   const connected = useGooglePublic();
@@ -100,6 +123,10 @@ export function CalendarPage() {
   );
   const groups = useMemo(() => groupEventsByDay(filtered), [filtered]);
   const win = windowForTab(tab);
+  const activeSource =
+    sources.find((s) => s.id === calendarId) ??
+    sources.find((s) => s.primary) ??
+    null;
 
   if (!connected) {
     return (
@@ -109,12 +136,24 @@ export function CalendarPage() {
           title="Calendar"
           subtitle="Connect Google Calendar"
         />
-        <p className="text-sm text-neutral-500">
-          No Google account connected.{" "}
-          <Link to="/settings" className="underline underline-offset-2">
-            Connect in Settings
-          </Link>
-        </p>
+        <Card
+          padding="default"
+          className="border-stream-calendar-border/80"
+        >
+          <CardHeader className="mb-2">
+            <CardTitle className="text-title-md">
+              Google Calendar not connected
+            </CardTitle>
+            <CardDescription>
+              Link Google to triage meetings beside PR, Jira, and mail.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild size="sm" variant="accent">
+              <Link to="/settings">Connect in Settings</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </PageShell>
     );
   }
@@ -124,7 +163,12 @@ export function CalendarPage() {
       <PageHeader
         backTo="/"
         title="Calendar"
-        subtitle={`${connected.name || connected.email} · ${win.label}`}
+        subtitle={`Meeting triage · ${connected.name || connected.email} · ${win.label}`}
+        leading={
+          <Badge variant="calendar" className="mt-1">
+            Calendar
+          </Badge>
+        }
         actions={
           <Button
             type="button"
@@ -133,111 +177,143 @@ export function CalendarPage() {
             onClick={() => void load(true)}
             disabled={loading}
           >
+            {loading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <RefreshCw className="h-3.5 w-3.5" />
+            )}
             Refresh
           </Button>
         }
       />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div
-          className="flex flex-wrap gap-1 rounded-lg border border-neutral-200 p-1 dark:border-neutral-800"
-          role="tablist"
-          aria-label="Calendar range"
-        >
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              role="tab"
-              aria-selected={tab === t.id}
-              className={cn(
-                "rounded-md px-2.5 py-1 text-xs font-medium",
-                tab === t.id
-                  ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
-                  : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-900",
-              )}
-              onClick={() => setTab(t.id)}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-        <Select value={calendarId} onValueChange={setCalendarId}>
-          <SelectTrigger className="h-8 w-[12rem] text-xs" aria-label="Calendar">
-            <SelectValue placeholder="Calendar" />
-          </SelectTrigger>
-          <SelectContent>
-            {(sources.length > 0
-              ? sources
-              : [{ id: "primary", summary: "Primary", primary: true }]
-            ).map((s) => (
-              <SelectItem key={s.id} value={s.id}>
-                {s.summary}
-                {s.primary ? " (primary)" : ""}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Input
-          className="h-8 max-w-xs text-xs"
-          placeholder="Search title…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          aria-label="Search events"
-        />
+      <Card
+        padding="default"
+        className="border-stream-calendar-border/80"
+      >
+        <CardHeader className="mb-3">
+          <CardTitle className="text-title-md font-semibold">Agenda</CardTitle>
+          <CardDescription>
+            Scan today and upcoming meetings — not a full calendar editor.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <TabsList aria-label="Calendar range" className="h-auto flex-wrap">
+              {TABS.map((t) => (
+                <TabsTrigger
+                  key={t.id}
+                  id={`calendar-tab-${t.id}`}
+                  aria-controls="calendar-tab-panel"
+                  active={tab === t.id}
+                  onClick={() => setTab(t.id)}
+                >
+                  {t.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            <Select value={calendarId} onValueChange={setCalendarId}>
+              <SelectTrigger
+                className="h-8 w-[12rem] text-xs"
+                aria-label="Calendar"
+              >
+                <SelectValue placeholder="Calendar" />
+              </SelectTrigger>
+              <SelectContent>
+                {(sources.length > 0
+                  ? sources
+                  : [{ id: "primary", summary: "Primary", primary: true }]
+                ).map((s) => (
+                  <SelectItem key={s.id} value={s.id}>
+                    <span className="inline-flex items-center gap-2">
+                      {"backgroundColor" in s && s.backgroundColor ? (
+                        <span
+                          className="h-2 w-2 rounded-full"
+                          style={{ backgroundColor: s.backgroundColor }}
+                          aria-hidden
+                        />
+                      ) : null}
+                      {s.summary}
+                      {s.primary ? " (primary)" : ""}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input
+              className="h-8 max-w-xs text-xs"
+              placeholder="Search title…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              aria-label="Search events"
+            />
+          </div>
+
+          {error ? <ErrorBlock tone="warning">{error}</ErrorBlock> : null}
+        </CardContent>
+      </Card>
+
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="font-keycap text-body-sm text-on-surface-variant">
+          {loading && events.length === 0
+            ? "Loading…"
+            : `${filtered.length} event${filtered.length === 1 ? "" : "s"}`}
+        </p>
+        {activeSource ? (
+          <span className="inline-flex items-center gap-1.5 text-body-sm text-on-surface-variant">
+            <span
+              className="h-2.5 w-2.5 rounded-full"
+              style={{
+                backgroundColor:
+                  activeSource.backgroundColor ||
+                  "var(--stream-calendar-border)",
+              }}
+              aria-hidden
+            />
+            {activeSource.summary}
+          </span>
+        ) : null}
       </div>
 
-      {error ? (
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-      ) : null}
-
-      {loading && events.length === 0 ? (
-        <p className="flex items-center gap-2 text-sm text-neutral-500">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Loading events…
-        </p>
-      ) : groups.length === 0 ? (
-        <p className="text-sm text-neutral-500">No events in this range.</p>
-      ) : (
-        <div className="space-y-5">
-          {groups.map((group) => (
-            <section key={group.key}>
-              <h2 className="mb-2 text-xs font-medium tracking-wide text-neutral-500 uppercase">
-                {group.label}
-              </h2>
-              <ul className="divide-y divide-neutral-200 overflow-hidden rounded-lg border border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800">
-                {group.items.map((event) => (
-                  <li key={`${event.calendarId}:${event.id}`}>
-                    <Link
-                      to={`/calendar/${encodeURIComponent(event.calendarId)}/${encodeURIComponent(event.id)}`}
-                      className="flex w-full items-start gap-3 px-3 py-2.5 text-left hover:bg-neutral-50 dark:hover:bg-neutral-900/60"
-                    >
-                      <span className="w-28 shrink-0 text-xs text-neutral-500 tabular-nums">
-                        {formatEventWhen(event)}
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                          {event.title}
-                          {event.hangoutLink ? (
-                            <span className="ml-2 text-xs font-normal text-sky-600 dark:text-sky-400">
-                              Meet
-                            </span>
-                          ) : null}
-                        </span>
-                        {event.location ? (
-                          <span className="block truncate text-xs text-neutral-500">
-                            {event.location}
-                          </span>
-                        ) : null}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
-        </div>
-      )}
+      <TabsPanel
+        id="calendar-tab-panel"
+        aria-labelledby={`calendar-tab-${tab}`}
+      >
+        {loading && events.length === 0 ? (
+          <LoadingBlock>Loading events…</LoadingBlock>
+        ) : groups.length === 0 ? (
+          <Card padding="default">
+            <p className="py-12 text-center text-body-md text-on-surface-variant">
+              {emptyCopy(tab, query)}
+            </p>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {groups.map((group) => (
+              <Card key={group.key} padding="none" className="overflow-hidden">
+                <div className="border-b border-border bg-surface-container-low/50 px-3 py-2">
+                  <h2 className="text-label-sm font-semibold tracking-wide text-on-surface-variant uppercase">
+                    {group.label}
+                    <span className="ml-2 font-keycap normal-case tracking-normal text-on-surface-variant">
+                      {group.items.length}
+                    </span>
+                  </h2>
+                </div>
+                <ul>
+                  {group.items.map((event) => (
+                    <CalendarEventRow
+                      key={`${event.calendarId}:${event.id}`}
+                      event={event}
+                      calendarColor={activeSource?.backgroundColor}
+                      calendarName={activeSource?.summary}
+                    />
+                  ))}
+                </ul>
+              </Card>
+            ))}
+          </div>
+        )}
+      </TabsPanel>
     </PageShell>
   );
 }

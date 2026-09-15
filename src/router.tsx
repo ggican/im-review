@@ -5,6 +5,7 @@ import {
   redirect,
 } from "react-router-dom";
 
+import { AuthenticatedLayout } from "@/components/layout/AuthenticatedLayout";
 import { CommandPalette } from "@/features/command-palette/CommandPalette";
 import { api } from "@/lib/api";
 import { AiReviewPage } from "@/routes/ai-review";
@@ -30,7 +31,7 @@ export async function redirectIfAuthed() {
   return null;
 }
 
-function AppShell() {
+function RootShell() {
   return (
     <>
       <Outlet />
@@ -41,7 +42,7 @@ function AppShell() {
 
 export const router = createBrowserRouter([
   {
-    element: <AppShell />,
+    element: <RootShell />,
     children: [
       {
         path: "/onboarding",
@@ -49,64 +50,69 @@ export const router = createBrowserRouter([
         element: <OnboardingPage />,
       },
       {
-        path: "/",
-        loader: requireAuth,
-        element: <DashboardPage />,
-      },
-      {
-        path: "/repos",
-        loader: requireAuth,
-        element: <ReposPage />,
-      },
-      {
-        path: "/people",
-        loader: requireAuth,
-        element: <PeoplePage />,
-      },
-      {
-        path: "/jira",
-        loader: requireAuth,
-        element: <JiraPage />,
-      },
-      {
-        path: "/jira/:issueKey",
-        loader: requireAuth,
-        element: <JiraIssuePage />,
-      },
-      {
-        path: "/calendar",
-        loader: requireAuth,
-        element: <CalendarPage />,
-      },
-      {
-        path: "/calendar/:calendarId/:eventId",
-        loader: requireAuth,
-        element: <CalendarEventPage />,
-      },
-      {
-        path: "/gmail",
-        loader: requireAuth,
-        element: <GmailPage />,
-      },
-      {
-        path: "/gmail/:messageId",
-        loader: requireAuth,
-        element: <GmailMessagePage />,
-      },
-      {
-        path: "/settings",
-        loader: requireAuth,
-        element: <SettingsPage />,
-      },
-      {
-        path: "/metrics",
-        loader: requireAuth,
-        element: <MetricsPage />,
-      },
-      {
-        path: "/review/:owner/:repo/:number",
-        loader: requireAuth,
-        element: <AiReviewPage />,
+        element: <AuthenticatedLayout />,
+        children: [
+          {
+            path: "/",
+            loader: requireAuth,
+            element: <DashboardPage />,
+          },
+          {
+            path: "/repos",
+            loader: requireAuth,
+            element: <ReposPage />,
+          },
+          {
+            path: "/people",
+            loader: requireAuth,
+            element: <PeoplePage />,
+          },
+          {
+            path: "/jira",
+            loader: requireAuth,
+            element: <JiraPage />,
+          },
+          {
+            path: "/jira/:issueKey",
+            loader: requireAuth,
+            element: <JiraIssuePage />,
+          },
+          {
+            path: "/calendar",
+            loader: requireAuth,
+            element: <CalendarPage />,
+          },
+          {
+            path: "/calendar/:calendarId/:eventId",
+            loader: requireAuth,
+            element: <CalendarEventPage />,
+          },
+          {
+            path: "/gmail",
+            loader: requireAuth,
+            element: <GmailPage />,
+          },
+          {
+            path: "/gmail/:messageId",
+            loader: requireAuth,
+            element: <GmailMessagePage />,
+          },
+          {
+            path: "/settings",
+            loader: requireAuth,
+            element: <SettingsPage />,
+          },
+          {
+            path: "/metrics",
+            loader: requireAuth,
+            element: <MetricsPage />,
+          },
+          {
+            path: "/review/:owner/:repo/:number",
+            loader: requireAuth,
+            element: <AiReviewPage />,
+          },
+        ],
       },
       { path: "*", element: <Navigate to="/" replace /> },
     ],

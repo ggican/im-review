@@ -111,5 +111,45 @@ describe("CalendarPage", () => {
     await waitFor(() => {
       expect(openUrl).toHaveBeenCalledWith("https://meet.google.com/abc");
     });
+
+    await user.click(screen.getByRole("button", { name: /Open in Calendar/ }));
+    await waitFor(() => {
+      expect(openUrl).toHaveBeenCalledWith(
+        "https://calendar.google.com/event?eid=1",
+      );
+    });
+  });
+
+  it("shows empty agenda copy when there are no events", async () => {
+    saveGooglePublic({ email: "alice@example.com", name: "Alice" });
+    vi.mocked(fetchCalendarEvents).mockResolvedValue([]);
+    renderCalendar();
+    expect(await screen.findByText("No events on the agenda.")).toBeInTheDocument();
+  });
+
+  it("shows no upcoming events when Upcoming tab is empty", async () => {
+    const user = userEvent.setup();
+    saveGooglePublic({ email: "alice@example.com", name: "Alice" });
+    vi.mocked(fetchCalendarEvents).mockResolvedValue([]);
+    renderCalendar();
+    await screen.findByText("No events on the agenda.");
+    await user.click(screen.getByRole("tab", { name: "Upcoming" }));
+    expect(await screen.findByText("No upcoming events.")).toBeInTheDocument();
+  });
+
+  it("shows event not found on detail when fetch fails", async () => {
+    saveGooglePublic({ email: "alice@example.com", name: "Alice" });
+    vi.mocked(fetchCalendarEvent).mockRejectedValue(new Error("not found"));
+    render(
+      <MemoryRouter initialEntries={["/calendar/primary/missing"]}>
+        <Routes>
+          <Route
+            path="/calendar/:calendarId/:eventId"
+            element={<CalendarEventPage />}
+          />
+        </Routes>
+      </MemoryRouter>,
+    );
+    expect(await screen.findByRole("alert")).toHaveTextContent(/not found/i);
   });
 });

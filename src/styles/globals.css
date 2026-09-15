@@ -5,29 +5,349 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-@theme {
-  --font-sans:
-    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-}
+/*
+ * IM Review design foundation — Stitch Technical Workspace tokens.
+ * Semantic values on :root / html.dark; @theme exposes Tailwind utilities.
+ */
 
 @layer base {
   :root {
     color-scheme: light;
-    --selection-bg: #d4d4d4;
-    --selection-fg: #171717;
-    --scrollbar-thumb: #d4d4d4;
-    --scrollbar-thumb-hover: #a3a3a3;
+
+    --background: #f9f9f8;
+    --surface: #f9f9f8;
+    --surface-dim: #d9dad9;
+    --surface-bright: #f9f9f8;
+    --surface-container-lowest: #ffffff;
+    --surface-container-low: #f3f4f3;
+    --surface-container: #edeeed;
+    --surface-container-high: #e7e8e7;
+    --surface-container-highest: #e1e3e2;
+    --surface-variant: #e1e3e2;
+
+    --on-background: #191c1c;
+    --on-surface: #191c1c;
+    --on-surface-variant: #3b4a47;
+    --inverse-surface: #2e3131;
+    --inverse-on-surface: #f0f1f0;
+
+    --chrome: #111318;
+    --chrome-foreground: #ffffff;
+    --chrome-muted: #889096;
+    --chrome-recessed: #1e222b;
+
+    --primary: #006a62;
+    --on-primary: #ffffff;
+    --primary-container: #00e5d4;
+    --on-primary-container: #00625a;
+    --inverse-primary: #00dece;
+    --surface-tint: #006a62;
+    --accent: #00e5d4;
+
+    --secondary: #5d5e64;
+    --on-secondary: #ffffff;
+    --secondary-container: #dfdfe6;
+    --on-secondary-container: #616269;
+    --tertiary: #006b58;
+    --on-tertiary: #ffffff;
+    --tertiary-container: #00e7c0;
+    --on-tertiary-container: #006351;
+
+    --outline: #6a7a77;
+    --outline-variant: #b9cac6;
+    --border: #e5e9e8;
+
+    --error: #ba1a1a;
+    --on-error: #ffffff;
+    --error-container: #ffdad6;
+    --on-error-container: #93000a;
+    --success: #0e6e3e;
+    --success-container: #e9f9f0;
+    --on-success-container: #0e6e3e;
+    --warning: #8a4c07;
+    --warning-container: #fef6e9;
+    --on-warning-container: #8a4c07;
+
+    --stream-github: #e5faf7;
+    --stream-github-border: #b6f3ec;
+    --stream-github-fg: #006e66;
+    --stream-jira: #fef6e9;
+    --stream-jira-border: #fde2b8;
+    --stream-jira-fg: #8a4c07;
+    --stream-gmail: #edf4fe;
+    --stream-gmail-border: #c6dcfc;
+    --stream-gmail-fg: #194b8c;
+    --stream-calendar: #f3effc;
+    --stream-calendar-border: #ddcff7;
+    --stream-calendar-fg: #4b2b85;
+    --stream-ai: #e9f9f0;
+    --stream-ai-border: #b5eed0;
+    --stream-ai-fg: #0e6e3e;
+
+    --shadow-card: 0 1px 3px rgba(17, 19, 24, 0.04),
+      0 8px 20px -4px rgba(17, 19, 24, 0.03);
+    --shadow-float: 0 12px 28px -6px rgba(16, 20, 24, 0.08),
+      0 3px 8px -2px rgba(16, 20, 24, 0.04);
+
+    --selection-bg: #b6f3ec;
+    --selection-fg: #00201d;
+    --scrollbar-thumb: #c5cfcd;
+    --scrollbar-thumb-hover: #6a7a77;
+
+    --radius-xs: 0.25rem;
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.25rem;
+    --radius-2xl: 1.5rem;
+    --radius-window: 1.75rem;
+
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 0.875rem;
+    --space-lg: 1.25rem;
+    --space-xl: 1.75rem;
+    --space-gutter: 1rem;
+    --space-margin: 1.25rem;
   }
 
   html.dark {
     color-scheme: dark;
-    --selection-bg: #404040;
-    --selection-fg: #f5f5f5;
-    --scrollbar-thumb: #404040;
-    --scrollbar-thumb-hover: #737373;
-  }
 
+    --background: #0b0e14;
+    --surface: #111318;
+    --surface-dim: #07090d;
+    --surface-bright: #161b24;
+    --surface-container-lowest: #07090d;
+    --surface-container-low: #0e1117;
+    --surface-container: #161b24;
+    --surface-container-high: #1c222d;
+    --surface-container-highest: #222733;
+    --surface-variant: #161b24;
+
+    --on-background: #e5e7eb;
+    --on-surface: #e5e7eb;
+    --on-surface-variant: #9aa3ad;
+    --inverse-surface: #e5e7eb;
+    --inverse-on-surface: #111318;
+
+    --chrome: #07090d;
+    --chrome-foreground: #ffffff;
+    --chrome-muted: #889096;
+    --chrome-recessed: #1e222b;
+
+    --primary: #00dece;
+    --on-primary: #00201d;
+    --primary-container: #00e5d4;
+    --on-primary-container: #00201d;
+    --inverse-primary: #006a62;
+    --surface-tint: #00dece;
+    --accent: #00e5d4;
+
+    --secondary: #c6c6cd;
+    --on-secondary: #1a1b21;
+    --secondary-container: #45474c;
+    --on-secondary-container: #e2e2e9;
+    --tertiary: #00e0ba;
+    --on-tertiary: #002019;
+    --tertiary-container: #006b58;
+    --on-tertiary-container: #31fed5;
+
+    --outline: #6a7a77;
+    --outline-variant: #222733;
+    --border: #222733;
+
+    --error: #ffb4ab;
+    --on-error: #690005;
+    --error-container: #93000a;
+    --on-error-container: #ffdad6;
+    --success: #7dd3a8;
+    --success-container: #0e3d24;
+    --on-success-container: #b5eed0;
+    --warning: #f5c97a;
+    --warning-container: #4a2c05;
+    --on-warning-container: #fde2b8;
+
+    --stream-github: #0d2a28;
+    --stream-github-border: #1a4f4a;
+    --stream-github-fg: #40fbea;
+    --stream-jira: #2a1f0a;
+    --stream-jira-border: #5c4010;
+    --stream-jira-fg: #fde2b8;
+    --stream-gmail: #0f1f33;
+    --stream-gmail-border: #1e3a5f;
+    --stream-gmail-fg: #c6dcfc;
+    --stream-calendar: #1a1430;
+    --stream-calendar-border: #3a2d5c;
+    --stream-calendar-fg: #ddcff7;
+    --stream-ai: #0e3d24;
+    --stream-ai-border: #1a5c38;
+    --stream-ai-fg: #b5eed0;
+
+    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.35),
+      0 8px 20px -4px rgba(0, 0, 0, 0.4);
+    --shadow-float: 0 12px 28px -6px rgba(0, 0, 0, 0.45),
+      0 3px 8px -2px rgba(0, 0, 0, 0.35);
+
+    --selection-bg: #005049;
+    --selection-fg: #40fbea;
+    --scrollbar-thumb: #3d4654;
+    --scrollbar-thumb-hover: #6a7a77;
+  }
+}
+
+@theme {
+  --font-sans:
+    "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-headline:
+    "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:
+    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    monospace;
+
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-dim: var(--surface-dim);
+  --color-surface-bright: var(--surface-bright);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
+  --color-surface-variant: var(--surface-variant);
+
+  --color-on-background: var(--on-background);
+  --color-on-surface: var(--on-surface);
+  --color-on-surface-variant: var(--on-surface-variant);
+  --color-inverse-surface: var(--inverse-surface);
+  --color-inverse-on-surface: var(--inverse-on-surface);
+
+  --color-chrome: var(--chrome);
+  --color-chrome-foreground: var(--chrome-foreground);
+  --color-chrome-muted: var(--chrome-muted);
+  --color-chrome-recessed: var(--chrome-recessed);
+
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-primary-container: var(--primary-container);
+  --color-on-primary-container: var(--on-primary-container);
+  --color-inverse-primary: var(--inverse-primary);
+  --color-surface-tint: var(--surface-tint);
+  --color-accent: var(--accent);
+
+  --color-secondary: var(--secondary);
+  --color-on-secondary: var(--on-secondary);
+  --color-secondary-container: var(--secondary-container);
+  --color-on-secondary-container: var(--on-secondary-container);
+  --color-tertiary: var(--tertiary);
+  --color-on-tertiary: var(--on-tertiary);
+  --color-tertiary-container: var(--tertiary-container);
+  --color-on-tertiary-container: var(--on-tertiary-container);
+
+  --color-outline: var(--outline);
+  --color-outline-variant: var(--outline-variant);
+  --color-border: var(--border);
+
+  --color-error: var(--error);
+  --color-on-error: var(--on-error);
+  --color-error-container: var(--error-container);
+  --color-on-error-container: var(--on-error-container);
+  --color-success: var(--success);
+  --color-success-container: var(--success-container);
+  --color-on-success-container: var(--on-success-container);
+  --color-warning: var(--warning);
+  --color-warning-container: var(--warning-container);
+  --color-on-warning-container: var(--on-warning-container);
+
+  --color-stream-github: var(--stream-github);
+  --color-stream-github-border: var(--stream-github-border);
+  --color-stream-github-fg: var(--stream-github-fg);
+  --color-stream-jira: var(--stream-jira);
+  --color-stream-jira-border: var(--stream-jira-border);
+  --color-stream-jira-fg: var(--stream-jira-fg);
+  --color-stream-gmail: var(--stream-gmail);
+  --color-stream-gmail-border: var(--stream-gmail-border);
+  --color-stream-gmail-fg: var(--stream-gmail-fg);
+  --color-stream-calendar: var(--stream-calendar);
+  --color-stream-calendar-border: var(--stream-calendar-border);
+  --color-stream-calendar-fg: var(--stream-calendar-fg);
+  --color-stream-ai: var(--stream-ai);
+  --color-stream-ai-border: var(--stream-ai-border);
+  --color-stream-ai-fg: var(--stream-ai-fg);
+
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 0.875rem;
+  --spacing-lg: 1.25rem;
+  --spacing-xl: 1.75rem;
+  --spacing-gutter: 1rem;
+  --spacing-margin: 1.25rem;
+
+  --shadow-card: 0 1px 3px rgba(17, 19, 24, 0.04),
+    0 8px 20px -4px rgba(17, 19, 24, 0.03);
+  --shadow-float: 0 12px 28px -6px rgba(16, 20, 24, 0.08),
+    0 3px 8px -2px rgba(16, 20, 24, 0.04);
+
+  --text-headline-xl: 2.25rem;
+  --text-headline-xl--line-height: 2.75rem;
+  --text-headline-xl--letter-spacing: -0.03em;
+  --text-headline-xl--font-weight: 700;
+
+  --text-headline-lg: 1.75rem;
+  --text-headline-lg--line-height: 2.25rem;
+  --text-headline-lg--letter-spacing: -0.02em;
+  --text-headline-lg--font-weight: 600;
+
+  --text-headline-md: 1.375rem;
+  --text-headline-md--line-height: 1.75rem;
+  --text-headline-md--letter-spacing: -0.015em;
+  --text-headline-md--font-weight: 600;
+
+  --text-headline-sm: 1.125rem;
+  --text-headline-sm--line-height: 1.5rem;
+  --text-headline-sm--letter-spacing: -0.01em;
+  --text-headline-sm--font-weight: 600;
+
+  --text-title-md: 1rem;
+  --text-title-md--line-height: 1.375rem;
+  --text-title-md--letter-spacing: -0.01em;
+  --text-title-md--font-weight: 600;
+
+  --text-body-lg: 0.9375rem;
+  --text-body-lg--line-height: 1.375rem;
+
+  --text-body-md: 0.8125rem;
+  --text-body-md--line-height: 1.1875rem;
+
+  --text-body-sm: 0.75rem;
+  --text-body-sm--line-height: 1.0625rem;
+
+  --text-label-md: 0.8125rem;
+  --text-label-md--line-height: 1rem;
+  --text-label-md--font-weight: 600;
+
+  --text-label-sm: 0.6875rem;
+  --text-label-sm--line-height: 0.875rem;
+  --text-label-sm--font-weight: 600;
+
+  --text-code-md: 0.8125rem;
+  --text-code-md--line-height: 1.125rem;
+  --text-code-md--font-weight: 500;
+
+  --text-code-sm: 0.6875rem;
+  --text-code-sm--line-height: 0.9375rem;
+  --text-code-sm--font-weight: 500;
+}
+
+@layer base {
   html,
   body,
   #root {
@@ -37,11 +357,7 @@
   body {
     font-family: var(--font-sans);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    @apply bg-neutral-50 text-neutral-900 antialiased;
-  }
-
-  html.dark body {
-    @apply bg-neutral-950 text-neutral-100;
+    @apply bg-background text-on-background antialiased;
   }
 
   ::selection {
@@ -50,12 +366,8 @@
   }
 
   :focus-visible {
-    outline: 2px solid #a3a3a3;
+    outline: 2px solid var(--primary-container);
     outline-offset: 2px;
-  }
-
-  html.dark :focus-visible {
-    outline-color: #737373;
   }
 
   * {
@@ -64,13 +376,13 @@
   }
 
   *::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
   }
 
   *::-webkit-scrollbar-thumb {
     background: var(--scrollbar-thumb);
-    border-radius: 8px;
+    border-radius: 9999px;
     border: 2px solid transparent;
     background-clip: padding-box;
   }
@@ -92,4 +404,123 @@
   [aria-disabled="true"] {
     cursor: not-allowed;
   }
+}
+
+@layer utilities {
+  .font-headline {
+    font-family: var(--font-headline);
+  }
+
+  .font-keycap {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    line-height: 0.75rem;
+  }
+
+  .surface-card {
+    background-color: var(--surface-container-lowest);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+  }
+
+  .surface-panel {
+    background-color: var(--surface-container-low);
+    border: 1px solid color-mix(in srgb, var(--outline-variant) 40%, transparent);
+    border-radius: var(--radius-lg);
+  }
+
+  .surface-chrome {
+    background-color: var(--chrome);
+    color: var(--chrome-foreground);
+  }
+}
+
+/* Sonner toasts — IM Review identity (no notification center) */
+[data-sonner-toaster] {
+  --normal-bg: var(--surface-container-lowest);
+  --normal-border: var(--border);
+  --normal-text: var(--on-surface);
+  font-family: var(--font-sans);
+}
+
+[data-sonner-toast].im-toast {
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-card) !important;
+  background: var(--surface-container-lowest) !important;
+  color: var(--on-surface) !important;
+  gap: 0.5rem;
+}
+
+[data-sonner-toast].im-toast-success {
+  border-color: color-mix(in srgb, var(--success) 35%, var(--border)) !important;
+  background: color-mix(
+    in srgb,
+    var(--success-container) 70%,
+    var(--surface-container-lowest)
+  ) !important;
+  color: var(--on-success-container) !important;
+}
+
+[data-sonner-toast].im-toast-error {
+  border-color: color-mix(in srgb, var(--error) 35%, var(--border)) !important;
+  background: color-mix(
+    in srgb,
+    var(--error-container) 70%,
+    var(--surface-container-lowest)
+  ) !important;
+  color: var(--on-error-container) !important;
+}
+
+[data-sonner-toast].im-toast-warning {
+  border-color: color-mix(in srgb, var(--warning) 35%, var(--border)) !important;
+  background: color-mix(
+    in srgb,
+    var(--warning-container) 70%,
+    var(--surface-container-lowest)
+  ) !important;
+  color: var(--on-warning-container) !important;
+}
+
+[data-sonner-toast].im-toast-info {
+  border-color: color-mix(
+    in srgb,
+    var(--primary-container) 45%,
+    var(--border)
+  ) !important;
+  background: color-mix(
+    in srgb,
+    var(--stream-github) 55%,
+    var(--surface-container-lowest)
+  ) !important;
+}
+
+.im-toast-title {
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+}
+
+.im-toast-description {
+  font-size: 0.75rem !important;
+  color: var(--on-surface-variant) !important;
+}
+
+.im-toast-close {
+  background: transparent !important;
+  border: 1px solid var(--border) !important;
+  color: var(--on-surface-variant) !important;
+}
+
+.im-toast-action {
+  background: var(--primary-container) !important;
+  color: var(--on-primary-container) !important;
+  border-radius: var(--radius-md) !important;
+}
+
+.im-toast-cancel {
+  background: transparent !important;
+  color: var(--on-surface-variant) !important;
 }

@@ -122,6 +122,10 @@ describe("MetricsPage", () => {
       screen.getByRole("heading", { name: "Metrics" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Overall score")).toBeInTheDocument();
+    expect(screen.getByText("Pull requests reviewed")).toBeInTheDocument();
+    expect(screen.getByText("Average review time")).toBeInTheDocument();
+    expect(screen.getByText("Review response rate")).toBeInTheDocument();
+    expect(screen.getByText("CI health")).toBeInTheDocument();
     expect(screen.getByText("Speed breakdown")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /Quality/ }));

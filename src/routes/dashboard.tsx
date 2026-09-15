@@ -1,18 +1,9 @@
-import {
-  BarChart3,
-  BookMarked,
-  CalendarDays,
-  LogOut,
-  Mail,
-  Settings,
-  SquareKanban,
-  Users,
-} from "lucide-react";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { BrandMark, PageShell } from "@/components/layout/PageShell";
+import { PageHeader, PageShell } from "@/components/layout/PageShell";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { AuthorFilterMode } from "@/features/people/types";
 import { fetchOpenPrsByAuthor } from "@/features/pr/api";
@@ -25,6 +16,15 @@ import {
   prKey,
   savedReviewToPullRequest,
 } from "@/features/pr/types";
+import {
+  NeedsMeSection,
+  type SourceFilter,
+  TodayHeader,
+  TodaySidePreviews,
+  TodaySummaryCards,
+  useSourceFilter,
+} from "@/features/today/TodayView";
+import { useTodaySideData } from "@/features/today/useTodaySideData";
 import { api, type GithubUser } from "@/lib/api";
 import { updateDesktopAlerts } from "@/lib/desktop-alerts";
 import {
@@ -93,10 +93,16 @@ export function DashboardPage() {
   const [searchItems, setSearchItems] = useState<PullRequest[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const hub = searchParams.get("hub");
+  const isPrHub = hub === "prs";
   const ready = Boolean(user);
   const { lists, loading, error, stale, updatedAt, refresh } = useMyPRs(
     ready,
     tab,
+  );
+  const side = useTodaySideData(ready && !isPrHub);
+  const [sourceFilter, setSourceFilter] = useSourceFilter(
+    isPrHub ? "prs" : "all",
   );
 
   const visibleLists = useMemo(
@@ -118,6 +124,37 @@ export function DashboardPage() {
     );
   }, [visibleLists, lastSeen, settings.showFavoritePeople]);
 
+  const needsMeCount = useMemo(() => {
+    const reviewKeys = new Set(
+      visibleLists.review.map((p) => prKey(p.repo, p.number)),
+    );
+    const extraCi = ciFails.filter(
+      (h) => !reviewKeys.has(prKey(h.pr.repo, h.pr.number)),
+    ).length;
+    return (
+      visibleLists.review.length +
+      extraCi +
+      side.jira.length +
+      side.gmail.length
+    );
+  }, [visibleLists.review, ciFails, side.jira.length, side.gmail.length]);
+
+  const sourceCounts = useMemo(() => {
+    const prs = visibleLists.review.length + ciFails.length;
+    return {
+      all: prs + side.jira.length + side.gmail.length,
+      prs,
+      jira: side.jira.length,
+      mail: side.gmail.length,
+    };
+  }, [visibleLists.review, ciFails, side.jira, side.gmail]);
+
+  const nextMeetingLabel = useMemo(() => {
+    const first = side.calendar[0];
+    if (!first) return null;
+    return first.title ? `Next: ${first.title}` : "Later today";
+  }, [side.calendar]);
+
   useEffect(() => {
     document.title = newCount > 0 ? `(${newCount}) IM Review` : "IM Review";
   }, [newCount]);
@@ -131,6 +168,10 @@ export function DashboardPage() {
       setTab("favorites");
     }
   }, [settings.showFavoritePeople, tab]);
+
+  useEffect(() => {
+    setSourceFilter(isPrHub ? "prs" : "all");
+  }, [isPrHub, setSourceFilter]);
 
   useEffect(() => {
     if (!authorLogin || authorMode !== "search") {
@@ -203,140 +244,209 @@ export function DashboardPage() {
     });
   }, [newCount, ciFails.length]);
 
-  async function onLogout() {
-    await api.deleteToken();
-    toast.success("Signed out");
-    navigate("/onboarding", { replace: true });
+  async function onRefreshAll() {
+    await Promise.all([refresh(), side.refresh()]);
+  }
+
+  if (isPrHub) {
+    const openKeys = new Set<string>();
+    for (const list of [
+      visibleLists.all,
+      visibleLists.favorites,
+      visibleLists.assigned,
+      visibleLists.review,
+      visibleLists.mine,
+    ]) {
+      for (const p of list) openKeys.add(prKey(p.repo, p.number));
+    }
+    const openCount = openKeys.size;
+    const repoCount = new Set(
+      [
+        ...visibleLists.all,
+        ...visibleLists.favorites,
+        ...visibleLists.assigned,
+        ...visibleLists.review,
+        ...visibleLists.mine,
+      ].map((p) => p.repo),
+    ).size;
+    const ciFailureMap = Object.fromEntries(
+      ciFails.map((hit) => [
+        prKey(hit.pr.repo, hit.pr.number),
+        hit.description,
+      ]),
+    );
+
+    return (
+      <PageShell width="full" className="gap-4">
+        <PageHeader
+          title="Pull Requests"
+          leading={
+            openCount > 0 ? (
+              <Badge variant="github" className="mt-1 normal-case">
+                {openCount} open
+                {repoCount > 0 ? ` · ${repoCount} repos` : ""}
+              </Badge>
+            ) : (
+              <Badge variant="github" className="mt-1">
+                GitHub
+              </Badge>
+            )
+          }
+          subtitle={
+            user
+              ? `Review open work across your repositories. ${user.name ?? user.login} · @${user.login}${
+                  settings.refreshIntervalMin > 0
+                    ? ` · auto ${settings.refreshIntervalMin}m`
+                    : " · auto off"
+                }`
+              : "Loading…"
+          }
+          actions={
+            <div className="flex flex-wrap items-center gap-2">
+              <Button asChild variant="outline" size="sm">
+                <Link to="/">Today</Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/people">People</Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/repos">
+                  Repos
+                  {favorites.length > 0 ? (
+                    <span className="tabular-nums opacity-70">
+                      {favorites.length}
+                    </span>
+                  ) : null}
+                </Link>
+              </Button>
+            </div>
+          }
+        />
+
+        {ciFails.length > 0 ? (
+          <div className="rounded-lg border border-error/30 bg-error-container px-4 py-3 text-body-md text-on-error-container">
+            <p className="font-medium">
+              {ciFails.length} of your open PR
+              {ciFails.length === 1 ? "" : "s"} have failing CI
+            </p>
+            <ul className="mt-2 space-y-1 text-body-sm">
+              {ciFails.slice(0, 4).map((hit) => (
+                <li key={`${hit.pr.repo}#${hit.pr.number}`}>
+                  <button
+                    type="button"
+                    className="underline underline-offset-2"
+                    onClick={() => navigate(reviewPath(hit.pr))}
+                  >
+                    {hit.pr.repo}#{hit.pr.number}
+                  </button>
+                  <span className="opacity-80"> · {hit.description}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+        <PRList
+          lists={visibleLists}
+          active={tab}
+          onTabChange={setTab}
+          loading={loading}
+          error={error}
+          stale={stale}
+          onRefresh={() => void refresh()}
+          updatedAt={updatedAt}
+          onSelect={(pr) => navigate(reviewPath(pr))}
+          authorLogin={authorLogin}
+          authorMode={authorMode}
+          onAuthorChange={onAuthorChange}
+          searchItems={searchItems}
+          searchLoading={searchLoading}
+          searchError={searchError}
+          ciFailures={ciFailureMap}
+        />
+      </PageShell>
+    );
   }
 
   return (
-    <PageShell>
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <BrandMark />
-          <div className="hidden h-6 w-px bg-neutral-200 sm:block dark:bg-neutral-800" />
-          <div className="min-w-0">
-            <div className="truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">
-              {user?.name ?? user?.login ?? "…"}
-            </div>
-            <div className="truncate text-xs text-neutral-500">
-              {user ? `@${user.login}` : "Loading…"}
-              {settings.refreshIntervalMin > 0
-                ? ` · auto ${settings.refreshIntervalMin}m`
-                : " · auto off"}
-              <span className="ml-1.5 hidden text-neutral-400 sm:inline">
-                · ⌘K
-              </span>
-            </div>
-          </div>
-          {user?.avatar_url ? (
-            <img
-              src={user.avatar_url}
-              alt=""
-              className="ml-1 h-9 w-9 shrink-0 rounded-full border border-neutral-200 dark:border-neutral-800"
-            />
-          ) : (
-            <div className="ml-1 h-9 w-9 shrink-0 rounded-full bg-neutral-200 dark:bg-neutral-800" />
-          )}
-        </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link to="/people">
-              <Users className="h-4 w-4" />
-              People
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/jira">
-              <SquareKanban className="h-4 w-4" />
-              Jira
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/calendar">
-              <CalendarDays className="h-4 w-4" />
-              Calendar
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/gmail">
-              <Mail className="h-4 w-4" />
-              Gmail
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/metrics">
-              <BarChart3 className="h-4 w-4" />
-              Metrics
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/repos">
-              <BookMarked className="h-4 w-4" />
-              Repos
-              {favorites.length > 0 ? (
-                <span className="tabular-nums opacity-70">
-                  {favorites.length}
-                </span>
-              ) : null}
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/settings">
-              <Settings className="h-4 w-4" />
-              Settings
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" onClick={onLogout}>
-            <LogOut className="h-4 w-4" />
-            Sign out
-          </Button>
-        </div>
-      </header>
+    <PageShell width="full" className="gap-5">
+      <TodayHeader
+        userName={user?.name ?? null}
+        userLogin={user?.login ?? ""}
+        actionCount={needsMeCount}
+        onRefresh={() => void onRefreshAll()}
+        refreshing={loading || side.loading}
+        favoritesCount={favorites.length}
+      />
+
+      <TodaySummaryCards
+        needsMe={needsMeCount}
+        prReview={visibleLists.review.length}
+        prMine={visibleLists.mine.length}
+        ciFails={ciFails.length}
+        jiraCount={side.jira.length}
+        jiraConnected={side.jiraConnected}
+        meetingCount={side.calendar.length}
+        nextMeetingLabel={nextMeetingLabel}
+        googleConnected={side.googleConnected}
+      />
 
       {ciFails.length > 0 ? (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+        <div className="rounded-lg border border-error/30 bg-error-container px-4 py-3 text-body-md text-on-error-container">
           <p className="font-medium">
             {ciFails.length} of your open PR
             {ciFails.length === 1 ? "" : "s"} have failing CI
           </p>
-          <ul className="mt-2 space-y-1 text-xs">
+          <ul className="mt-2 space-y-1 text-body-sm">
             {ciFails.slice(0, 4).map((hit) => (
               <li key={`${hit.pr.repo}#${hit.pr.number}`}>
                 <button
                   type="button"
-                  className="underline underline-offset-2 hover:text-red-950 dark:hover:text-red-100"
+                  className="underline underline-offset-2"
                   onClick={() => navigate(reviewPath(hit.pr))}
                 >
                   {hit.pr.repo}#{hit.pr.number}
                 </button>
-                <span className="text-red-600/80 dark:text-red-400/80">
-                  {" "}
-                  · {hit.description}
-                </span>
+                <span className="opacity-80"> · {hit.description}</span>
               </li>
             ))}
           </ul>
         </div>
       ) : null}
 
-      <PRList
-        lists={visibleLists}
-        active={tab}
-        onTabChange={setTab}
-        loading={loading}
-        error={error}
-        stale={stale}
-        onRefresh={() => void refresh()}
-        updatedAt={updatedAt}
-        onSelect={(pr) => navigate(reviewPath(pr))}
-        authorLogin={authorLogin}
-        authorMode={authorMode}
-        onAuthorChange={onAuthorChange}
-        searchItems={searchItems}
-        searchLoading={searchLoading}
-        searchError={searchError}
-      />
+      <div className="grid gap-6 lg:grid-cols-12">
+        <div className="lg:col-span-7">
+          <NeedsMeSection
+            filter={sourceFilter}
+            onFilterChange={(f: SourceFilter) => setSourceFilter(f)}
+            reviewPrs={visibleLists.review}
+            reviewedPrs={visibleLists.reviewed}
+            ciHits={ciFails}
+            jira={side.jira}
+            gmail={side.gmail}
+            jiraConnected={side.jiraConnected}
+            googleConnected={side.googleConnected}
+            loading={side.loading}
+            prLoading={loading}
+            prError={error}
+            onSelectPr={(pr) => navigate(reviewPath(pr))}
+            counts={sourceCounts}
+          />
+        </div>
+        <div className="lg:col-span-5">
+          <TodaySidePreviews
+            calendar={side.calendar}
+            gmail={side.gmail}
+            jira={side.jira}
+            googleConnected={side.googleConnected}
+            jiraConnected={side.jiraConnected}
+            calendarError={side.calendarError}
+            gmailError={side.gmailError}
+            jiraError={side.jiraError}
+            loading={side.loading}
+          />
+        </div>
+      </div>
     </PageShell>
   );
 }

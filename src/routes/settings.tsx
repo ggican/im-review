@@ -1,12 +1,31 @@
 import { listen } from "@tauri-apps/api/event";
-import { Plus, Trash2 } from "lucide-react";
+import {
+  Bot,
+  Calendar,
+  GitPullRequest,
+  Plus,
+  Ticket,
+  Trash2,
+} from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { PageHeader, PageShell } from "@/components/layout/PageShell";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { TabsList, TabsPanel, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
   AI_PROVIDERS,
@@ -60,6 +79,7 @@ const INTERVALS = [
 type SettingsTab =
   | "general"
   | "ai"
+  | "github"
   | "jira"
   | "google"
   | "templates"
@@ -68,10 +88,11 @@ type SettingsTab =
 
 const TABS: Array<{ id: SettingsTab; label: string }> = [
   { id: "general", label: "General" },
-  { id: "ai", label: "AI" },
+  { id: "ai", label: "AI providers" },
+  { id: "github", label: "GitHub" },
   { id: "jira", label: "Jira" },
   { id: "google", label: "Google" },
-  { id: "templates", label: "Templates" },
+  { id: "templates", label: "Review templates" },
   { id: "favorites", label: "Favorites" },
   { id: "history", label: "History" },
 ];
@@ -84,14 +105,9 @@ function Panel({
   className?: string;
 }) {
   return (
-    <section
-      className={cn(
-        "space-y-4 rounded-lg border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-950",
-        className,
-      )}
-    >
+    <Card padding="default" className={cn("space-y-4", className)}>
       {children}
-    </section>
+    </Card>
   );
 }
 
@@ -107,11 +123,11 @@ function PanelIntro({
   return (
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0">
-        <h2 className="text-sm font-medium text-neutral-900 dark:text-neutral-50">
-          {title}
-        </h2>
+        <h2 className="text-title-md text-on-surface">{title}</h2>
         {description ? (
-          <p className="mt-0.5 text-xs text-neutral-500">{description}</p>
+          <p className="mt-0.5 text-body-sm text-on-surface-variant">
+            {description}
+          </p>
         ) : null}
       </div>
       {action}
@@ -121,9 +137,74 @@ function PanelIntro({
 
 function ScrollList({ children }: { children: ReactNode }) {
   return (
-    <ul className="max-h-[min(28rem,55vh)] divide-y divide-neutral-200 overflow-y-auto rounded-lg border border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800">
+    <ul className="max-h-[min(28rem,55vh)] divide-y divide-border overflow-y-auto rounded-lg border border-border">
       {children}
     </ul>
+  );
+}
+
+function StatusBadge({
+  connected,
+  connectedLabel = "Connected",
+  disconnectedLabel = "Disconnected",
+}: {
+  connected: boolean;
+  connectedLabel?: string;
+  disconnectedLabel?: string;
+}) {
+  return (
+    <Badge variant={connected ? "success" : "outline"}>
+      {connected ? connectedLabel : disconnectedLabel}
+    </Badge>
+  );
+}
+
+function ConnectionCard({
+  title,
+  description,
+  connected,
+  detail,
+  badge,
+  accentClass,
+  icon,
+  onOpen,
+}: {
+  title: string;
+  description: string;
+  connected: boolean;
+  detail: string;
+  badge?: ReactNode;
+  accentClass: string;
+  icon: ReactNode;
+  onOpen: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className={cn(
+        "rounded-xl border p-3 text-left transition-colors hover:bg-surface-container-low/60",
+        accentClass,
+      )}
+    >
+      <div className="flex items-start gap-2.5">
+        <span className="mt-0.5 text-on-surface-variant">{icon}</span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-body-md font-medium text-on-surface">
+              {title}
+            </span>
+            {badge ?? <StatusBadge connected={connected} />}
+          </div>
+          <p className="mt-0.5 truncate text-body-sm text-on-surface-variant">
+            {detail}
+          </p>
+          <p className="mt-1 text-body-sm text-on-surface-variant">
+            {description}
+          </p>
+        </div>
+      </div>
+    </button>
   );
 }
 
@@ -158,6 +239,11 @@ export function SettingsPage() {
   const [googleAuthUrl, setGoogleAuthUrl] = useState<string | null>(null);
   const [personLogin, setPersonLogin] = useState("");
   const [personBusy, setPersonBusy] = useState(false);
+  const [pendingDeleteTemplate, setPendingDeleteTemplate] =
+    useState<CommentTemplate | null>(null);
+  const [pendingDeleteReviewId, setPendingDeleteReviewId] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     let unlisten: (() => void) | undefined;
@@ -382,10 +468,14 @@ export function SettingsPage() {
   }
   const focusedHasKey = Boolean(providerStatus[focusedProvider.id]);
   const focusedBusy = aiBusy === focusedProvider.id;
+  const anyAiKey = AI_PROVIDERS.some((p) => providerStatus[p.id]);
+  const activeProviderLabel =
+    AI_PROVIDERS.find((p) => p.id === draft.aiProvider)?.label ??
+    draft.aiProvider;
 
   const tabLabels = TABS.map((item) => {
     if (item.id === "templates" && templates.length > 0) {
-      return { ...item, label: `Templates (${templates.length})` };
+      return { ...item, label: `Review templates (${templates.length})` };
     }
     if (item.id === "favorites") {
       const n =
@@ -402,122 +492,171 @@ export function SettingsPage() {
     <PageShell width="lg" className="gap-5">
       <PageHeader
         title="Settings"
-        subtitle="Preferences, AI keys, and local shortcuts"
+        subtitle="Connections, preferences, and local data"
         backTo="/"
+        leading={
+          <Badge variant="outline" className="mt-1">
+            Settings
+          </Badge>
+        }
       />
 
-      <div
-        role="tablist"
-        aria-label="Settings sections"
-        className="inline-flex flex-wrap rounded-lg border border-neutral-200 bg-neutral-100 p-0.5 dark:border-neutral-800 dark:bg-neutral-900"
-      >
-        {tabLabels.map((item) => {
-          const selected = tab === item.id;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              role="tab"
-              aria-selected={selected}
-              onClick={() => setTab(item.id)}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                selected
-                  ? "bg-white text-neutral-900 shadow-sm dark:bg-neutral-800 dark:text-neutral-50"
-                  : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200",
-              )}
-            >
-              {item.label}
-            </button>
-          );
-        })}
-      </div>
+      <TabsList aria-label="Settings sections" className="h-auto flex-wrap">
+        {tabLabels.map((item) => (
+          <TabsTrigger
+            key={item.id}
+            id={`settings-tab-${item.id}`}
+            aria-controls="settings-tab-panel"
+            active={tab === item.id}
+            onClick={() => setTab(item.id)}
+          >
+            {item.label}
+          </TabsTrigger>
+        ))}
+      </TabsList>
 
+      <TabsPanel id="settings-tab-panel" aria-labelledby={`settings-tab-${tab}`}>
       {tab === "general" ? (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Panel>
-            <PanelIntro
-              title="Auto refresh"
-              description="How often to reload PR lists while the app is open or running in the menu bar (closing the window hides to tray; Quit exits)."
+        <div className="space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <ConnectionCard
+              title="GitHub"
+              description="PAT stored in local keychain. Never shown in the UI."
+              connected
+              detail="Token configured · reconnect to rotate"
+              accentClass="border-stream-github-border/80 bg-stream-github/30"
+              icon={<GitPullRequest className="h-4 w-4" aria-hidden />}
+              onOpen={() => setTab("github")}
             />
-            <div className="flex flex-wrap gap-2">
-              {INTERVALS.map((opt) => (
+            <ConnectionCard
+              title="Jira"
+              description="API token stored locally for work-item lists."
+              connected={Boolean(jiraPublic)}
+              detail={
+                jiraPublic
+                  ? `${jiraPublic.displayName} · ${jiraPublic.host.replace(/^https:\/\//, "")}`
+                  : "Not connected"
+              }
+              badge={
+                <StatusBadge
+                  connected={Boolean(jiraPublic)}
+                  connectedLabel="Key saved"
+                  disconnectedLabel="No key"
+                />
+              }
+              accentClass="border-stream-jira-border/80 bg-stream-jira/30"
+              icon={<Ticket className="h-4 w-4" aria-hidden />}
+              onOpen={() => setTab("jira")}
+            />
+            <ConnectionCard
+              title="Google"
+              description="One OAuth for Calendar and Gmail."
+              connected={Boolean(googlePublic)}
+              detail={
+                googlePublic
+                  ? googlePublic.name || googlePublic.email
+                  : "Not connected"
+              }
+              badge={
+                <StatusBadge
+                  connected={Boolean(googlePublic)}
+                  connectedLabel="Connected"
+                  disconnectedLabel="Not connected"
+                />
+              }
+              accentClass="border-stream-gmail-border/80 bg-stream-gmail/30"
+              icon={<Calendar className="h-4 w-4" aria-hidden />}
+              onOpen={() => setTab("google")}
+            />
+            <ConnectionCard
+              title="AI provider"
+              description="Keys stay in local app storage."
+              connected={anyAiKey}
+              detail={`${activeProviderLabel}${anyAiKey ? " · key configured" : " · no key"}`}
+              badge={
+                <StatusBadge
+                  connected={anyAiKey}
+                  connectedLabel="Key saved"
+                  disconnectedLabel="No key"
+                />
+              }
+              accentClass="border-stream-ai-border/80 bg-stream-ai/30"
+              icon={<Bot className="h-4 w-4" aria-hidden />}
+              onOpen={() => setTab("ai")}
+            />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Panel>
+              <PanelIntro
+                title="Auto refresh"
+                description="How often to reload PR lists while the app is open or running in the menu bar (closing the window hides to tray; Quit exits)."
+              />
+              <div className="flex flex-wrap gap-2">
+                {INTERVALS.map((opt) => (
+                  <Button
+                    key={opt.value}
+                    type="button"
+                    size="sm"
+                    variant={
+                      draft.refreshIntervalMin === opt.value
+                        ? "accent"
+                        : "outline"
+                    }
+                    onClick={() => patch({ refreshIntervalMin: opt.value })}
+                  >
+                    {opt.label}
+                  </Button>
+                ))}
+              </div>
+            </Panel>
+
+            <Panel>
+              <PanelIntro
+                title="Theme"
+                description="Appearance for this app."
+              />
+              <div className="flex flex-wrap gap-2">
+                {(["system", "light", "dark"] as ThemeMode[]).map((mode) => (
+                  <Button
+                    key={mode}
+                    type="button"
+                    size="sm"
+                    variant={draft.theme === mode ? "accent" : "outline"}
+                    onClick={() => patch({ theme: mode })}
+                    className="capitalize"
+                  >
+                    {mode}
+                  </Button>
+                ))}
+              </div>
+            </Panel>
+
+            <Panel className="sm:col-span-2">
+              <PanelIntro
+                title="People tab"
+                description="Optional dashboard tab listing open PRs from all favorite authors."
+              />
+              <div className="flex flex-wrap gap-2">
                 <Button
-                  key={opt.value}
                   type="button"
                   size="sm"
-                  variant={
-                    draft.refreshIntervalMin === opt.value
-                      ? "default"
-                      : "outline"
-                  }
-                  onClick={() => patch({ refreshIntervalMin: opt.value })}
+                  variant={draft.showFavoritePeople ? "accent" : "outline"}
+                  onClick={() => patch({ showFavoritePeople: true })}
                 >
-                  {opt.label}
+                  Show People tab
                 </Button>
-              ))}
-            </div>
-          </Panel>
-
-          <Panel>
-            <PanelIntro title="Theme" description="Appearance for this app." />
-            <div className="flex flex-wrap gap-2">
-              {(["system", "light", "dark"] as ThemeMode[]).map((mode) => (
                 <Button
-                  key={mode}
                   type="button"
                   size="sm"
-                  variant={draft.theme === mode ? "default" : "outline"}
-                  onClick={() => patch({ theme: mode })}
-                  className="capitalize"
+                  variant={!draft.showFavoritePeople ? "accent" : "outline"}
+                  onClick={() => patch({ showFavoritePeople: false })}
                 >
-                  {mode}
+                  Hide
                 </Button>
-              ))}
-            </div>
-          </Panel>
-
-          <Panel>
-            <PanelIntro
-              title="People tab"
-              description="Optional dashboard tab listing open PRs from all favorite authors."
-            />
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant={draft.showFavoritePeople ? "default" : "outline"}
-                onClick={() => patch({ showFavoritePeople: true })}
-              >
-                Show People tab
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant={!draft.showFavoritePeople ? "default" : "outline"}
-                onClick={() => patch({ showFavoritePeople: false })}
-              >
-                Hide
-              </Button>
-            </div>
-          </Panel>
-
-          <Panel className="sm:col-span-2">
-            <PanelIntro
-              title="Account"
-              description={`Current refresh: ${
-                getSettings().refreshIntervalMin || "off"
-              } · GitHub PAT is stored locally in this app.`}
-            />
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => void reconnect()}
-            >
-              Reconnect GitHub PAT
-            </Button>
-          </Panel>
+              </div>
+            </Panel>
+          </div>
         </div>
       ) : null}
 
@@ -529,7 +668,7 @@ export function SettingsPage() {
           />
 
           <div>
-            <p className="mb-1.5 text-xs font-medium text-neutral-500">
+            <p className="mb-1.5 text-label-sm text-on-surface-variant">
               Active provider
             </p>
             <div className="flex flex-wrap gap-2">
@@ -539,7 +678,7 @@ export function SettingsPage() {
                   type="button"
                   size="sm"
                   variant={
-                    draft.aiProvider === provider.id ? "default" : "outline"
+                    draft.aiProvider === provider.id ? "accent" : "outline"
                   }
                   onClick={() => {
                     patch({ aiProvider: provider.id });
@@ -554,7 +693,7 @@ export function SettingsPage() {
           </div>
 
           <div>
-            <p className="mb-1.5 text-xs font-medium text-neutral-500">
+            <p className="mb-1.5 text-label-sm text-on-surface-variant">
               Configure key
             </p>
             <div className="mb-3 flex flex-wrap gap-1.5">
@@ -569,8 +708,8 @@ export function SettingsPage() {
                     className={cn(
                       "rounded-md border px-2.5 py-1 text-xs font-medium transition-colors",
                       selected
-                        ? "border-neutral-900 bg-neutral-900 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900"
-                        : "border-neutral-200 text-neutral-600 hover:border-neutral-300 dark:border-neutral-800 dark:text-neutral-400 dark:hover:border-neutral-700",
+                        ? "border-primary bg-primary text-on-primary"
+                        : "border-border text-on-surface-variant hover:border-outline-variant",
                     )}
                   >
                     {provider.label}
@@ -579,11 +718,11 @@ export function SettingsPage() {
                         "ml-1.5",
                         hasKey
                           ? selected
-                            ? "text-emerald-300 dark:text-emerald-700"
-                            : "text-emerald-600 dark:text-emerald-400"
+                            ? "text-primary-container"
+                            : "text-success"
                           : selected
-                            ? "text-neutral-400 dark:text-neutral-500"
-                            : "text-neutral-400",
+                            ? "text-on-primary/60"
+                            : "text-on-surface-variant",
                       )}
                     >
                       {hasKey ? "●" : "○"}
@@ -593,13 +732,13 @@ export function SettingsPage() {
               })}
             </div>
 
-            <div className="space-y-3 rounded-lg border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-900/50">
+            <div className="space-y-3 rounded-lg border border-stream-ai-border/80 bg-stream-ai/30 p-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
-                  <h3 className="text-sm font-medium">
+                  <h3 className="text-body-md font-medium text-on-surface">
                     {focusedProvider.label}
                   </h3>
-                  <p className="mt-0.5 text-xs text-neutral-500">
+                  <p className="mt-0.5 text-body-sm text-on-surface-variant">
                     {focusedProvider.hint}{" "}
                     <a
                       href={focusedProvider.docsUrl}
@@ -611,25 +750,28 @@ export function SettingsPage() {
                     </a>
                   </p>
                 </div>
-                {focusedHasKey ? (
-                  <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
-                    Key saved
-                  </span>
-                ) : (
-                  <span className="text-xs text-neutral-400">No key</span>
-                )}
+                <StatusBadge
+                  connected={focusedHasKey}
+                  connectedLabel="Key saved"
+                  disconnectedLabel="No key"
+                />
               </div>
 
               {focusedHasKey ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  disabled={focusedBusy}
-                  onClick={() => void removeAi(focusedProvider.id)}
-                >
-                  Remove key
-                </Button>
+                <div className="space-y-2">
+                  <p className="font-mono text-xs text-on-surface-variant">
+                    API key · •••••••• (masked)
+                  </p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={focusedBusy}
+                    onClick={() => void removeAi(focusedProvider.id)}
+                  >
+                    Remove key
+                  </Button>
+                </div>
               ) : (
                 <div className="flex flex-col gap-2 sm:flex-row">
                   <Input
@@ -644,10 +786,12 @@ export function SettingsPage() {
                       }));
                     }}
                     disabled={focusedBusy}
+                    aria-label={`${focusedProvider.label} API key`}
                   />
                   <Button
                     type="button"
                     size="sm"
+                    variant="accent"
                     disabled={
                       focusedBusy ||
                       !(aiDraftKeys[focusedProvider.id] ?? "").trim()
@@ -663,17 +807,54 @@ export function SettingsPage() {
         </Panel>
       ) : null}
 
+      {tab === "github" ? (
+        <Panel>
+          <PanelIntro
+            title="GitHub"
+            description="Personal access token for PR lists and review submit. Stored in the OS keychain — never shown here."
+          />
+          <div className="space-y-3 rounded-lg border border-stream-github-border/80 bg-stream-github/30 p-4">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <h3 className="text-body-md font-medium text-on-surface">
+                  GitHub PAT
+                </h3>
+                <p className="mt-0.5 text-body-sm text-on-surface-variant">
+                  Current refresh:{" "}
+                  {getSettings().refreshIntervalMin || "off"} · token stays
+                  local to this app.
+                </p>
+              </div>
+              <StatusBadge connected connectedLabel="Token configured" />
+            </div>
+            <p className="font-mono text-xs text-on-surface-variant">
+              Credential · •••••••• (masked)
+            </p>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => void reconnect()}
+            >
+              Reconnect GitHub PAT
+            </Button>
+          </div>
+        </Panel>
+      ) : null}
+
       {tab === "jira" ? (
         <Panel>
           <PanelIntro
             title="Jira Cloud"
             description="Same as AI keys: paste the token, save locally, remove anytime. Used only to list your work items."
           />
-          <div className="space-y-3 rounded-lg border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-900/50">
+          <div className="space-y-3 rounded-lg border border-stream-jira-border/80 bg-stream-jira/30 p-4">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
-                <h3 className="text-sm font-medium">Atlassian API token</h3>
-                <p className="mt-0.5 text-xs text-neutral-500">
+                <h3 className="text-body-md font-medium text-on-surface">
+                  Atlassian API token
+                </h3>
+                <p className="mt-0.5 text-body-sm text-on-surface-variant">
                   Site URL + email + token from Atlassian.{" "}
                   <a
                     href="https://id.atlassian.com/manage-profile/security/api-tokens"
@@ -685,23 +866,24 @@ export function SettingsPage() {
                   </a>
                 </p>
               </div>
-              {jiraPublic ? (
-                <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
-                  Key saved
-                </span>
-              ) : (
-                <span className="text-xs text-neutral-400">No key</span>
-              )}
+              <StatusBadge
+                connected={Boolean(jiraPublic)}
+                connectedLabel="Key saved"
+                disconnectedLabel="No key"
+              />
             </div>
 
             {jiraPublic ? (
               <>
-                <p className="truncate text-sm">
+                <p className="truncate text-body-md text-on-surface">
                   {jiraPublic.displayName}
-                  <span className="block truncate text-xs text-neutral-500">
+                  <span className="block truncate text-body-sm text-on-surface-variant">
                     {jiraPublic.email} ·{" "}
                     {jiraPublic.host.replace(/^https:\/\//, "")}
                   </span>
+                </p>
+                <p className="font-mono text-xs text-on-surface-variant">
+                  API token · •••••••• (masked)
                 </p>
                 <Button
                   type="button"
@@ -741,6 +923,7 @@ export function SettingsPage() {
                   <Button
                     type="button"
                     size="sm"
+                    variant="accent"
                     disabled={
                       jiraBusy ||
                       !jiraHost.trim() ||
@@ -764,35 +947,35 @@ export function SettingsPage() {
             title="Google (Calendar & Gmail)"
             description="One Connect for Calendar and Gmail. IM Review stores a refresh token locally. Enable Calendar API and Gmail API in Google Cloud Console."
           />
-          <div className="space-y-3 rounded-lg border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-900/50">
+          <div className="space-y-3 rounded-lg border border-stream-gmail-border/80 bg-stream-gmail/30 p-4">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
-                <h3 className="text-sm font-medium">Google account</h3>
-                <p className="mt-0.5 text-xs text-neutral-500">
+                <h3 className="text-body-md font-medium text-on-surface">
+                  Google account
+                </h3>
+                <p className="mt-0.5 text-body-sm text-on-surface-variant">
                   Calendar and Gmail share this sign-in. No Client ID needed —
                   the app handles OAuth for you.
                 </p>
               </div>
-              {googlePublic ? (
-                <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
-                  Connected
-                </span>
-              ) : (
-                <span className="text-xs text-neutral-400">Not connected</span>
-              )}
+              <StatusBadge
+                connected={Boolean(googlePublic)}
+                connectedLabel="Connected"
+                disconnectedLabel="Not connected"
+              />
             </div>
 
             {googlePublic ? (
               <>
-                <p className="truncate text-sm">
+                <p className="truncate text-body-md text-on-surface">
                   {googlePublic.name || googlePublic.email}
-                  <span className="block truncate text-xs text-neutral-500">
+                  <span className="block truncate text-body-sm text-on-surface-variant">
                     {googlePublic.email}
                   </span>
                 </p>
-                <p className="text-xs text-neutral-500">
-                  Calendar and Gmail use the same account. If Gmail fails after an
-                  app update, use Connect again to grant new scopes.
+                <p className="text-body-sm text-on-surface-variant">
+                  Calendar and Gmail use the same account. If Gmail fails after
+                  an app update, use Connect again to grant new scopes.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <Button
@@ -838,7 +1021,7 @@ export function SettingsPage() {
                 </div>
                 {googleBusy && googleAuthUrl ? (
                   <div className="space-y-1">
-                    <p className="text-xs text-neutral-500">
+                    <p className="text-body-sm text-on-surface-variant">
                       Browser should open. If not, copy this URL and paste it in
                       a browser:
                     </p>
@@ -858,6 +1041,7 @@ export function SettingsPage() {
                   <Button
                     type="button"
                     size="sm"
+                    variant="accent"
                     disabled={googleBusy || !isGoogleOAuthConfigured()}
                     onClick={() => void connectGoogle()}
                   >
@@ -888,7 +1072,7 @@ export function SettingsPage() {
                 </div>
                 {googleBusy && googleAuthUrl ? (
                   <div className="space-y-1">
-                    <p className="text-xs text-neutral-500">
+                    <p className="text-body-sm text-on-surface-variant">
                       Browser should open. If not, copy this URL and paste it in
                       a browser:
                     </p>
@@ -904,13 +1088,13 @@ export function SettingsPage() {
               </div>
             )}
             {!isGoogleOAuthConfigured() && !googlePublic ? (
-              <p className="text-xs text-amber-700 dark:text-amber-400">
+              <p className="rounded-lg border border-warning/30 bg-warning-container px-3 py-2 text-body-sm text-on-warning-container">
                 This build has no Google OAuth client. Set{" "}
-                <code className="rounded bg-neutral-200 px-1 dark:bg-neutral-800">
+                <code className="rounded bg-surface-container-high px-1 font-mono text-xs">
                   VITE_GOOGLE_OAUTH_CLIENT_ID
                 </code>{" "}
                 and{" "}
-                <code className="rounded bg-neutral-200 px-1 dark:bg-neutral-800">
+                <code className="rounded bg-surface-container-high px-1 font-mono text-xs">
                   VITE_GOOGLE_OAUTH_CLIENT_SECRET
                 </code>{" "}
                 then rebuild.
@@ -939,7 +1123,7 @@ export function SettingsPage() {
           />
 
           {editing ? (
-            <div className="space-y-2 rounded-lg border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-900/50">
+            <div className="space-y-2 rounded-lg border border-border bg-surface-container-low/40 p-4">
               <Input
                 placeholder="Template name"
                 value={editing.name}
@@ -956,7 +1140,12 @@ export function SettingsPage() {
                 }
               />
               <div className="flex gap-2">
-                <Button type="button" size="sm" onClick={saveTemplate}>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="accent"
+                  onClick={saveTemplate}
+                >
                   Save template
                 </Button>
                 <Button
@@ -973,7 +1162,7 @@ export function SettingsPage() {
 
           <ScrollList>
             {templates.length === 0 ? (
-              <li className="px-4 py-8 text-center text-sm text-neutral-500">
+              <li className="px-4 py-8 text-center text-body-md text-on-surface-variant">
                 No templates yet.
               </li>
             ) : (
@@ -987,8 +1176,10 @@ export function SettingsPage() {
                     className="min-w-0 flex-1 text-left"
                     onClick={() => setEditing(t)}
                   >
-                    <div className="text-sm font-medium">{t.name}</div>
-                    <div className="mt-0.5 line-clamp-2 text-xs text-neutral-500">
+                    <div className="text-body-md font-medium text-on-surface">
+                      {t.name}
+                    </div>
+                    <div className="mt-0.5 line-clamp-2 text-body-sm text-on-surface-variant">
                       {t.body}
                     </div>
                   </button>
@@ -997,10 +1188,7 @@ export function SettingsPage() {
                     size="icon"
                     variant="ghost"
                     aria-label={`Delete ${t.name}`}
-                    onClick={() => {
-                      deleteTemplate(t.id);
-                      toast.success("Template deleted");
-                    }}
+                    onClick={() => setPendingDeleteTemplate(t)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -1034,7 +1222,7 @@ export function SettingsPage() {
               />
               <ScrollList>
                 {favorites.length === 0 ? (
-                  <li className="px-3 py-4 text-sm text-neutral-500">
+                  <li className="px-3 py-4 text-body-sm text-on-surface-variant">
                     No favorite repos. Click Restore defaults.
                   </li>
                 ) : (
@@ -1087,7 +1275,7 @@ export function SettingsPage() {
               />
               <ScrollList>
                 {favoriteBranches.length === 0 ? (
-                  <li className="px-3 py-4 text-sm text-neutral-500">
+                  <li className="px-3 py-4 text-body-sm text-on-surface-variant">
                     No favorite branches yet.
                   </li>
                 ) : (
@@ -1097,10 +1285,10 @@ export function SettingsPage() {
                       className="flex items-start justify-between gap-3 px-3 py-3"
                     >
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">
+                        <p className="truncate text-body-md font-medium text-on-surface">
                           {b.title}
                         </p>
-                        <p className="mt-0.5 font-mono text-xs text-neutral-500">
+                        <p className="mt-0.5 font-mono text-xs text-on-surface-variant">
                           {b.repo} · {b.branch} · #{b.prNumber}
                         </p>
                       </div>
@@ -1152,13 +1340,18 @@ export function SettingsPage() {
                 onChange={(e) => setPersonLogin(e.target.value)}
                 aria-label="GitHub login to favorite"
               />
-              <Button type="submit" size="sm" disabled={personBusy}>
+              <Button
+                type="submit"
+                size="sm"
+                variant="accent"
+                disabled={personBusy}
+              >
                 Add
               </Button>
             </form>
             <ScrollList>
               {favoriteUsers.length === 0 ? (
-                <li className="px-3 py-4 text-sm text-neutral-500">
+                <li className="px-3 py-4 text-body-sm text-on-surface-variant">
                   No favorite people yet.
                 </li>
               ) : (
@@ -1168,10 +1361,10 @@ export function SettingsPage() {
                     className="flex items-center justify-between gap-3 px-3 py-2.5"
                   >
                     <span className="min-w-0">
-                      <span className="block truncate text-sm font-medium">
+                      <span className="block truncate text-body-md font-medium text-on-surface">
                         {user.name ?? user.login}
                       </span>
-                      <span className="block truncate font-mono text-xs text-neutral-500">
+                      <span className="block truncate font-mono text-xs text-on-surface-variant">
                         @{user.login}
                       </span>
                     </span>
@@ -1210,7 +1403,7 @@ export function SettingsPage() {
           />
           <ScrollList>
             {savedReviews.length === 0 ? (
-              <li className="px-3 py-4 text-sm text-neutral-500">
+              <li className="px-3 py-4 text-body-sm text-on-surface-variant">
                 No submitted reviews saved yet.
               </li>
             ) : (
@@ -1218,10 +1411,10 @@ export function SettingsPage() {
                 <li key={r.id} className="space-y-2 px-3 py-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">
+                      <p className="truncate text-body-md font-medium text-on-surface">
                         {r.prTitle}
                       </p>
-                      <p className="mt-0.5 text-xs text-neutral-500">
+                      <p className="mt-0.5 text-body-sm text-on-surface-variant">
                         <span className="font-mono">
                           {r.repo}#{r.prNumber}
                         </span>
@@ -1240,15 +1433,12 @@ export function SettingsPage() {
                       size="icon"
                       variant="ghost"
                       aria-label="Delete saved review"
-                      onClick={() => {
-                        deleteSavedReview(r.id);
-                        toast.success("Removed from history");
-                      }}
+                      onClick={() => setPendingDeleteReviewId(r.id)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
-                  <p className="line-clamp-3 text-xs text-neutral-600 dark:text-neutral-400">
+                  <p className="line-clamp-3 text-body-sm text-on-surface-variant">
                     {r.summary}
                   </p>
                   <Button asChild type="button" size="sm" variant="outline">
@@ -1262,6 +1452,87 @@ export function SettingsPage() {
           </ScrollList>
         </Panel>
       ) : null}
+      </TabsPanel>
+
+      <Dialog
+        open={pendingDeleteTemplate != null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDeleteTemplate(null);
+        }}
+      >
+        <DialogContent side="center" className="max-w-sm p-0">
+          <DialogHeader>
+            <DialogTitle>Delete template?</DialogTitle>
+            <DialogDescription>
+              {pendingDeleteTemplate
+                ? `Remove “${pendingDeleteTemplate.name}” from local templates.`
+                : "Remove this template."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 px-5 py-4">
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => setPendingDeleteTemplate(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="destructive"
+              onClick={() => {
+                if (!pendingDeleteTemplate) return;
+                deleteTemplate(pendingDeleteTemplate.id);
+                setPendingDeleteTemplate(null);
+                toast.success("Template deleted");
+              }}
+            >
+              Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={pendingDeleteReviewId != null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDeleteReviewId(null);
+        }}
+      >
+        <DialogContent side="center" className="max-w-sm p-0">
+          <DialogHeader>
+            <DialogTitle>Delete history entry?</DialogTitle>
+            <DialogDescription>
+              Remove this local submitted-review copy. GitHub is unchanged.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 px-5 py-4">
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => setPendingDeleteReviewId(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="destructive"
+              onClick={() => {
+                if (!pendingDeleteReviewId) return;
+                deleteSavedReview(pendingDeleteReviewId);
+                setPendingDeleteReviewId(null);
+                toast.success("Removed from history");
+              }}
+            >
+              Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }

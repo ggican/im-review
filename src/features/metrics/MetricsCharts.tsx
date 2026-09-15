@@ -1,3 +1,11 @@
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
 import type { DailyActivityPoint, MetricsScorecard } from "./types";
 
 function GroupedScoreChart({
@@ -11,22 +19,22 @@ function GroupedScoreChart({
     {
       label: "Speed",
       current: current.speed.score,
-      previous: previous?.speed.score ?? 0,
+      previous: previous?.speed.score,
     },
     {
       label: "Throughput",
       current: current.throughput.score,
-      previous: previous?.throughput.score ?? 0,
+      previous: previous?.throughput.score,
     },
     {
       label: "Quality",
       current: current.quality.score,
-      previous: previous?.quality.score ?? 0,
+      previous: previous?.quality.score,
     },
     {
       label: "Collab",
       current: current.collaboration.score,
-      previous: previous?.collaboration.score ?? 0,
+      previous: previous?.collaboration.score,
     },
   ];
 
@@ -34,24 +42,24 @@ function GroupedScoreChart({
     <div className="space-y-3">
       {rows.map((row) => (
         <div key={row.label}>
-          <div className="mb-1 flex items-center justify-between text-xs text-neutral-500">
+          <div className="mb-1 flex items-center justify-between text-body-sm text-on-surface-variant">
             <span>{row.label}</span>
-            <span className="tabular-nums">
+            <span className="font-keycap tabular-nums">
               {row.current}
-              {previous ? ` / prev ${row.previous}` : ""}
+              {row.previous != null ? ` / prev ${row.previous}` : ""}
             </span>
           </div>
           <div className="flex h-4 gap-1">
-            <div className="relative flex-1 overflow-hidden rounded-md bg-neutral-100 dark:bg-neutral-800">
+            <div className="relative flex-1 overflow-hidden rounded-md bg-surface-container-high">
               <div
-                className="absolute inset-y-0 left-0 rounded-md bg-neutral-900 dark:bg-neutral-100"
+                className="absolute inset-y-0 left-0 rounded-md bg-primary"
                 style={{ width: `${row.current}%` }}
               />
             </div>
-            {previous ? (
-              <div className="relative flex-1 overflow-hidden rounded-md bg-neutral-100 dark:bg-neutral-800">
+            {previous && row.previous != null ? (
+              <div className="relative flex-1 overflow-hidden rounded-md bg-surface-container-high">
                 <div
-                  className="absolute inset-y-0 left-0 rounded-md bg-neutral-400 dark:bg-neutral-600"
+                  className="absolute inset-y-0 left-0 rounded-md bg-outline-variant"
                   style={{ width: `${row.previous}%` }}
                 />
               </div>
@@ -59,14 +67,14 @@ function GroupedScoreChart({
           </div>
         </div>
       ))}
-      <div className="flex gap-3 text-xs text-neutral-400">
+      <div className="flex gap-3 text-body-sm text-on-surface-variant">
         <span className="inline-flex items-center gap-1">
-          <span className="h-2 w-2 rounded-sm bg-neutral-900 dark:bg-neutral-100" />
+          <span className="h-2 w-2 rounded-sm bg-primary" />
           Current
         </span>
         {previous ? (
           <span className="inline-flex items-center gap-1">
-            <span className="h-2 w-2 rounded-sm bg-neutral-400" />
+            <span className="h-2 w-2 rounded-sm bg-outline-variant" />
             Previous
           </span>
         ) : null}
@@ -98,7 +106,17 @@ function polyline(
 function ActivityChart({ points }: { points: DailyActivityPoint[] }) {
   if (points.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-neutral-500">
+      <p className="py-8 text-center text-body-md text-on-surface-variant">
+        No activity in this window.
+      </p>
+    );
+  }
+
+  const hasAny =
+    points.some((p) => p.created > 0 || p.merged > 0 || p.reviewed > 0);
+  if (!hasAny) {
+    return (
+      <p className="py-8 text-center text-body-md text-on-surface-variant">
         No activity in this window.
       </p>
     );
@@ -137,33 +155,31 @@ function ActivityChart({ points }: { points: DailyActivityPoint[] }) {
             width={b.barW}
             height={b.h}
             rx="4"
-            className="fill-neutral-900 dark:fill-neutral-100"
+            className="fill-primary"
             opacity={0.85}
           />
         ))}
         <polyline
           fill="none"
           strokeWidth="2"
-          className="stroke-emerald-600 dark:stroke-emerald-400"
+          className="stroke-success"
           points={polyline(merged, width, height, pad)}
         />
         <polyline
           fill="none"
           strokeWidth="2"
-          className="stroke-sky-600 dark:stroke-sky-400"
+          className="stroke-primary-container"
           points={polyline(reviewed, width, height, pad)}
         />
       </svg>
-      <div className="mt-2 flex flex-wrap justify-between gap-2 text-xs text-neutral-400">
-        <span>{points[0]?.date}</span>
+      <div className="mt-2 flex flex-wrap justify-between gap-2 text-body-sm text-on-surface-variant">
+        <span className="font-keycap">{points[0]?.date}</span>
         <span className="inline-flex items-center gap-3">
           <span>Bars: created</span>
-          <span className="text-emerald-700 dark:text-emerald-400">
-            Line: merged
-          </span>
-          <span className="text-sky-700 dark:text-sky-400">Line: reviewed</span>
+          <span className="text-success">Line: merged</span>
+          <span className="text-primary">Line: reviewed</span>
         </span>
-        <span>{points[points.length - 1]?.date}</span>
+        <span className="font-keycap">{points[points.length - 1]?.date}</span>
       </div>
     </div>
   );
@@ -180,21 +196,29 @@ export function MetricsCharts({
 }) {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <section className="rounded-lg border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-950">
-        <h2 className="text-sm font-semibold">Score vs previous period</h2>
-        <p className="mt-1 mb-4 text-xs text-neutral-500">
-          Dark bar is current window. Gray bar is the previous window of the
-          same length.
-        </p>
-        <GroupedScoreChart current={current} previous={previous} />
-      </section>
-      <section className="rounded-lg border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-950">
-        <h2 className="text-sm font-semibold">Daily activity</h2>
-        <p className="mt-1 mb-4 text-xs text-neutral-500">
-          PRs created each day, with merged and reviewed overlays.
-        </p>
-        <ActivityChart points={daily} />
-      </section>
+      <Card padding="default">
+        <CardHeader className="mb-3">
+          <CardTitle className="text-title-md">Score vs previous period</CardTitle>
+          <CardDescription>
+            Teal bar is current window. Gray bar is the previous window of the
+            same length.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <GroupedScoreChart current={current} previous={previous} />
+        </CardContent>
+      </Card>
+      <Card padding="default">
+        <CardHeader className="mb-3">
+          <CardTitle className="text-title-md">Daily activity</CardTitle>
+          <CardDescription>
+            PRs created each day, with merged and reviewed overlays.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ActivityChart points={daily} />
+        </CardContent>
+      </Card>
     </div>
   );
 }

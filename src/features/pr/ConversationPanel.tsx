@@ -3,6 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import type { CommentTemplate } from "@/lib/settings";
 import { relativeTime } from "@/lib/time";
@@ -94,34 +95,39 @@ export function ConversationPanel({
   }
 
   return (
-    <section className="space-y-3 rounded-lg border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-950">
+    <Card padding="default" className="space-y-3">
       <div className="flex items-center gap-2">
-        <MessageSquare className="h-4 w-4 text-neutral-400" />
-        <h2 className="text-sm font-semibold">Conversation</h2>
-        <span className="text-xs text-neutral-400">
+        <MessageSquare className="h-4 w-4 text-on-surface-variant" aria-hidden />
+        <h2 className="font-headline text-title-md font-semibold text-on-surface">
+          Conversation
+        </h2>
+        <span className="text-body-sm text-on-surface-variant">
           ({comments.length} comment{comments.length === 1 ? "" : "s"})
         </span>
       </div>
-      <p className="text-xs text-neutral-500">
+      <p className="text-body-sm text-on-surface-variant">
         Issue-level comments on this PR (same as the Conversation tab on
         GitHub).
       </p>
 
       {loading ? (
-        <div className="flex items-center gap-2 text-sm text-neutral-500">
-          <Loader2 className="h-4 w-4 animate-spin" />
+        <div className="flex items-center gap-2 text-body-md text-on-surface-variant">
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
           Loading comments…
         </div>
       ) : null}
 
       {error ? (
-        <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+        <div
+          role="alert"
+          className="rounded-lg border border-warning/30 bg-warning-container px-3 py-2 text-body-sm text-on-warning-container"
+        >
           {error}
         </div>
       ) : null}
 
       {!loading && !error && comments.length === 0 ? (
-        <p className="py-4 text-center text-sm text-neutral-500">
+        <p className="py-4 text-center text-body-md text-on-surface-variant">
           No conversation comments yet.
         </p>
       ) : null}
@@ -131,9 +137,9 @@ export function ConversationPanel({
           {comments.map((c) => (
             <li
               key={c.id}
-              className="rounded-md border border-neutral-200 px-3 py-2.5 dark:border-neutral-800"
+              className="rounded-lg border border-border bg-surface-container-low/40 px-3 py-2.5"
             >
-              <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-500">
+              <div className="flex flex-wrap items-center gap-2 text-body-sm text-on-surface-variant">
                 {c.avatarUrl ? (
                   <img
                     src={c.avatarUrl}
@@ -141,16 +147,14 @@ export function ConversationPanel({
                     className="h-4 w-4 rounded-full"
                   />
                 ) : null}
-                <span className="font-medium text-neutral-800 dark:text-neutral-200">
-                  {c.user}
-                </span>
+                <span className="font-medium text-on-surface">{c.user}</span>
                 <span aria-hidden>·</span>
                 <span>{relativeTime(c.createdAt)}</span>
                 <a
                   href={c.htmlUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="ml-auto underline underline-offset-2"
+                  className="ml-auto underline underline-offset-2 hover:text-on-surface"
                 >
                   GitHub
                 </a>
@@ -168,9 +172,7 @@ export function ConversationPanel({
                     <Button
                       type="button"
                       size="sm"
-                      disabled={
-                        rowBusy || writeDisabled || !editBody.trim()
-                      }
+                      disabled={rowBusy || writeDisabled || !editBody.trim()}
                       onClick={() => void saveEdit(c.id)}
                     >
                       Save
@@ -188,7 +190,7 @@ export function ConversationPanel({
                 </div>
               ) : (
                 <>
-                  <p className="mt-2 text-sm whitespace-pre-wrap text-neutral-800 dark:text-neutral-200">
+                  <p className="mt-2 text-body-md whitespace-pre-wrap text-on-surface">
                     {c.body}
                   </p>
                   {c.isOwn ? (
@@ -223,7 +225,7 @@ export function ConversationPanel({
         </ul>
       ) : null}
 
-      <div className="space-y-2 border-t border-neutral-200 pt-3 dark:border-neutral-800">
+      <div className="space-y-2 border-t border-border pt-3">
         {templates.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {templates.map((t) => (
@@ -232,7 +234,7 @@ export function ConversationPanel({
                 type="button"
                 disabled={posting || writeDisabled}
                 onClick={() => setBody(t.body)}
-                className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                className="rounded-md border border-border bg-surface-container-lowest px-2 py-1 text-xs font-medium text-on-surface hover:bg-surface-container-low"
                 title={t.body}
               >
                 {t.name}
@@ -257,11 +259,11 @@ export function ConversationPanel({
           Comment
         </Button>
         {writeDisabled ? (
-          <p className="text-xs text-amber-700 dark:text-amber-300">
+          <p className="text-body-sm text-warning">
             Writes paused after a GitHub rate limit — wait a few minutes.
           </p>
         ) : null}
       </div>
-    </section>
+    </Card>
   );
 }

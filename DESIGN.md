@@ -1,201 +1,291 @@
 ---
 name: IM Review
-description: Dense desktop Operate UI for GitHub PR triage and AI-assisted review.
+description: Technical Workspace desktop Operate UI for PR, Jira, Gmail, Calendar, and AI review.
 colors:
-  ink: "#171717"
-  ink-soft: "#737373"
-  paper: "#fafafa"
-  paper-raised: "#ffffff"
-  paper-dark: "#0a0a0a"
-  ink-dark: "#f5f5f5"
-  border: "#e5e5e5"
-  border-dark: "#262626"
-  danger: "#dc2626"
-  success: "#059669"
-  favorite: "#fbbf24"
+  background: "#f9f9f8"
+  surface: "#f9f9f8"
+  surface-dim: "#d9dad9"
+  surface-bright: "#f9f9f8"
+  surface-container-lowest: "#ffffff"
+  surface-container-low: "#f3f4f3"
+  surface-container: "#edeeed"
+  surface-container-high: "#e7e8e7"
+  surface-container-highest: "#e1e3e2"
+  surface-variant: "#e1e3e2"
+  on-background: "#191c1c"
+  on-surface: "#191c1c"
+  on-surface-variant: "#3b4a47"
+  inverse-surface: "#2e3131"
+  inverse-on-surface: "#f0f1f0"
+  chrome: "#111318"
+  chrome-foreground: "#ffffff"
+  chrome-muted: "#889096"
+  chrome-recessed: "#1e222b"
+  primary: "#006a62"
+  on-primary: "#ffffff"
+  primary-container: "#00e5d4"
+  on-primary-container: "#00625a"
+  inverse-primary: "#00dece"
+  accent: "#00e5d4"
+  secondary: "#5d5e64"
+  on-secondary: "#ffffff"
+  secondary-container: "#dfdfe6"
+  on-secondary-container: "#616269"
+  tertiary: "#006b58"
+  on-tertiary: "#ffffff"
+  tertiary-container: "#00e7c0"
+  on-tertiary-container: "#006351"
+  outline: "#6a7a77"
+  outline-variant: "#b9cac6"
+  border: "#e5e9e8"
+  error: "#ba1a1a"
+  on-error: "#ffffff"
+  error-container: "#ffdad6"
+  on-error-container: "#93000a"
+  success: "#0e6e3e"
+  success-container: "#e9f9f0"
+  on-success-container: "#0e6e3e"
+  warning: "#8a4c07"
+  warning-container: "#fef6e9"
+  on-warning-container: "#8a4c07"
+  stream-github: "#e5faf7"
+  stream-github-border: "#b6f3ec"
+  stream-github-fg: "#006e66"
+  stream-jira: "#fef6e9"
+  stream-jira-border: "#fde2b8"
+  stream-jira-fg: "#8a4c07"
+  stream-gmail: "#edf4fe"
+  stream-gmail-border: "#c6dcfc"
+  stream-gmail-fg: "#194b8c"
+  stream-calendar: "#f3effc"
+  stream-calendar-border: "#ddcff7"
+  stream-calendar-fg: "#4b2b85"
+  stream-ai: "#e9f9f0"
+  stream-ai-border: "#b5eed0"
+  stream-ai-fg: "#0e6e3e"
+  background-dark: "#0b0e14"
+  surface-dark: "#111318"
+  on-surface-dark: "#e5e7eb"
+  on-surface-variant-dark: "#9aa3ad"
+  border-dark: "#222733"
+  primary-dark: "#00dece"
+  on-primary-dark: "#00201d"
 typography:
-  title:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "1.25rem"
+  headline-xl:
+    fontFamily: "Space Grotesk, Inter, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "2.25rem"
+    fontWeight: 700
+    lineHeight: 1.22
+  headline-lg:
+    fontFamily: "Space Grotesk, Inter, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "1.75rem"
+    fontWeight: 600
+    lineHeight: 1.29
+  headline-md:
+    fontFamily: "Space Grotesk, Inter, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "1.375rem"
+    fontWeight: 600
+    lineHeight: 1.27
+  headline-sm:
+    fontFamily: "Space Grotesk, Inter, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "1.125rem"
+    fontWeight: 600
+    lineHeight: 1.33
+  title-md:
+    fontFamily: "Plus Jakarta Sans, Inter, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "1rem"
     fontWeight: 600
     lineHeight: 1.375
-  body:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "0.875rem"
+  body-lg:
+    fontFamily: "Plus Jakarta Sans, Inter, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.9375rem"
     fontWeight: 400
-    lineHeight: 1.5
-  label:
-    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
+    lineHeight: 1.47
+  body-md:
+    fontFamily: "Plus Jakarta Sans, Inter, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.8125rem"
+    fontWeight: 400
+    lineHeight: 1.46
+  body-sm:
+    fontFamily: "Plus Jakarta Sans, Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: "0.75rem"
+    fontWeight: 400
+    lineHeight: 1.42
+  label-md:
+    fontFamily: "Plus Jakarta Sans, Inter, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.8125rem"
+    fontWeight: 600
+    lineHeight: 1.23
+  label-sm:
+    fontFamily: "Plus Jakarta Sans, Inter, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.6875rem"
+    fontWeight: 600
+    lineHeight: 1.27
+  code-md:
+    fontFamily: "JetBrains Mono, ui-monospace, Menlo, Monaco, Consolas, monospace"
+    fontSize: "0.8125rem"
     fontWeight: 500
-    lineHeight: 1.33
-  mono:
-    fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
-    fontSize: "0.75rem"
-    fontWeight: 400
-    lineHeight: 1.33
+    lineHeight: 1.38
+  code-sm:
+    fontFamily: "JetBrains Mono, ui-monospace, Menlo, Monaco, Consolas, monospace"
+    fontSize: "0.6875rem"
+    fontWeight: 500
+    lineHeight: 1.36
+  key-shortcut:
+    fontFamily: "JetBrains Mono, ui-monospace, Menlo, Monaco, Consolas, monospace"
+    fontSize: "0.625rem"
+    fontWeight: 600
+    lineHeight: 1.2
 rounded:
-  sm: "4px"
-  md: "6px"
-  lg: "8px"
+  xs: "0.25rem"
+  sm: "0.5rem"
+  md: "0.75rem"
+  lg: "1rem"
+  xl: "1.25rem"
+  "2xl": "1.5rem"
+  window: "1.75rem"
+  full: "9999px"
 spacing:
-  xs: "4px"
-  sm: "8px"
-  md: "16px"
-  lg: "24px"
-  xl: "32px"
+  xs: "0.25rem"
+  sm: "0.5rem"
+  md: "0.875rem"
+  lg: "1.25rem"
+  xl: "1.75rem"
+  gutter: "1rem"
+  margin: "1.25rem"
 components:
   button-primary:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.paper}"
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.on-primary}"
     rounded: "{rounded.md}"
     padding: "8px 16px"
     height: "36px"
   button-primary-hover:
-    backgroundColor: "#262626"
-    textColor: "{colors.paper}"
+    backgroundColor: "{colors.on-primary-container}"
+    textColor: "{colors.on-primary}"
+  button-accent:
+    backgroundColor: "{colors.primary-container}"
+    textColor: "{colors.on-primary-container}"
+    rounded: "{rounded.md}"
   button-outline:
     backgroundColor: "transparent"
-    textColor: "{colors.ink}"
+    textColor: "{colors.on-surface}"
     rounded: "{rounded.md}"
-    padding: "8px 16px"
-    height: "36px"
   button-ghost:
     backgroundColor: "transparent"
-    textColor: "{colors.ink}"
+    textColor: "{colors.on-surface}"
     rounded: "{rounded.md}"
-    padding: "8px 16px"
-    height: "36px"
   button-destructive:
-    backgroundColor: "{colors.danger}"
-    textColor: "#ffffff"
+    backgroundColor: "{colors.error}"
+    textColor: "{colors.on-error}"
     rounded: "{rounded.md}"
-    padding: "8px 16px"
-    height: "36px"
   input:
-    backgroundColor: "{colors.paper-raised}"
-    textColor: "{colors.ink}"
+    backgroundColor: "{colors.surface-container-lowest}"
+    textColor: "{colors.on-surface}"
     rounded: "{rounded.md}"
     padding: "4px 12px"
     height: "36px"
   surface-card:
-    backgroundColor: "{colors.paper-raised}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.lg}"
+    backgroundColor: "{colors.surface-container-lowest}"
+    textColor: "{colors.on-surface}"
+    rounded: "{rounded.xl}"
     padding: "0"
+  badge:
+    rounded: "{rounded.full}"
+    fontSize: "{typography.label-sm.fontSize}"
 ---
 
 # Design System: IM Review
 
 ## Overview
 
-**Creative North Star: "The Review Desk"**
+**Creative North Star: "Technical Workspace"**
 
-*(Inferred from incumbent code during `/impeccable document` scan — not a user-named metaphor. Confirm or rename anytime.)*
-
-IM Review's shipped UI is a quiet, dense desktop tool surface: Inter + Tailwind neutrals, light paper backgrounds, flat bordered lists, and sparse amber/emerald/red status accents. It prioritizes scanability of PR queues and review workflows over brand theater. Depth comes from borders and tonal surfaces, not shadows or gradients.
+Aligned to the Google Stitch export (`docs/design/stitch-export/technical_workspace`) and the product logo cyan. IM Review is a calm engineering work desk: soft chalk canvas, deep chrome navigation, vivid cyan accents, and dense scanable lists for PRs, Jira, Gmail, Calendar, and AI review.
 
 **Key Characteristics:**
-- Flat Operate density (lists, tabs, compact headers)
-- Neutral ink/paper palette with light + dark themes
-- Inter for UI; monospace only for repo/branch/path metadata
-- Lucide icons; no emoji-as-icon
-- Borders and soft fills for structure; almost no elevation shadows
+- Soft off-white canvas with layered surface containers
+- Brand cyan (`#00E5D4`) as primary-container / accent; deep teal (`#006A62`) for primary actions (light)
+- Space Grotesk headlines, Plus Jakarta Sans body, JetBrains Mono metadata (Inter as shipped fallback until font packages land)
+- Lucide icons (not Material Symbols)
+- Soft card elevation + hairline borders; pill status badges
 
 ## Colors
 
-A restrained neutral system with rare semantic accents.
+### Brand & chrome
+- **Primary** `#006A62` / dark `#00DECE`: primary actions
+- **Primary container / Accent** `#00E5D4`: focus rings, brand highlights, logo-aligned cyan
+- **Chrome** `#111318`: top navigation shell
+- **Canvas** `#F9F9F8`: work surface background
 
-### Primary
-- **Graphite Ink** (#171717 / Tailwind `neutral-900`): Primary buttons and strong text in light mode.
+### Semantic streams (pastel cards)
+- GitHub: bg `#E5FAF7` / border `#B6F3EC` / fg `#006E66`
+- Jira: bg `#FEF6E9` / border `#FDE2B8` / fg `#8A4C07`
+- Gmail: bg `#EDF4FE` / border `#C6DCFC` / fg `#194B8C`
+- Calendar: bg `#F3EFFC` / border `#DDCFF7` / fg `#4B2B85`
+- AI / success mint: bg `#E9F9F0` / border `#B5EED0` / fg `#0E6E3E`
 
-### Secondary
-- *None as a brand accent.* Secondary actions use outline/ghost neutrals.
-
-### Tertiary
-- **Favorite Amber** (#fbbf24 / `amber-400`): Star/favorite affordances only.
-- **Signal Emerald** (#059669): Success / connected / positive meta.
-- **Alert Red** (#dc2626 / `red-600`): Destructive actions and error banners.
-
-### Neutral
-- **Cool Paper** (#fafafa / `neutral-50`): App background (light).
-- **Raised Paper** (#ffffff): Cards, list shells.
-- **Soft Ink** (#737373 / `neutral-500`): Secondary labels and meta.
-- **Hairline Border** (#e5e5e5 / `neutral-200`): List and section borders.
-- **Night Paper** (#0a0a0a / `neutral-950`): Dark-mode body background.
-- **Night Ink** (#f5f5f5 / `neutral-100`): Dark-mode primary text.
+### Status
+- Error `#BA1A1A`, Warning `#8A4C07`, Success `#0E6E3E`
 
 ### Named Rules
-**The Quiet Accent Rule.** Amber, emerald, and red appear only for status or favorite semantics — never as large brand washes or hero gradients.
+**The Cyan Accent Rule.** Large brand washes use `primary-container`; graphite/neutral-only chrome is reserved for the dark top shell, not the whole app.
 
 ## Typography
 
-**Display Font:** Inter (same as body; no separate display face shipped)
-**Body Font:** Inter (`@fontsource/inter` 400/500/600)
-**Label/Mono Font:** system UI monospace for `owner/repo`, branches, paths
-
-**Character:** Neutral product sans — legible at 12–14px in dense lists; hierarchy via weight and size, not decorative fonts.
+**Display:** Space Grotesk (fallback Inter)  
+**Body / UI:** Plus Jakarta Sans (fallback Inter)  
+**Mono:** JetBrains Mono (fallback system mono)
 
 ### Hierarchy
-- **Title** (600, ~20px / `text-xl` or `text-lg`): Page and PR titles.
-- **Body** (400, 14px / `text-sm`): Primary readable content.
-- **Label** (500–600, 12px / `text-xs`, often uppercase tracking on section headers): Meta, filters, section labels.
-- **Mono** (400, 12px): Repo keys, branches, file paths.
+- Headline XL→SM for section titles
+- Title MD / Body LG–SM for content
+- Label MD/SM for chips and filters
+- Code MD/SM + key-shortcut (`0.625rem`) for `⌘K`, branches, issue keys
 
-### Named Rules
-**The One Family Rule.** Do not introduce a second UI sans (e.g. IBM Plex) into shipped screens unless PRODUCT/DESIGN are intentionally redesigned together.
+## Layout & Spacing
 
-## Layout
-
-Desktop-first single-column app chrome: compact top bars, full-width list panels, bordered rounded containers (`rounded-lg`), generous empty states (`py-16`). Spacing follows Tailwind 4/8/16/24 rhythm. PR detail uses tabbed content (detail / files / reviews / AI) rather than multi-column dashboards.
+8px-adjacent rhythm via `xs/sm/md/lg/xl` plus `gutter` and `margin`. Desktop-first; foundation tokens only — page chrome composition comes later.
 
 ## Elevation & Depth
 
-Mostly flat. Cards and lists use 1px borders + surface color changes. Inputs may use a subtle `shadow-sm`. No glow, glassmorphism, or multi-layer drop shadows.
-
-### Named Rules
-**The Flat-By-Default Rule.** Prefer border + background shift over shadow for grouping.
+Cards use subtle dual-layer shadow + 1px `border`. Floating modules use stronger float shadow. Prefer surface-container steps over heavy gradients.
 
 ## Shapes
 
-Consistent small radii: controls `rounded-md` (~6px), panels `rounded-lg` (~8px). Rectangular list rows with dividers. No pill-heavy chrome.
+- Controls: `md` (0.75rem)
+- Panels: `lg`–`xl`
+- Status badges / pills: `full` (9999px)
+- Window shell (mock only): `window` (1.75rem) — not used in Tauri chrome
 
-## Components
+## Components (foundation)
 
 ### Buttons
-- **Shape:** `rounded-md`, height 36px default (`h-9`)
-- **Primary:** Graphite fill / paper text; hover darker graphite
-- **Outline / Ghost:** Neutral borders or hover wash
-- **Destructive:** Red-600 fill
-- **Focus:** `ring-2 ring-neutral-400`
+Primary (teal), accent (cyan container), outline, ghost, secondary, destructive; sizes sm/default/lg/icon.
 
-### Cards / Containers
-- **Corner Style:** `rounded-lg`
-- **Background:** white / dark neutral-950
-- **Border:** neutral-200 / neutral-800
-- **Shadow Strategy:** none by default
+### Icon buttons
+Square `icon` / `icon-sm` using the same variants.
 
-### Inputs / Fields
-- **Style:** bordered, white/dark fill, `h-9`, `rounded-md`
-- **Focus:** neutral ring
-- **Placeholder:** neutral-400
+### Badges
+Neutral, primary, accent, success, warning, error, outline, plus stream variants (github/jira/gmail/calendar/ai).
 
-### Navigation
-Header row with product/context title, icon buttons (Settings, Repos, Logout), and filter toggles. PR detail uses text/tabs for mode switching.
+### Tabs
+Pill track on `surface-container-low`; active trigger on `surface-container-lowest` with soft shadow.
 
-### Status chips
-Small tinted pills for review state (e.g. red/amber/neutral backgrounds) — semantic only.
+### Cards
+`surface-card` utility / `Card` primitive: lowest container, border, xl radius, card shadow.
+
+### Inputs
+Bordered fields on lowest surface; focus ring uses `primary-container`.
 
 ## Do's and Don'ts
 
-### Do:
-- **Do** keep list density high and meta in `text-xs` / mono where appropriate.
-- **Do** support light and dark via `html.dark` + neutral pairs.
-- **Do** use Lucide icons at ~14–16px beside labels.
-- **Do** treat `design-system/pr-helper/MASTER.md` as a *proposal* unless a redesign is explicitly approved.
+### Do
+- **Do** use semantic tokens (`bg-background`, `text-on-surface`, `border-border`) over raw neutrals for new UI.
+- **Do** keep Lucide as the icon set.
+- **Do** keep existing logo assets.
 
-### Don't:
-- **Don't** ship purple-gradient SaaS chrome, glow shadows, or emoji icon rows on Operate screens.
-- **Don't** replace Inter globally without an explicit redesign pass.
-- **Don't** invent marketing hero layouts inside the authenticated app shell.
-- **Don't** treat Pro Max dark slate/gold tokens as incumbent until DESIGN.md is rewritten for that world.
+### Don't
+- **Don't** ship fake macOS traffic lights inside the Tauri window.
+- **Don't** paste Stitch HTML/CDN Tailwind/Material Symbols.
+- **Don't** replace auth, APIs, or routes as part of the foundation pass.

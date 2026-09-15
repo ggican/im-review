@@ -5,7 +5,18 @@ import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { PageHeader, PageShell } from "@/components/layout/PageShell";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ErrorBlock, LoadingBlock } from "@/components/ui/feedback";
+import { cn } from "@/lib/cn";
+import { favoriteStarClass } from "@/lib/favorite-styles";
 import { useGooglePublic } from "@/lib/use-settings";
 
 import {
@@ -121,12 +132,19 @@ export function GmailMessagePage() {
     return (
       <PageShell>
         <PageHeader backTo="/gmail" title="Gmail" subtitle="Connect first" />
-        <p className="text-sm text-neutral-500">
-          No Google account connected.{" "}
-          <Link to="/settings" className="underline underline-offset-2">
-            Connect in Settings
-          </Link>
-        </p>
+        <Card padding="default" className="border-stream-gmail-border/80">
+          <CardHeader className="mb-2">
+            <CardTitle className="text-title-md">Gmail not connected</CardTitle>
+            <CardDescription>
+              Connect Google in Settings to open messages.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild size="sm" variant="accent">
+              <Link to="/settings">Connect in Settings</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </PageShell>
     );
   }
@@ -137,6 +155,11 @@ export function GmailMessagePage() {
         backTo="/gmail"
         title={message?.subject ?? messageId}
         subtitle={message?.from}
+        leading={
+          <Badge variant="gmail" className="mt-1">
+            Gmail
+          </Badge>
+        }
         actions={
           <Button
             type="button"
@@ -152,103 +175,147 @@ export function GmailMessagePage() {
       />
 
       {loading ? (
-        <div className="flex items-center gap-2 text-sm text-neutral-500">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Loading message…
-        </div>
+        <LoadingBlock>Loading message…</LoadingBlock>
       ) : error ? (
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        <ErrorBlock tone="warning">{error}</ErrorBlock>
       ) : message ? (
-        <div className="space-y-5">
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              disabled={saving}
-              onClick={() => void toggleRead()}
-            >
-              {message.unread ? "Mark read" : "Mark unread"}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              disabled={saving}
-              onClick={() => void toggleStar()}
-            >
-              <Star className="h-3.5 w-3.5" />
-              {message.starred ? "Unstar" : "Star"}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              disabled={saving}
-              onClick={() => void archive()}
-            >
-              <Archive className="h-3.5 w-3.5" />
-              Archive
-            </Button>
-          </div>
-
-          <dl className="grid gap-2 text-sm sm:grid-cols-[6rem_minmax(0,1fr)]">
-            <dt className="text-xs font-semibold tracking-wide text-neutral-500 uppercase">
-              To
-            </dt>
-            <dd className="break-all">{message.to || "—"}</dd>
-            {message.cc ? (
-              <>
-                <dt className="text-xs font-semibold tracking-wide text-neutral-500 uppercase">
-                  Cc
-                </dt>
-                <dd className="break-all">{message.cc}</dd>
-              </>
-            ) : null}
-            <dt className="text-xs font-semibold tracking-wide text-neutral-500 uppercase">
-              Date
-            </dt>
-            <dd>{new Date(message.dateMs).toLocaleString()}</dd>
-          </dl>
-
-          {message.labelIds.length > 0 ? (
-            <div className="flex flex-wrap gap-1">
-              {message.labelIds.map((label) => (
-                <span
-                  key={label}
-                  className="rounded-full border border-neutral-200 px-2 py-0.5 text-xs dark:border-neutral-800"
-                >
-                  {label}
-                </span>
-              ))}
-            </div>
-          ) : null}
-
-          <section>
-            {message.bodyText ? (
-              <pre className="font-sans text-sm whitespace-pre-wrap text-neutral-700 dark:text-neutral-300">
-                {message.bodyText}
-              </pre>
-            ) : message.bodyHtml ? (
-              <div
-                className="prose prose-sm dark:prose-invert max-w-none text-neutral-700 dark:text-neutral-300"
-                dangerouslySetInnerHTML={{ __html: message.bodyHtml }}
-              />
-            ) : (
-              <p className="text-sm text-neutral-400">
-                No plain-text body.{" "}
-                <button
-                  type="button"
-                  className="underline underline-offset-2"
-                  onClick={() => void openInGmail()}
-                >
-                  Open in Gmail
-                </button>
-              </p>
+        <div className="space-y-4">
+          <Card
+            padding="default"
+            className={cn(
+              "border-stream-gmail-border/80",
+              message.unread && "bg-stream-gmail/30",
             )}
-          </section>
+          >
+            <CardHeader className="mb-3">
+              <CardDescription className="flex flex-wrap items-center gap-2">
+                <span className="text-on-surface">{message.from}</span>
+                {message.unread ? (
+                  <Badge variant="accent">Unread</Badge>
+                ) : (
+                  <Badge variant="outline">Read</Badge>
+                )}
+                {message.starred ? (
+                  <Badge variant="warning">Starred</Badge>
+                ) : null}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={saving}
+                  onClick={() => void toggleRead()}
+                >
+                  {saving ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : null}
+                  {message.unread ? "Mark read" : "Mark unread"}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={saving}
+                  onClick={() => void toggleStar()}
+                >
+                  <Star
+                    className={cn(
+                      "h-3.5 w-3.5",
+                      favoriteStarClass(message.starred),
+                    )}
+                  />
+                  {message.starred ? "Unstar" : "Star"}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={saving}
+                  onClick={() => void archive()}
+                >
+                  <Archive className="h-3.5 w-3.5" />
+                  Archive
+                </Button>
+              </div>
+
+              <dl className="grid gap-2 rounded-lg border border-border bg-surface-container-low/40 px-3 py-2.5 text-body-sm sm:grid-cols-[6rem_minmax(0,1fr)]">
+                <dt className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+                  To
+                </dt>
+                <dd className="break-all text-on-surface">
+                  {message.to || "—"}
+                </dd>
+                {message.cc ? (
+                  <>
+                    <dt className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+                      Cc
+                    </dt>
+                    <dd className="break-all text-on-surface">{message.cc}</dd>
+                  </>
+                ) : null}
+                <dt className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+                  Date
+                </dt>
+                <dd className="text-on-surface">
+                  {new Date(message.dateMs).toLocaleString()}
+                </dd>
+              </dl>
+
+              {message.labelIds.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {message.labelIds.map((label) => (
+                    <Badge
+                      key={label}
+                      variant="outline"
+                      className="font-mono text-[10px]"
+                    >
+                      {label}
+                    </Badge>
+                  ))}
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+
+          <Card padding="default">
+            <CardHeader className="mb-2">
+              <CardTitle className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+                Message
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {message.bodyText ? (
+                <pre className="max-h-[36rem] overflow-auto rounded-lg border border-border bg-surface-container-low p-3 font-sans text-body-md leading-relaxed whitespace-pre-wrap text-on-surface">
+                  {message.bodyText}
+                </pre>
+              ) : message.bodyHtml ? (
+                <div
+                  className="prose prose-sm dark:prose-invert max-w-none rounded-lg border border-border bg-surface-container-low p-3 text-on-surface"
+                  dangerouslySetInnerHTML={{ __html: message.bodyHtml }}
+                />
+              ) : (
+                <p className="rounded-lg border border-dashed border-border px-3 py-8 text-center text-body-md text-on-surface-variant">
+                  No plain-text body.{" "}
+                  <button
+                    type="button"
+                    className="underline underline-offset-2"
+                    onClick={() => void openInGmail()}
+                  >
+                    Open in Gmail
+                  </button>
+                </p>
+              )}
+            </CardContent>
+          </Card>
         </div>
-      ) : null}
+      ) : (
+        <p className="py-10 text-center text-body-md text-on-surface-variant">
+          Message not found.
+        </p>
+      )}
     </PageShell>
   );
 }

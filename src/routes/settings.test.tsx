@@ -151,10 +151,10 @@ describe("SettingsPage", () => {
     const user = userEvent.setup();
     renderSettings();
 
-    await user.click(screen.getByRole("tab", { name: "AI" }));
-    expect(screen.getByText("AI providers")).toBeInTheDocument();
+    await user.click(screen.getByRole("tab", { name: "AI providers" }));
+    expect(screen.getByText("Active provider")).toBeInTheDocument();
 
-    await user.click(screen.getByRole("tab", { name: /Templates/ }));
+    await user.click(screen.getByRole("tab", { name: /Review templates/ }));
     expect(screen.getByText("Comment templates")).toBeInTheDocument();
 
     await user.click(screen.getByRole("tab", { name: /Favorites/ }));
@@ -166,6 +166,9 @@ describe("SettingsPage", () => {
 
     await user.click(screen.getByRole("tab", { name: /Google/ }));
     expect(screen.getByText(/Google \(Calendar & Gmail\)/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: "GitHub" }));
+    expect(screen.getByText("GitHub PAT")).toBeInTheDocument();
 
     await user.click(screen.getByRole("tab", { name: /History/ }));
     expect(screen.getByText("Submitted review history")).toBeInTheDocument();
@@ -198,6 +201,7 @@ describe("SettingsPage", () => {
   it("reconnects GitHub PAT", async () => {
     const user = userEvent.setup();
     renderSettings();
+    await user.click(screen.getByRole("tab", { name: "GitHub" }));
     await user.click(
       screen.getByRole("button", { name: "Reconnect GitHub PAT" }),
     );
@@ -214,7 +218,7 @@ describe("SettingsPage", () => {
       { id: "openai", has_key: false },
     ]);
     renderSettings();
-    await user.click(screen.getByRole("tab", { name: "AI" }));
+    await user.click(screen.getByRole("tab", { name: "AI providers" }));
 
     const input = screen.getByPlaceholderText(/cursor_/i);
     await user.type(input, "sk-test-key");
@@ -379,7 +383,7 @@ describe("SettingsPage", () => {
   it("creates, edits, and deletes templates", async () => {
     const user = userEvent.setup();
     renderSettings();
-    await user.click(screen.getByRole("tab", { name: /Templates/ }));
+    await user.click(screen.getByRole("tab", { name: /Review templates/ }));
 
     await user.click(screen.getByRole("button", { name: "Add" }));
     await user.type(screen.getByPlaceholderText("Template name"), "Ship it");
@@ -398,6 +402,8 @@ describe("SettingsPage", () => {
     await user.click(screen.getByRole("button", { name: "Save template" }));
 
     await user.click(screen.getByRole("button", { name: "Delete Ship it v2" }));
+    expect(screen.getByRole("heading", { name: "Delete template?" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Delete" }));
     expect(vi.mocked(toast.success)).toHaveBeenCalledWith("Template deleted");
   });
 
@@ -447,6 +453,10 @@ describe("SettingsPage", () => {
     await user.click(
       screen.getByRole("button", { name: "Delete saved review" }),
     );
+    expect(
+      screen.getByRole("heading", { name: "Delete history entry?" }),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Delete" }));
     expect(vi.mocked(toast.success)).toHaveBeenCalledWith(
       "Removed from history",
     );
@@ -455,7 +465,7 @@ describe("SettingsPage", () => {
   it("validates template fields and restores default favorites", async () => {
     const user = userEvent.setup();
     renderSettings();
-    await user.click(screen.getByRole("tab", { name: /Templates/ }));
+    await user.click(screen.getByRole("tab", { name: /Review templates/ }));
     await user.click(screen.getByRole("button", { name: "Add" }));
     await user.click(screen.getByRole("button", { name: "Save template" }));
     expect(vi.mocked(toast.error)).toHaveBeenCalledWith(
@@ -467,5 +477,21 @@ describe("SettingsPage", () => {
     expect(vi.mocked(toast.success)).toHaveBeenCalledWith(
       "Default favorite repos restored",
     );
+  });
+
+  it("shows connection overview cards on General", () => {
+    renderSettings();
+    expect(
+      screen.getByRole("button", { name: /GitHub.*Token configured/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Jira.*No key/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Google.*Not connected/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /AI provider/i }),
+    ).toBeInTheDocument();
   });
 });

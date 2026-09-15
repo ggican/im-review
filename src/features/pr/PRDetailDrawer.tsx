@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,7 +29,6 @@ import type {
   PullRequest,
   ReviewEvent,
 } from "@/features/pr/types";
-import { cn } from "@/lib/cn";
 import { relativeTime } from "@/lib/time";
 import { useTemplates } from "@/lib/use-settings";
 
@@ -47,24 +47,19 @@ function CiBadge({
   status: CiStatus;
   description: string;
 }) {
-  const color =
+  const variant =
     status === "success"
-      ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+      ? "success"
       : status === "failure"
-        ? "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300"
+        ? "error"
         : status === "pending"
-          ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
-          : "bg-neutral-100 text-neutral-600 dark:bg-neutral-900 dark:text-neutral-400";
+          ? "warning"
+          : "default";
 
   return (
-    <span
-      className={cn(
-        "inline-flex rounded-md px-2 py-0.5 text-xs font-medium",
-        color,
-      )}
-    >
+    <Badge variant={variant} className="normal-case">
       CI · {status} — {description}
-    </span>
+    </Badge>
   );
 }
 
@@ -160,7 +155,7 @@ export function PRDetailDrawer({ pr, open, onOpenChange }: Props) {
             </DialogHeader>
 
             <div className="flex-1 space-y-5 overflow-y-auto px-5 py-4">
-              <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-500">
+              <div className="flex flex-wrap items-center gap-2 text-body-sm text-on-surface-variant">
                 <span className="inline-flex items-center gap-1.5">
                   {shown.author.avatarUrl ? (
                     <img
@@ -171,30 +166,24 @@ export function PRDetailDrawer({ pr, open, onOpenChange }: Props) {
                   ) : null}
                   {shown.author.login}
                 </span>
-                {shown.isDraft ? (
-                  <span className="rounded bg-neutral-200 px-1.5 py-0.5 text-xs font-medium uppercase dark:bg-neutral-800">
-                    draft
-                  </span>
-                ) : null}
+                {shown.isDraft ? <Badge variant="outline">Draft</Badge> : null}
                 {shown.headBranch || shown.baseBranch ? (
-                  <span className="font-mono text-neutral-400">
+                  <span className="font-keycap">
                     {shown.headBranch ?? "?"}
                     {shown.baseBranch ? <> → {shown.baseBranch}</> : null}
                   </span>
                 ) : null}
                 {detail ? (
-                  <span className="font-mono">
-                    <span className="text-emerald-600">
-                      +{detail.additions}
-                    </span>{" "}
-                    <span className="text-red-600">−{detail.deletions}</span> ·{" "}
+                  <span className="font-keycap">
+                    <span className="text-success">+{detail.additions}</span>{" "}
+                    <span className="text-error">−{detail.deletions}</span> ·{" "}
                     {detail.changedFiles} files
                   </span>
                 ) : null}
               </div>
 
               {loading && !detail ? (
-                <div className="flex items-center gap-2 text-sm text-neutral-500">
+                <div className="flex items-center gap-2 text-body-sm text-on-surface-variant">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Loading details…
                 </div>
@@ -207,20 +196,20 @@ export function PRDetailDrawer({ pr, open, onOpenChange }: Props) {
                     description={detail.ciDescription}
                   />
                   <div>
-                    <h3 className="mb-1 text-xs font-medium tracking-wide text-neutral-400 uppercase">
+                    <h3 className="mb-1 text-label-sm font-medium tracking-wide text-on-surface-variant uppercase">
                       Reviewers
                     </h3>
-                    <p className="text-sm text-neutral-700 dark:text-neutral-300">
+                    <p className="text-body-sm text-on-surface">
                       {detail.reviewers.length
                         ? detail.reviewers.map((r) => `@${r}`).join(", ")
                         : "None yet"}
                     </p>
                   </div>
                   <div>
-                    <h3 className="mb-1 text-xs font-medium tracking-wide text-neutral-400 uppercase">
+                    <h3 className="mb-1 text-label-sm font-medium tracking-wide text-on-surface-variant uppercase">
                       Description
                     </h3>
-                    <pre className="max-h-48 overflow-auto rounded-md bg-neutral-50 p-3 text-xs leading-relaxed whitespace-pre-wrap text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">
+                    <pre className="max-h-48 overflow-auto rounded-md bg-surface-container-low p-3 text-body-sm leading-relaxed whitespace-pre-wrap text-on-surface">
                       {detail.body || "No description."}
                     </pre>
                   </div>
@@ -228,10 +217,10 @@ export function PRDetailDrawer({ pr, open, onOpenChange }: Props) {
               ) : null}
 
               <div className="space-y-2">
-                <h3 className="text-xs font-medium tracking-wide text-neutral-400 uppercase">
+                <h3 className="text-label-sm font-medium tracking-wide text-on-surface-variant uppercase">
                   Cursor AI
                 </h3>
-                <p className="text-xs text-neutral-500">
+                <p className="text-body-sm text-on-surface-variant">
                   Opens a full-screen review flow: GitHub diffs → AI draft → you
                   confirm → only then submit to GitHub.
                 </p>
@@ -244,7 +233,7 @@ export function PRDetailDrawer({ pr, open, onOpenChange }: Props) {
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-xs font-medium tracking-wide text-neutral-400 uppercase">
+                <h3 className="text-label-sm font-medium tracking-wide text-on-surface-variant uppercase">
                   Review comment
                 </h3>
                 {templates.length > 0 ? (
@@ -255,7 +244,7 @@ export function PRDetailDrawer({ pr, open, onOpenChange }: Props) {
                         type="button"
                         disabled={Boolean(busy)}
                         onClick={() => setComment(t.body)}
-                        className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                        className="rounded-md border border-border bg-surface-container-low px-2 py-1 text-label-sm font-medium text-on-surface hover:bg-surface-container-high"
                         title={t.body}
                       >
                         {t.name}
@@ -273,7 +262,7 @@ export function PRDetailDrawer({ pr, open, onOpenChange }: Props) {
               </div>
             </div>
 
-            <div className="space-y-2 border-t border-neutral-200 px-5 py-4 dark:border-neutral-800">
+            <div className="space-y-2 border-t border-border px-5 py-4">
               <div className="flex flex-wrap gap-2">
                 <Button
                   type="button"

@@ -69,6 +69,17 @@ describe("GmailPage", () => {
       );
     });
     expect(screen.getByText("Review please")).toBeInTheDocument();
+    expect(screen.getByLabelText("Star message")).toBeInTheDocument();
+  });
+
+  it("shows empty unread copy when the list is empty", async () => {
+    saveGooglePublic({ email: "alice@example.com", name: "Alice" });
+    vi.mocked(fetchGmailMessages).mockResolvedValue({
+      messages: [],
+      nextPageToken: null,
+    });
+    renderGmail();
+    expect(await screen.findByText("No unread messages.")).toBeInTheDocument();
   });
 
   it("switches tabs and applies search", async () => {

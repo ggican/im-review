@@ -6,7 +6,7 @@ import imReviewLogo from "@/assets/im-review-logo.png";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 
-type Width = "md" | "lg";
+type Width = "md" | "lg" | "full";
 
 export function PageShell({
   children,
@@ -20,8 +20,12 @@ export function PageShell({
   return (
     <main
       className={cn(
-        "mx-auto flex min-h-screen w-full flex-col gap-6 px-6 py-8",
-        width === "lg" ? "max-w-4xl" : "max-w-3xl",
+        "mx-auto flex w-full flex-1 flex-col gap-5 px-4 py-6 sm:px-6",
+        width === "lg"
+          ? "max-w-4xl"
+          : width === "full"
+            ? "max-w-none"
+            : "max-w-3xl",
         className,
       )}
     >
@@ -55,11 +59,13 @@ export function PageHeader({
         ) : null}
         {leading}
         <div className="min-w-0">
-          <h1 className="text-lg font-semibold tracking-tight text-neutral-900 dark:text-neutral-50">
+          <h1 className="font-headline text-headline-sm font-semibold tracking-tight text-on-surface">
             {title}
           </h1>
           {subtitle ? (
-            <div className="mt-0.5 text-xs text-neutral-500">{subtitle}</div>
+            <div className="mt-0.5 text-body-sm text-on-surface-variant">
+              {subtitle}
+            </div>
           ) : null}
         </div>
       </div>
@@ -72,11 +78,24 @@ export function PageHeader({
   );
 }
 
-export function BrandMark({ className }: { className?: string }) {
+export function BrandMark({
+  className,
+  tone = "default",
+}: {
+  className?: string;
+  tone?: "default" | "chrome";
+}) {
   return (
     <div className={cn("flex items-center gap-2", className)}>
       <img src={imReviewLogo} alt="" className="h-8 w-8 rounded-md" />
-      <span className="text-sm font-semibold tracking-tight">IM Review</span>
+      <span
+        className={cn(
+          "font-headline text-sm font-semibold tracking-tight",
+          tone === "chrome" ? "text-chrome-foreground" : "text-on-surface",
+        )}
+      >
+        IM Review
+      </span>
     </div>
   );
 }

@@ -15,6 +15,7 @@ export default tseslint.config(
       ".cursor/**",
       ".impeccable/**",
       "design-system/**",
+      "docs/design/**",
       "coverage/**",
     ],
   },

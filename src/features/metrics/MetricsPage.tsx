@@ -2,7 +2,16 @@ import { Loader2, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { PageHeader, PageShell } from "@/components/layout/PageShell";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ErrorBlock, LoadingBlock } from "@/components/ui/feedback";
 import {
   Select,
   SelectContent,
@@ -10,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/cn";
+import { TabsList, TabsPanel, TabsTrigger } from "@/components/ui/tabs";
 
 import { CiHealthPanel } from "./CiHealthPanel";
 import { useMetrics } from "./hooks";
@@ -19,6 +28,7 @@ import { MetricCard } from "./MetricCard";
 import { MetricsCharts } from "./MetricsCharts";
 import { MetricSuggestionsPanel } from "./MetricSuggestionsPanel";
 import { MetricSummaryBanner } from "./MetricSummaryBanner";
+import { MetricSummaryCards } from "./MetricSummaryCards";
 import type {
   MetricCategory,
   MetricsAggregation,
@@ -102,11 +112,16 @@ export function MetricsPage() {
   ];
 
   return (
-    <PageShell width="lg">
+    <PageShell width="lg" className="gap-5">
       <PageHeader
         title="Metrics"
         subtitle="Engineering scorecard from your GitHub PR activity"
         backTo="/"
+        leading={
+          <Badge variant="accent" className="mt-1">
+            Metrics
+          </Badge>
+        }
         actions={
           <Button
             type="button"
@@ -125,97 +140,93 @@ export function MetricsPage() {
         }
       />
 
-      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-950">
-        <div className="min-w-[11rem] flex-1 sm:flex-none">
-          <p className="mb-1 text-xs font-medium text-neutral-500">
-            Aggregation
-          </p>
-          <Select
-            value={aggregation}
-            onValueChange={(value) =>
-              setAggregation(value as MetricsAggregation)
-            }
-          >
-            <SelectTrigger aria-label="Aggregation">
-              <SelectValue placeholder="Choose aggregation" />
-            </SelectTrigger>
-            <SelectContent>
-              {METRICS_AGGREGATION_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <p className="mb-1 text-xs font-medium text-neutral-500">
-            Time window
-          </p>
-          <div
-            className="flex flex-wrap items-center gap-1"
-            role="group"
-            aria-label="Time window"
-          >
-            {METRICS_WINDOW_OPTIONS.map((option) => (
-              <Button
-                key={option.value}
-                type="button"
-                size="sm"
-                variant={preset === option.value ? "default" : "outline"}
-                onClick={() => setPreset(option.value)}
-                disabled={loading && preset === option.value}
+      <Card padding="default" className="border-stream-github-border/80">
+        <CardHeader className="mb-3">
+          <CardTitle className="text-title-md">Filters</CardTitle>
+          <CardDescription>
+            Aggregation and window apply to scorecard calculations only — CI is
+            informational.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap items-end gap-4">
+            <div className="min-w-[11rem] flex-1 sm:flex-none">
+              <p className="mb-1 text-label-sm text-on-surface-variant">
+                Aggregation
+              </p>
+              <Select
+                value={aggregation}
+                onValueChange={(value) =>
+                  setAggregation(value as MetricsAggregation)
+                }
               >
-                {option.label}
-              </Button>
-            ))}
+                <SelectTrigger aria-label="Aggregation">
+                  <SelectValue placeholder="Choose aggregation" />
+                </SelectTrigger>
+                <SelectContent>
+                  {METRICS_AGGREGATION_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="mb-1 text-label-sm text-on-surface-variant">
+                Time window
+              </p>
+              <div
+                className="flex flex-wrap items-center gap-1"
+                role="group"
+                aria-label="Time window"
+              >
+                {METRICS_WINDOW_OPTIONS.map((option) => (
+                  <Button
+                    key={option.value}
+                    type="button"
+                    size="sm"
+                    variant={preset === option.value ? "accent" : "outline"}
+                    onClick={() => setPreset(option.value)}
+                    disabled={loading && preset === option.value}
+                  >
+                    {option.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      <div
-        role="tablist"
-        aria-label="Metrics sections"
-        className="inline-flex flex-wrap rounded-lg border border-neutral-200 bg-neutral-100 p-0.5 dark:border-neutral-800 dark:bg-neutral-900"
-      >
-        {tabs.map((item) => {
-          const selected = tab === item.id;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              role="tab"
-              aria-selected={selected}
-              onClick={() => setTab(item.id)}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                selected
-                  ? "bg-white text-neutral-900 shadow-sm dark:bg-neutral-800 dark:text-neutral-50"
-                  : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200",
-              )}
-            >
-              {item.label}
-            </button>
-          );
-        })}
-      </div>
+      <TabsList aria-label="Metrics sections" className="h-auto flex-wrap">
+        {tabs.map((item) => (
+          <TabsTrigger
+            key={item.id}
+            id={`metrics-tab-${item.id}`}
+            aria-controls="metrics-tab-panel"
+            active={tab === item.id}
+            onClick={() => setTab(item.id)}
+          >
+            {item.label}
+          </TabsTrigger>
+        ))}
+      </TabsList>
 
-      {error ? (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
-          {error}
-        </div>
-      ) : null}
+      {error ? <ErrorBlock>{error}</ErrorBlock> : null}
 
       {loading && !scorecard ? (
-        <div className="flex items-center justify-center gap-2 py-20 text-sm text-neutral-500">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Computing metrics from GitHub…
-        </div>
+        <LoadingBlock>Computing metrics from GitHub…</LoadingBlock>
       ) : null}
 
+      <TabsPanel
+        id="metrics-tab-panel"
+        aria-labelledby={`metrics-tab-${tab}`}
+        className="space-y-5"
+      >
       {scorecard && tab === "scorecard" ? (
-        <div className="space-y-6">
+        <div className="space-y-5">
           <MetricSummaryBanner
             overall={scorecard.overall}
             login={login}
@@ -225,6 +236,8 @@ export function MetricsPage() {
             generatedAt={updatedAt}
             trend={trends?.overall ?? null}
           />
+
+          <MetricSummaryCards scorecard={scorecard} ciHealth={ciHealth} />
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <MetricCard
@@ -276,10 +289,13 @@ export function MetricsPage() {
       ) : null}
 
       {!loading && !error && !scorecard ? (
-        <p className="py-12 text-center text-sm text-neutral-500">
-          No metrics available yet.
-        </p>
+        <Card padding="default">
+          <p className="py-12 text-center text-body-md text-on-surface-variant">
+            No metrics available yet.
+          </p>
+        </Card>
       ) : null}
+      </TabsPanel>
     </PageShell>
   );
 }

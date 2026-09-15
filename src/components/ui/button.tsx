@@ -5,22 +5,27 @@ import * as React from "react";
 import { cn } from "@/lib/cn";
 
 const buttonVariants = cva(
-  "inline-flex cursor-pointer items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex cursor-pointer items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-container/70 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
         default:
-          "bg-neutral-900 text-neutral-50 hover:bg-neutral-800 dark:bg-neutral-50 dark:text-neutral-900 dark:hover:bg-neutral-200",
+          "bg-primary text-on-primary hover:bg-on-primary-container dark:hover:opacity-90",
+        accent:
+          "bg-primary-container text-on-primary-container hover:brightness-95",
+        secondary:
+          "bg-secondary-container text-on-secondary-container hover:brightness-95",
         outline:
-          "border border-neutral-300 bg-transparent hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800",
-        ghost: "hover:bg-neutral-100 dark:hover:bg-neutral-800",
-        destructive: "bg-red-600 text-white hover:bg-red-700",
+          "border border-border bg-transparent text-on-surface hover:bg-surface-container-low",
+        ghost: "text-on-surface hover:bg-surface-container-low",
+        destructive: "bg-error text-on-error hover:brightness-95",
       },
       size: {
         default: "h-9 px-4 py-2",
         sm: "h-8 px-3 text-xs",
         lg: "h-10 px-6",
         icon: "h-9 w-9",
+        "icon-sm": "h-8 w-8",
       },
     },
     defaultVariants: { variant: "default", size: "default" },
@@ -47,3 +52,24 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   },
 );
 Button.displayName = "Button";
+
+export type IconButtonProps = Omit<ButtonProps, "size"> & {
+  size?: "icon" | "icon-sm";
+  "aria-label": string;
+};
+
+/** Square icon-only control; requires an accessible name. */
+export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
+  ({ size = "icon", variant = "ghost", className, ...props }, ref) => (
+    <Button
+      ref={ref}
+      variant={variant}
+      size={size}
+      className={cn("shrink-0", className)}
+      {...props}
+    />
+  ),
+);
+IconButton.displayName = "IconButton";
+
+export { buttonVariants };

@@ -4,7 +4,7 @@ import type { ReviewEvent } from "./types";
 export const DONE_REVIEW_BADGE = "Already reviewed";
 
 /** Pending badge when there is no local/GitHub review from you. */
-export const PENDING_REVIEW_BADGE = "Not reviewed";
+export const PENDING_REVIEW_BADGE = "Needs review";
 
 /** Human label for a local IM Review submit event. */
 export function reviewEventLabel(event: ReviewEvent): string {

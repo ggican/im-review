@@ -10,6 +10,7 @@ const mockNavigate = vi.fn();
 const mockUseMyPRs = vi.fn();
 const mockScanMineCiFailures = vi.fn();
 const mockUpdateDesktopAlerts = vi.fn();
+const mockSideRefresh = vi.fn();
 
 vi.mock("react-router-dom", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react-router-dom")>();
@@ -38,6 +39,21 @@ vi.mock("@/lib/desktop-alerts", () => ({
   updateDesktopAlerts: (...args: unknown[]) => mockUpdateDesktopAlerts(...args),
 }));
 
+vi.mock("@/features/today/useTodaySideData", () => ({
+  useTodaySideData: () => ({
+    jira: [],
+    gmail: [],
+    calendar: [],
+    jiraConnected: false,
+    googleConnected: false,
+    loading: false,
+    jiraError: null,
+    gmailError: null,
+    calendarError: null,
+    refresh: mockSideRefresh,
+  }),
+}));
+
 vi.mock("sonner", () => ({
   toast: {
     success: vi.fn(),
@@ -50,14 +66,13 @@ import { api } from "@/lib/api";
 import { DashboardPage } from "./dashboard";
 
 const mockValidateToken = vi.mocked(api.validateToken);
-const mockDeleteToken = vi.mocked(api.deleteToken);
 
 const minePr = makePr({ repo: "acme/app", number: 9, title: "Mine PR" });
 const reviewPr = makePr({ repo: "acme/app", number: 10, title: "Review me" });
 
-function renderDashboard() {
+function renderDashboard(path = "/") {
   return render(
-    <MemoryRouter initialEntries={["/"]}>
+    <MemoryRouter initialEntries={[path]}>
       <Routes>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/onboarding" element={<div>Onboarding</div>} />
@@ -77,12 +92,12 @@ describe("DashboardPage", () => {
       showFavoritePeople: false,
     });
     mockNavigate.mockReset();
+    mockSideRefresh.mockReset();
     mockValidateToken.mockResolvedValue({
       login: "alice",
       name: "Alice",
       avatar_url: "",
     });
-    mockDeleteToken.mockResolvedValue(undefined);
     mockUseMyPRs.mockReturnValue({
       lists: {
         all: [],
@@ -107,20 +122,18 @@ describe("DashboardPage", () => {
     mockUpdateDesktopAlerts.mockResolvedValue(undefined);
   });
 
-  it("renders user header and PR list tabs", async () => {
-    const user = userEvent.setup();
+  it("renders greeting, Needs me, and summary cards", async () => {
     renderDashboard();
     await waitFor(() => {
-      expect(screen.getByText("Alice")).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: /Good (morning|afternoon|evening), Alice/ }),
+      ).toBeInTheDocument();
     });
-    expect(screen.getByText(/@alice/)).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /All open/ })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /Favorites/ })).toBeInTheDocument();
-    expect(
-      screen.getByRole("tab", { name: /Already reviewed/ }),
-    ).toBeInTheDocument();
-    await user.click(screen.getByRole("tab", { name: /Review requested/ }));
+    expect(screen.getByRole("heading", { name: "Needs me" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /All/ })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /PRs/ })).toBeInTheDocument();
     expect(screen.getByText("Review me")).toBeInTheDocument();
+    expect(screen.getByText("Needs review")).toBeInTheDocument();
   });
 
   it("shows CI failure banner and updates desktop alerts", async () => {
@@ -131,17 +144,24 @@ describe("DashboardPage", () => {
     expect(mockUpdateDesktopAlerts).toHaveBeenCalled();
   });
 
-  it("navigates to metrics from header", async () => {
-    const user = userEvent.setup();
+  it("links to people and repos from page actions", async () => {
     renderDashboard();
     await waitFor(() => {
-      expect(screen.getByText("Alice")).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: /Good (morning|afternoon|evening), Alice/ }),
+      ).toBeInTheDocument();
     });
-    await user.click(screen.getByRole("link", { name: /Metrics/ }));
-    expect(screen.getByText("Metrics page")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "People" })).toHaveAttribute(
+      "href",
+      "/people",
+    );
+    expect(screen.getByRole("link", { name: /Repos/ })).toHaveAttribute(
+      "href",
+      "/repos",
+    );
   });
 
-  it("navigates from CI banner and PR list, and signs out", async () => {
+  it("navigates from CI banner and PR review item", async () => {
     const user = userEvent.setup();
     renderDashboard();
     await waitFor(() => {
@@ -152,18 +172,11 @@ describe("DashboardPage", () => {
     );
     expect(mockNavigate).toHaveBeenCalledWith("/review/acme/app/9");
 
-    await user.click(screen.getByRole("tab", { name: /Review requested/ }));
-    await user.click(screen.getByRole("button", { name: /Review me/ }));
+    await user.click(screen.getByRole("button", { name: /Review Diff/i }));
     expect(mockNavigate).toHaveBeenCalledWith("/review/acme/app/10");
-
-    await user.click(screen.getByRole("button", { name: "Sign out" }));
-    await waitFor(() => {
-      expect(mockDeleteToken).toHaveBeenCalled();
-    });
-    expect(mockNavigate).toHaveBeenCalledWith("/onboarding", { replace: true });
   });
 
-  it("keeps locally reviewed PRs and redirects when token invalid", async () => {
+  it("shows already reviewed section and redirects when token invalid", async () => {
     const { saveReviewLocally } = await import("@/lib/settings");
     saveReviewLocally({
       repo: "acme/ghost",
@@ -192,12 +205,12 @@ describe("DashboardPage", () => {
       refresh: vi.fn(),
     });
     mockScanMineCiFailures.mockResolvedValue([]);
-    const user = userEvent.setup();
     renderDashboard();
     await waitFor(() => {
-      expect(screen.getByText("Alice")).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: /Already reviewed/i }),
+      ).toBeInTheDocument();
     });
-    await user.click(screen.getByRole("tab", { name: /Already reviewed/ }));
     expect(screen.getByText("Ghost reviewed")).toBeInTheDocument();
 
     mockValidateToken.mockRejectedValueOnce(new Error("bad token"));
@@ -207,5 +220,21 @@ describe("DashboardPage", () => {
         replace: true,
       });
     });
+  });
+
+  it("keeps full PR list on hub=prs", async () => {
+    renderDashboard("/?hub=prs");
+    await waitFor(() => {
+      expect(
+        screen.getByRole("heading", { name: /Pull Requests/ }),
+      ).toBeInTheDocument();
+    });
+    expect(screen.getByRole("tab", { name: /All open/ })).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: /Already reviewed/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("searchbox", { name: "Search pull requests" }),
+    ).toBeInTheDocument();
   });
 });

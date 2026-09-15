@@ -1,8 +1,12 @@
-import { GitBranch, Loader2 } from "lucide-react";
+import { GitBranch } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { PageHeader } from "@/components/layout/PageShell";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ErrorBlock, LoadingBlock } from "@/components/ui/feedback";
 import { fetchOpenPullsForRepo } from "@/features/pr/api";
 import type { PullRequest } from "@/features/pr/types";
 import { relativeTime } from "@/lib/time";
@@ -46,63 +50,65 @@ export function RepoOpenBranchesPanel({ repo, onBack }: Props) {
   }, [repo.fullName]);
 
   return (
-    <section className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="min-w-0">
-          <Button type="button" size="sm" variant="ghost" onClick={onBack}>
-            ← Back to repos
+    <section className="space-y-4">
+      <PageHeader
+        title={repo.fullName}
+        subtitle="Open PRs / active head branches — click to open in IM Review"
+        leading={
+          <Badge variant="github" className="mt-1">
+            Repo
+          </Badge>
+        }
+        actions={
+          <Button type="button" size="sm" variant="outline" onClick={onBack}>
+            Back to repos
           </Button>
-          <h2 className="mt-1 truncate text-sm font-semibold">
-            {repo.fullName}
-          </h2>
-          <p className="text-xs text-neutral-500">
-            Open PRs / active head branches — click to open in IM Review
-          </p>
-        </div>
-      </div>
+        }
+      />
 
-      <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
+      <Card padding="none" className="overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center gap-2 px-4 py-12 text-sm text-neutral-500">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Loading open PRs…
-          </div>
+          <LoadingBlock embedded>Loading open PRs…</LoadingBlock>
         ) : error ? (
-          <div className="px-4 py-8 text-center text-sm text-red-600 dark:text-red-400">
-            {error}
-          </div>
+          <ErrorBlock className="m-3">{error}</ErrorBlock>
         ) : prs.length === 0 ? (
-          <div className="px-4 py-12 text-center text-sm text-neutral-500">
+          <div className="px-4 py-12 text-center text-body-md text-on-surface-variant">
             No open pull requests in this repo.
           </div>
         ) : (
           <ul>
             {prs.map((pr) => (
-              <li key={`${pr.repo}#${pr.number}`}>
+              <li
+                key={`${pr.repo}#${pr.number}`}
+                className="border-b border-border last:border-b-0"
+              >
                 <button
                   type="button"
                   onClick={() => navigate(reviewPath(pr))}
-                  className="flex w-full items-start gap-3 border-b border-neutral-200 px-3 py-3 text-left last:border-b-0 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900/60"
+                  className="flex w-full items-start gap-3 px-3 py-3 text-left hover:bg-surface-container-low/60"
                 >
-                  <GitBranch className="mt-0.5 h-4 w-4 shrink-0 text-neutral-400" />
+                  <GitBranch
+                    className="mt-0.5 h-4 w-4 shrink-0 text-on-surface-variant"
+                    aria-hidden
+                  />
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                      <span className="font-mono text-xs font-medium text-sky-700 dark:text-sky-300">
+                      <span className="font-mono text-xs font-medium text-primary">
                         {pr.headBranch ?? "(unknown branch)"}
                       </span>
-                      <span className="font-mono text-xs text-neutral-400">
+                      <span className="font-mono text-xs text-on-surface-variant">
                         #{pr.number}
                       </span>
                       {pr.isDraft ? (
-                        <span className="rounded bg-neutral-200 px-1 py-0.5 text-xs font-medium uppercase dark:bg-neutral-800">
+                        <Badge variant="secondary" className="uppercase">
                           draft
-                        </span>
+                        </Badge>
                       ) : null}
                     </div>
-                    <p className="mt-0.5 truncate text-sm text-neutral-800 dark:text-neutral-200">
+                    <p className="mt-0.5 truncate text-body-md text-on-surface">
                       {pr.title}
                     </p>
-                    <p className="mt-0.5 text-xs text-neutral-400">
+                    <p className="mt-0.5 text-body-sm text-on-surface-variant">
                       {pr.author.login} · {relativeTime(pr.updatedAt)}
                     </p>
                   </div>
@@ -111,7 +117,7 @@ export function RepoOpenBranchesPanel({ repo, onBack }: Props) {
             ))}
           </ul>
         )}
-      </div>
+      </Card>
     </section>
   );
 }

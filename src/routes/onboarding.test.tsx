@@ -58,6 +58,17 @@ describe("OnboardingPage", () => {
     mockToastError.mockReset();
   });
 
+  it("renders page header and welcome copy", () => {
+    renderOnboarding();
+    expect(
+      screen.getByRole("heading", { name: "IM Review" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Welcome/)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Connect your GitHub account" }),
+    ).toBeInTheDocument();
+  });
+
   it("does nothing on empty submit", async () => {
     const user = userEvent.setup();
     renderOnboarding();
@@ -103,6 +114,7 @@ describe("OnboardingPage", () => {
 
     await waitFor(() => {
       expect(mockToastError).toHaveBeenCalledWith("Error: bad token");
+      expect(screen.getByRole("alert")).toHaveTextContent(/bad token/);
       expect(mockNavigate).not.toHaveBeenCalled();
     });
   });

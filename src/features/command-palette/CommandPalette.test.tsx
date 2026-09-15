@@ -67,7 +67,7 @@ describe("CommandPalette", () => {
 
     await user.keyboard("{Meta>}k{/Meta}");
     expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByText("Dashboard")).toBeInTheDocument();
+    expect(screen.getByText("Today")).toBeInTheDocument();
     expect(screen.getByText("Cached PR")).toBeInTheDocument();
     expect(screen.getByText("acme/fav")).toBeInTheDocument();
   });

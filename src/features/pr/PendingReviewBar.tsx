@@ -2,6 +2,7 @@ import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/cn";
 
 import type { PendingInlineComment, ReviewEvent } from "./types";
 
@@ -38,19 +39,22 @@ export function PendingReviewBar({
     (!needsBodyOrComments || Boolean(body.trim()) || pending.length > 0);
 
   return (
-    <div className="sticky bottom-0 z-20 space-y-3 rounded-lg border border-amber-300 bg-amber-50 p-4 shadow-lg dark:border-amber-800 dark:bg-amber-950/80">
+    <div className="sticky bottom-0 z-20 space-y-3 rounded-xl border border-warning/40 bg-warning-container/95 p-4 shadow-float backdrop-blur-sm dark:border-amber-800 dark:bg-amber-950/90">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h3 className="text-sm font-semibold text-amber-950 dark:text-amber-100">
-            Pending review ({pending.length})
-          </h3>
-          <p className="mt-0.5 text-xs text-amber-800 dark:text-amber-200">
-            You can approve and still leave line comments (same as GitHub).
-          </p>
-        </div>
+          <div>
+            <h3 className="text-title-md font-semibold text-on-warning-container dark:text-amber-100">
+              Pending review ({pending.length})
+            </h3>
+            <p className="mt-0.5 text-body-sm text-on-warning-container/90 dark:text-amber-200">
+              You can approve and still leave line comments (same as GitHub).
+            </p>
+          </div>
         <div className="flex flex-wrap items-center gap-2">
           <select
-            className="rounded-md border border-amber-300 bg-white px-2 py-1.5 text-xs dark:border-amber-700 dark:bg-neutral-950"
+            className={cn(
+              "h-8 rounded-md border border-warning/50 bg-surface-container-lowest px-2 text-xs text-on-surface",
+              "dark:border-amber-700 dark:bg-neutral-950",
+            )}
             value={event}
             disabled={submitting}
             onChange={(e) =>
@@ -59,12 +63,13 @@ export function PendingReviewBar({
             aria-label="Review event"
           >
             <option value="COMMENT">Comment</option>
-            <option value="APPROVE">Approve</option>{" "}
+            <option value="APPROVE">Approve</option>
             <option value="REQUEST_CHANGES">Request changes</option>
           </select>
           <Button
             type="button"
             size="sm"
+            variant="accent"
             disabled={!canSubmit}
             onClick={onSubmit}
           >
@@ -76,21 +81,21 @@ export function PendingReviewBar({
         </div>
       </div>
 
-      <ul className="max-h-32 space-y-1 overflow-y-auto text-xs">
+      <ul className="max-h-32 space-y-1 overflow-y-auto text-body-sm">
         {pending.map((p) => (
           <li
             key={p.id}
-            className="flex items-start justify-between gap-2 rounded bg-white/70 px-2 py-1 dark:bg-neutral-950/50"
+            className="flex items-start justify-between gap-2 rounded-lg border border-border/60 bg-surface-container-lowest/80 px-2 py-1.5 dark:bg-neutral-950/50"
           >
-            <span className="min-w-0">
-              <span className="font-mono text-neutral-500">
+            <span className="min-w-0 text-on-surface">
+              <span className="font-keycap text-on-surface-variant">
                 {p.path}:{p.line}
               </span>{" "}
               {p.body.length > 80 ? `${p.body.slice(0, 80)}…` : p.body}
             </span>
             <button
               type="button"
-              className="shrink-0 text-neutral-500 underline"
+              className="shrink-0 text-on-surface-variant underline underline-offset-2 hover:text-on-surface"
               disabled={submitting}
               onClick={() => onRemove(p.id)}
             >
@@ -108,7 +113,7 @@ export function PendingReviewBar({
         placeholder="Optional summary for the review…"
       />
       {isDraft && event === "APPROVE" ? (
-        <p className="text-xs text-amber-800 dark:text-amber-200">
+        <p className="text-body-sm text-on-warning-container dark:text-amber-200">
           Draft PRs cannot be approved until marked ready.
         </p>
       ) : null}

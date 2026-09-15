@@ -1,17 +1,28 @@
-import { Loader2, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { PageHeader, PageShell } from "@/components/layout/PageShell";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ErrorBlock, LoadingBlock } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
+import { TabsList, TabsPanel, TabsTrigger } from "@/components/ui/tabs";
 import { fetchGithubUser, searchGithubUsers } from "@/features/people/api";
 import { normalizeGithubLogin } from "@/features/people/login";
 import type { FavoriteUser } from "@/features/people/types";
 import { fetchOpenPrsByAuthor } from "@/features/pr/api";
 import type { PullRequest } from "@/features/pr/types";
 import { cn } from "@/lib/cn";
+import { favoriteStarClass } from "@/lib/favorite-styles";
 import {
   getFavoriteUsers,
   MAX_FAVORITE_USERS,
@@ -27,62 +38,86 @@ function reviewPath(pr: PullRequest): string {
   return `/review/${owner}/${name}/${pr.number}`;
 }
 
+function initials(user: { name?: string | null; login: string }): string {
+  const source = (user.name ?? user.login).trim();
+  const parts = source.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) {
+    return `${parts[0]![0] ?? ""}${parts[1]![0] ?? ""}`.toUpperCase();
+  }
+  return source.slice(0, 2).toUpperCase() || "?";
+}
+
 function PersonRow({
   user,
   favorited,
+  selected,
   onOpen,
 }: {
   user: Omit<FavoriteUser, "favoritedAt"> & { favoritedAt?: string };
   favorited: boolean;
+  selected?: boolean;
   onOpen: () => void;
 }) {
   return (
-    <li className="flex items-center gap-3 border-b border-neutral-200 px-3 py-2.5 last:border-b-0 dark:border-neutral-800">
-      <button
-        type="button"
-        className="flex min-w-0 flex-1 items-center gap-3 text-left"
-        onClick={onOpen}
-      >
-        {user.avatarUrl ? (
-          <img src={user.avatarUrl} alt="" className="h-8 w-8 rounded-full" />
-        ) : (
-          <span className="h-8 w-8 rounded-full bg-neutral-200 dark:bg-neutral-800" />
+    <li className="border-b border-border last:border-b-0">
+      <div
+        className={cn(
+          "flex items-center gap-3 px-3 py-2.5",
+          selected && "bg-stream-github/40",
         )}
-        <span className="min-w-0">
-          <span className="block truncate text-sm font-medium">
-            {user.name ?? user.login}
-          </span>
-          <span className="block truncate text-xs text-neutral-500">
-            @{user.login}
-          </span>
-        </span>
-      </button>
-      <Button
-        type="button"
-        size="icon"
-        variant="ghost"
-        aria-label={favorited ? "Remove favorite person" : "Favorite person"}
-        aria-pressed={favorited}
-        onClick={() => {
-          if (!favorited && getFavoriteUsers().length >= MAX_FAVORITE_USERS) {
-            toast.error(`Favorite people limit is ${MAX_FAVORITE_USERS}`);
-            return;
-          }
-          toggleFavoriteUser({
-            login: user.login,
-            name: user.name,
-            avatarUrl: user.avatarUrl,
-            htmlUrl: user.htmlUrl,
-          });
-        }}
       >
-        <Star
-          className={cn(
-            "h-4 w-4",
-            favorited && "fill-amber-400 text-amber-500",
+        <button
+          type="button"
+          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+          onClick={onOpen}
+        >
+          {user.avatarUrl ? (
+            <img
+              src={user.avatarUrl}
+              alt=""
+              className="h-8 w-8 rounded-full border border-border"
+            />
+          ) : (
+            <span
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-stream-github font-keycap text-[10px] text-stream-github-fg"
+              aria-hidden
+            >
+              {initials(user)}
+            </span>
           )}
-        />
-      </Button>
+          <span className="min-w-0">
+            <span className="block truncate text-body-md font-medium text-on-surface">
+              {user.name ?? user.login}
+            </span>
+            <span className="block truncate font-mono text-xs text-on-surface-variant">
+              @{user.login}
+            </span>
+          </span>
+        </button>
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          aria-label={favorited ? "Remove favorite person" : "Favorite person"}
+          aria-pressed={favorited}
+          onClick={() => {
+            if (!favorited && getFavoriteUsers().length >= MAX_FAVORITE_USERS) {
+              toast.error(`Favorite people limit is ${MAX_FAVORITE_USERS}`);
+              return;
+            }
+            toggleFavoriteUser({
+              login: user.login,
+              name: user.name,
+              avatarUrl: user.avatarUrl,
+              htmlUrl: user.htmlUrl,
+            });
+          }}
+        >
+          <Star
+            className={cn("h-4 w-4", favoriteStarClass(favorited))}
+          />
+        </Button>
+      </div>
     </li>
   );
 }
@@ -179,62 +214,75 @@ export function PeoplePage() {
         backTo="/"
         title="People"
         subtitle={`${favorites.length} favorite${favorites.length === 1 ? "" : "s"} · star authors, then click to list their open PRs`}
+        leading={
+          <Badge variant="github" className="mt-1">
+            People
+          </Badge>
+        }
       />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Input
-          placeholder={
-            tab === "search" ? "Search GitHub users…" : "Add by login…"
-          }
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        {tab === "favorites" ? (
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => void addByLogin()}
-          >
-            Add
-          </Button>
-        ) : null}
-      </div>
+      <Card padding="default" className="border-stream-github-border/80">
+        <CardHeader className="mb-3">
+          <CardTitle className="text-title-md">Find authors</CardTitle>
+          <CardDescription>
+            Favorites stay local. Search uses GitHub user search.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Input
+              className="max-w-md"
+              placeholder={
+                tab === "search" ? "Search GitHub users…" : "Add by login…"
+              }
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              aria-label={
+                tab === "search" ? "Search GitHub users" : "Add by login"
+              }
+            />
+            {tab === "favorites" ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => void addByLogin()}
+              >
+                Add
+              </Button>
+            ) : null}
+          </div>
 
-      <div
-        role="tablist"
-        aria-label="People lists"
-        className="inline-flex rounded-lg border border-neutral-200 bg-neutral-100 p-0.5 dark:border-neutral-800 dark:bg-neutral-900"
+          <TabsList aria-label="People lists" className="h-auto flex-wrap">
+            <TabsTrigger
+              id="people-tab-favorites"
+              aria-controls="people-tab-panel"
+              active={tab === "favorites"}
+              onClick={() => setTab("favorites")}
+            >
+              Favorites ({favorites.length})
+            </TabsTrigger>
+            <TabsTrigger
+              id="people-tab-search"
+              aria-controls="people-tab-panel"
+              active={tab === "search"}
+              onClick={() => setTab("search")}
+            >
+              Search
+            </TabsTrigger>
+          </TabsList>
+        </CardContent>
+      </Card>
+
+      <TabsPanel
+        id="people-tab-panel"
+        aria-labelledby={`people-tab-${tab}`}
+        className="grid gap-4 lg:grid-cols-2"
       >
-        {(
-          [
-            { id: "favorites", label: `Favorites (${favorites.length})` },
-            { id: "search", label: "Search" },
-          ] as const
-        ).map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            role="tab"
-            aria-selected={tab === item.id}
-            onClick={() => setTab(item.id)}
-            className={cn(
-              "rounded-md px-3 py-1.5 text-xs font-medium",
-              tab === item.id
-                ? "bg-white text-neutral-900 shadow-sm dark:bg-neutral-800 dark:text-neutral-50"
-                : "text-neutral-500",
-            )}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
+        <Card padding="none" className="overflow-hidden">
           {tab === "favorites" ? (
             favorites.length === 0 ? (
-              <p className="px-4 py-12 text-center text-sm text-neutral-500">
+              <p className="px-4 py-12 text-center text-body-md text-on-surface-variant">
                 No favorite people yet. Star an author on the dashboard or
                 search.
               </p>
@@ -245,18 +293,16 @@ export function PeoplePage() {
                     key={user.login}
                     user={user}
                     favorited
+                    selected={selected === user.login}
                     onOpen={() => setSelected(user.login)}
                   />
                 ))}
               </ul>
             )
           ) : searching && results.length === 0 ? (
-            <div className="flex items-center justify-center gap-2 px-4 py-12 text-sm text-neutral-500">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Searching…
-            </div>
+            <LoadingBlock embedded>Searching…</LoadingBlock>
           ) : results.length === 0 ? (
-            <p className="px-4 py-12 text-center text-sm text-neutral-500">
+            <p className="px-4 py-12 text-center text-body-md text-on-surface-variant">
               {query.trim().length < 2
                 ? "Type at least 2 characters."
                 : "No users match."}
@@ -268,42 +314,50 @@ export function PeoplePage() {
                   key={user.login}
                   user={user}
                   favorited={favSet.has(user.login.toLowerCase())}
+                  selected={selected === user.login}
                   onOpen={() => setSelected(user.login)}
                 />
               ))}
             </ul>
           )}
-        </div>
+        </Card>
 
-        <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
+        <Card padding="none" className="overflow-hidden">
+          <div className="border-b border-border bg-surface-container-low/40 px-3 py-2">
+            <h2 className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+              Open PRs
+              {selected ? (
+                <span className="ml-2 font-mono normal-case tracking-normal">
+                  @{selected}
+                </span>
+              ) : null}
+            </h2>
+          </div>
           {!selected ? (
-            <p className="px-4 py-12 text-center text-sm text-neutral-500">
+            <p className="px-4 py-12 text-center text-body-md text-on-surface-variant">
               Select a person to list their open PRs.
             </p>
           ) : prLoading ? (
-            <div className="flex items-center justify-center gap-2 px-4 py-12 text-sm text-neutral-500">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Loading PRs by @{selected}…
-            </div>
+            <LoadingBlock embedded>Loading PRs by @{selected}…</LoadingBlock>
           ) : prError ? (
-            <p className="px-4 py-8 text-center text-sm text-red-600">
-              {prError}
-            </p>
+            <ErrorBlock className="m-3">{prError}</ErrorBlock>
           ) : prs.length === 0 ? (
-            <p className="px-4 py-12 text-center text-sm text-neutral-500">
+            <p className="px-4 py-12 text-center text-body-md text-on-surface-variant">
               No open PRs by @{selected}.
             </p>
           ) : (
             <ul>
               {prs.map((pr) => (
-                <li key={`${pr.repo}#${pr.number}`}>
+                <li key={`${pr.repo}#${pr.number}`} className="border-b border-border last:border-b-0">
                   <button
                     type="button"
-                    className="flex w-full flex-col items-start gap-0.5 border-b border-neutral-200 px-3 py-2.5 text-left last:border-b-0 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900"
+                    className="flex w-full flex-col items-start gap-0.5 px-3 py-2.5 text-left hover:bg-surface-container-low/60"
                     onClick={() => navigate(reviewPath(pr))}
                   >
-                    <span className="text-sm font-medium">{pr.title}</span>
-                    <span className="font-mono text-xs text-neutral-500">
+                    <span className="text-body-md font-medium text-on-surface">
+                      {pr.title}
+                    </span>
+                    <span className="font-mono text-xs text-on-surface-variant">
                       {pr.repo}#{pr.number} · {relativeTime(pr.updatedAt)}
                     </span>
                   </button>
@@ -311,8 +365,8 @@ export function PeoplePage() {
               ))}
             </ul>
           )}
-        </div>
-      </div>
+        </Card>
+      </TabsPanel>
     </PageShell>
   );
 }

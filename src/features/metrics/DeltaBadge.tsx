@@ -12,7 +12,11 @@ export function DeltaBadge({
   className?: string;
 }) {
   if (!trend || trend.pct == null) {
-    return <span className={cn("text-xs text-neutral-400", className)}>—</span>;
+    return (
+      <span className={cn("text-body-sm text-on-surface-variant", className)}>
+        —
+      </span>
+    );
   }
 
   const up = trend.pct > 0.5;
@@ -22,10 +26,10 @@ export function DeltaBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 text-xs font-medium",
-        up && "text-emerald-700 dark:text-emerald-400",
-        down && "text-red-700 dark:text-red-400",
-        !up && !down && "text-neutral-500",
+        "inline-flex items-center gap-1 text-body-sm font-medium",
+        up && "text-success",
+        down && "text-error",
+        !up && !down && "text-on-surface-variant",
         className,
       )}
     >

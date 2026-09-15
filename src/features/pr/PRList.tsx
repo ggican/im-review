@@ -4,11 +4,17 @@ import {
   ChevronRight,
   Loader2,
   RefreshCw,
+  Search,
 } from "lucide-react";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { Link } from "react-router-dom";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ErrorBlock, LoadingBlock } from "@/components/ui/feedback";
+import { Input } from "@/components/ui/input";
+import { TabsList, TabsPanel, TabsTrigger } from "@/components/ui/tabs";
 import { AuthorFilterBar } from "@/features/people/AuthorFilterBar";
 import type { AuthorFilterMode } from "@/features/people/types";
 import { cn } from "@/lib/cn";
@@ -22,7 +28,7 @@ import {
 import { useFavoriteUsers, useSettings } from "@/lib/use-settings";
 
 import { PRRow } from "./PRRow";
-import type { PrLists, PrTab, PullRequest } from "./types";
+import { prKey, type PrLists, type PrTab, type PullRequest } from "./types";
 
 const BASE_TABS: { id: PrTab; label: string }[] = [
   { id: "all", label: "All open" },
@@ -57,7 +63,24 @@ type Props = {
   searchItems?: PullRequest[];
   searchLoading?: boolean;
   searchError?: string | null;
+  /** Optional CI failure descriptions keyed by `repo#number`. */
+  ciFailures?: Record<string, string>;
 };
+
+function matchesQuery(pr: PullRequest, q: string): boolean {
+  if (!q) return true;
+  const hay = [
+    pr.title,
+    pr.repo,
+    `#${pr.number}`,
+    pr.author.login,
+    pr.headBranch ?? "",
+    pr.baseBranch ?? "",
+  ]
+    .join(" ")
+    .toLowerCase();
+  return hay.includes(q);
+}
 
 export function PRList({
   lists,
@@ -75,6 +98,7 @@ export function PRList({
   searchItems = [],
   searchLoading = false,
   searchError = null,
+  ciFailures = {},
 }: Props) {
   const lastSeen = useSyncExternalStore(
     subscribeLastSeen,
@@ -83,18 +107,22 @@ export function PRList({
   );
   const favoriteUsers = useFavoriteUsers();
   const { showFavoritePeople } = useSettings();
-  const tabs = showFavoritePeople
-    ? [...BASE_TABS, PEOPLE_TAB]
-    : BASE_TABS;
+  const tabs = showFavoritePeople ? [...BASE_TABS, PEOPLE_TAB] : BASE_TABS;
   const [page, setPage] = useState(1);
+  const [query, setQuery] = useState("");
   const tabItems = useMemo(() => lists[active] ?? [], [lists, active]);
   const searching = authorMode === "search" && Boolean(authorLogin);
-  const items = useMemo(() => {
+  const authorFiltered = useMemo(() => {
     if (searching) return searchItems;
     if (!authorLogin) return tabItems;
     const needle = authorLogin.toLowerCase();
     return tabItems.filter((pr) => pr.author.login.toLowerCase() === needle);
   }, [searching, searchItems, authorLogin, tabItems]);
+  const q = query.trim().toLowerCase();
+  const items = useMemo(
+    () => authorFiltered.filter((pr) => matchesQuery(pr, q)),
+    [authorFiltered, q],
+  );
   const listLoading = loading || (searching && searchLoading);
   const listError = searching ? searchError || error : error;
   const isReviewedTab = active === "reviewed" && !searching;
@@ -135,10 +163,12 @@ export function PRList({
 
   useEffect(() => {
     setPage(1);
-  }, [active, items.length, authorLogin, authorMode]);
+  }, [active, items.length, authorLogin, authorMode, q]);
 
   const emptyMessage =
-    authorLogin && items.length === 0 && !listLoading ? (
+    q && authorFiltered.length > 0 && items.length === 0 ? (
+      `No pull requests match “${query.trim()}”.`
+    ) : authorLogin && items.length === 0 && !listLoading ? (
       searching ? (
         `No open PRs by @${authorLogin}.`
       ) : (
@@ -147,7 +177,7 @@ export function PRList({
           {onAuthorChange ? (
             <button
               type="button"
-              className="underline underline-offset-2 hover:text-neutral-800 dark:hover:text-neutral-200"
+              className="underline underline-offset-2 hover:text-on-surface"
               onClick={() => onAuthorChange(authorLogin, "search")}
             >
               Show all PRs by @{authorLogin}
@@ -160,20 +190,22 @@ export function PRList({
         No open PRs in favorite repos.{" "}
         <Link
           to="/repos"
-          className="underline underline-offset-2 hover:text-neutral-800 dark:hover:text-neutral-200"
+          className="underline underline-offset-2 hover:text-on-surface"
         >
           Manage favorites
         </Link>
       </>
     ) : active === "all" ? (
       "No open pull requests found."
+    ) : active === "assigned" ? (
+      "No pull requests assigned to you."
     ) : active === "people" ? (
       favoriteUsers.length === 0 ? (
         <>
           No favorite people yet.{" "}
           <Link
             to="/settings"
-            className="underline underline-offset-2 hover:text-neutral-800 dark:hover:text-neutral-200"
+            className="underline underline-offset-2 hover:text-on-surface"
           >
             Add favorite people
           </Link>
@@ -187,7 +219,7 @@ export function PRList({
         it will show up here.{" "}
         <Link
           to="/settings"
-          className="underline underline-offset-2 hover:text-neutral-800 dark:hover:text-neutral-200"
+          className="underline underline-offset-2 hover:text-on-surface"
         >
           Open History
         </Link>
@@ -200,51 +232,21 @@ export function PRList({
     <section className="flex flex-col gap-3">
       <div
         data-testid="pr-list-toolbar"
-        className="flex flex-nowrap items-center gap-2"
+        className="flex flex-col gap-3 sm:flex-row sm:flex-nowrap sm:items-center"
       >
-        <div className="min-w-0 flex-1 overflow-x-auto">
-          <div
-            role="tablist"
-            aria-label="Pull request lists"
-            className="inline-flex rounded-lg border border-neutral-200 bg-neutral-100 p-0.5 whitespace-nowrap dark:border-neutral-800 dark:bg-neutral-900"
-          >
-            {tabs.map((tab) => {
-              const selected = tab.id === active;
-              const newCount = countNewPrs(lists[tab.id] ?? [], lastSeen);
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={selected}
-                  onClick={() => onTabChange(tab.id)}
-                  className={cn(
-                    "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                    selected
-                      ? "bg-white text-neutral-900 shadow-sm dark:bg-neutral-800 dark:text-neutral-50"
-                      : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200",
-                  )}
-                >
-                  {tab.label}
-                  <span className="ml-1.5 text-neutral-400 tabular-nums">
-                    {(lists[tab.id] ?? []).length}
-                  </span>
-                  {newCount > 0 ? (
-                    <span
-                      className={cn(
-                        "ml-1.5 rounded-sm px-1 py-0.5 text-xs font-semibold tabular-nums",
-                        selected
-                          ? "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300"
-                          : "bg-sky-100/80 text-sky-700 dark:bg-sky-950/60 dark:text-sky-400",
-                      )}
-                    >
-                      {newCount} new
-                    </span>
-                  ) : null}
-                </button>
-              );
-            })}
-          </div>
+        <div className="relative min-w-0 flex-1">
+          <Search
+            className="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-on-surface-variant"
+            aria-hidden
+          />
+          <Input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search title, author, repo, branch…"
+            aria-label="Search pull requests"
+            className="h-8 pl-8 text-xs"
+          />
         </div>
         <div
           data-testid="pr-list-actions"
@@ -266,6 +268,66 @@ export function PRList({
         </div>
       </div>
 
+      <div
+        data-testid="pr-list-refresh-row"
+        className="flex flex-wrap items-center justify-between gap-2"
+      >
+        <div className="min-w-0 flex-1 overflow-x-auto">
+          <TabsList
+            aria-label="Pull request lists"
+            className="h-auto whitespace-nowrap"
+          >
+            {tabs.map((tab) => {
+              const selected = tab.id === active;
+              const newCount = countNewPrs(lists[tab.id] ?? [], lastSeen);
+              return (
+                <TabsTrigger
+                  key={tab.id}
+                  id={`pr-list-tab-${tab.id}`}
+                  aria-controls="pr-list-tab-panel"
+                  active={selected}
+                  onClick={() => onTabChange(tab.id)}
+                >
+                  {tab.label}
+                  <span className="font-keycap text-on-surface-variant tabular-nums">
+                    {(lists[tab.id] ?? []).length}
+                  </span>
+                  {newCount > 0 ? (
+                    <Badge
+                      variant="accent"
+                      className="px-1 py-0 text-[10px] tabular-nums"
+                    >
+                      {newCount} new
+                    </Badge>
+                  ) : null}
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+        </div>
+          <div className="flex shrink-0 items-center gap-2">
+          {updatedAt ? (
+            <span className="text-body-sm whitespace-nowrap text-on-surface-variant">
+              Updated {updatedAt.toLocaleTimeString()}
+            </span>
+          ) : null}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onRefresh}
+            disabled={listLoading}
+          >
+            {listLoading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <RefreshCw className="h-3.5 w-3.5" />
+            )}
+            Refresh
+          </Button>
+        </div>
+      </div>
+
       {onAuthorChange ? (
         <AuthorFilterBar
           authorLogin={authorLogin}
@@ -277,69 +339,37 @@ export function PRList({
       ) : null}
 
       {searching && authorLogin ? (
-        <p className="text-xs text-neutral-500">
+        <p className="text-body-sm text-on-surface-variant">
           Open PRs by @{authorLogin} ({items.length})
         </p>
       ) : null}
 
       {listError ? (
-        <div
-          className={
-            stale
-              ? "rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
-              : "rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300"
-          }
-        >
-          {listError}
-        </div>
+        <ErrorBlock tone={stale ? "warning" : "error"}>{listError}</ErrorBlock>
       ) : null}
 
       {stale && !listError ? (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
-          Menampilkan list tersimpan (cache). Data mungkin tidak terbaru.
-        </div>
+        <ErrorBlock tone="warning">
+          Showing a cached list. Data may be out of date — Refresh when ready.
+        </ErrorBlock>
       ) : null}
 
       {newInActive > 0 ? (
-        <div className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-800 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-300">
+        <div className="rounded-lg border border-stream-github-border bg-stream-github px-3 py-2 text-body-sm text-stream-github-fg">
           {newInActive} PR{newInActive === 1 ? "" : "s"} updated since you last
           marked seen.
         </div>
       ) : null}
 
-      <div
-        data-testid="pr-list-refresh-row"
-        className="flex flex-wrap items-center justify-end gap-2"
+      <TabsPanel
+        id="pr-list-tab-panel"
+        aria-labelledby={`pr-list-tab-${active}`}
       >
-        {updatedAt ? (
-          <span className="text-xs whitespace-nowrap text-neutral-400">
-            Updated {updatedAt.toLocaleTimeString()}
-          </span>
-        ) : null}
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={onRefresh}
-          disabled={listLoading}
-        >
-          {listLoading ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <RefreshCw className="h-3.5 w-3.5" />
-          )}
-          Refresh
-        </Button>
-      </div>
-
-      <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
+      <Card padding="none" className="overflow-hidden">
         {listLoading && items.length === 0 ? (
-          <div className="flex items-center justify-center gap-2 px-4 py-16 text-sm text-neutral-500">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Loading pull requests…
-          </div>
+          <LoadingBlock embedded>Loading pull requests…</LoadingBlock>
         ) : items.length === 0 ? (
-          <div className="px-4 py-16 text-center text-sm text-neutral-500">
+          <div className="px-4 py-12 text-center text-body-md text-on-surface-variant">
             {emptyMessage}
           </div>
         ) : (
@@ -347,8 +377,18 @@ export function PRList({
             {pagePending.length > 0 ? (
               <div>
                 {pending.length > 0 && reviewed.length > 0 && safePage === 1 ? (
-                  <div className="bg-neutral-50 px-3 py-2 text-xs font-semibold tracking-wide text-neutral-500 uppercase dark:bg-neutral-900/80">
-                    Needs review ({pending.length})
+                  <div className="flex flex-wrap items-center gap-2 border-b border-border bg-stream-github/50 px-3 py-2">
+                    <span
+                      className="h-1.5 w-1.5 rounded-full bg-primary-container"
+                      aria-hidden
+                    />
+                    <h2 className="text-label-sm font-semibold tracking-wide text-on-surface uppercase">
+                      Needs review ({pending.length})
+                    </h2>
+                    <Badge variant="accent">{pending.length} pending</Badge>
+                    <span className="ml-auto text-body-sm text-on-surface-variant">
+                      Awaiting your approval or input
+                    </span>
                   </div>
                 ) : null}
                 <ul>
@@ -357,6 +397,7 @@ export function PRList({
                       key={`${pr.repo}#${pr.number}`}
                       pr={pr}
                       isNew={isPrNew(pr, lastSeen)}
+                      ciFailure={ciFailures[prKey(pr.repo, pr.number)] ?? null}
                       onSelect={onSelect}
                       onFilterAuthor={
                         onAuthorChange
@@ -371,8 +412,23 @@ export function PRList({
             {pageReviewed.length > 0 ? (
               <div>
                 {!isReviewedTab ? (
-                  <div className="border-t border-neutral-200 bg-neutral-50 px-3 py-2 text-xs font-semibold tracking-wide text-neutral-500 uppercase dark:border-neutral-800 dark:bg-neutral-900/80">
-                    Already reviewed ({reviewed.length})
+                  <div
+                    className={cn(
+                      "flex flex-wrap items-center gap-2 bg-stream-ai/50 px-3 py-2",
+                      pagePending.length > 0 && "border-t border-border",
+                    )}
+                  >
+                    <span
+                      className="h-1.5 w-1.5 rounded-full bg-success"
+                      aria-hidden
+                    />
+                    <h2 className="text-label-sm font-semibold tracking-wide text-on-surface-variant uppercase">
+                      Already reviewed ({reviewed.length})
+                    </h2>
+                    <Badge variant="success">{reviewed.length} tracked</Badge>
+                    <span className="ml-auto text-body-sm text-on-surface-variant">
+                      You submitted feedback or approved
+                    </span>
                   </div>
                 ) : null}
                 <ul>
@@ -381,6 +437,7 @@ export function PRList({
                       key={`${pr.repo}#${pr.number}-reviewed`}
                       pr={pr}
                       isNew={isPrNew(pr, lastSeen)}
+                      ciFailure={ciFailures[prKey(pr.repo, pr.number)] ?? null}
                       onSelect={onSelect}
                       onFilterAuthor={
                         onAuthorChange
@@ -394,10 +451,10 @@ export function PRList({
             ) : null}
           </div>
         )}
-      </div>
+      </Card>
 
       {ordered.length > PR_LIST_PAGE_SIZE ? (
-        <div className="flex items-center justify-between gap-2 text-xs text-neutral-500">
+        <div className="flex items-center justify-between gap-2 text-body-sm text-on-surface-variant">
           <span>
             {(safePage - 1) * PR_LIST_PAGE_SIZE + 1}–
             {Math.min(safePage * PR_LIST_PAGE_SIZE, ordered.length)} of{" "}
@@ -432,6 +489,7 @@ export function PRList({
           </div>
         </div>
       ) : null}
+      </TabsPanel>
     </section>
   );
 }

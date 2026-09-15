@@ -2,9 +2,20 @@ import { Loader2, RefreshCw, Star } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { PageHeader, PageShell } from "@/components/layout/PageShell";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ErrorBlock, LoadingBlock } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
+import { TabsList, TabsPanel, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/cn";
+import { favoriteStarClass } from "@/lib/favorite-styles";
 import { useFavorites } from "@/lib/use-settings";
 
 import { useRepos } from "./hooks";
@@ -93,8 +104,13 @@ export function ReposPage() {
     <PageShell width="lg" className="gap-5">
       <PageHeader
         backTo="/"
-        title="Repos"
+        title="Repositories"
         subtitle={`${favorites.length} favorite${favorites.length === 1 ? "" : "s"} · ${repos.length} loaded · click a repo for open PRs`}
+        leading={
+          <Badge variant="github" className="mt-1">
+            Repos
+          </Badge>
+        }
         actions={
           <Button
             type="button"
@@ -113,56 +129,56 @@ export function ReposPage() {
         }
       />
 
-      <Input
-        placeholder="Search repos…"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        autoFocus
-      />
+      <Card padding="default" className="border-stream-github-border/80">
+        <CardHeader className="mb-3">
+          <CardTitle className="text-title-md">Browse repositories</CardTitle>
+          <CardDescription>
+            Favorites filter the dashboard. Star repos here or restore defaults
+            in Settings.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Input
+            placeholder="Search repos…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            autoFocus
+            aria-label="Search repos"
+            className="max-w-md"
+          />
+          <TabsList aria-label="Repository lists" className="h-auto flex-wrap">
+            {tabs.map((item) => (
+              <TabsTrigger
+                key={item.id}
+                id={`repos-tab-${item.id}`}
+                aria-controls="repos-tab-panel"
+                active={tab === item.id}
+                onClick={() => setTab(item.id)}
+              >
+                {item.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </CardContent>
+      </Card>
 
-      <div
-        role="tablist"
-        aria-label="Repository lists"
-        className="inline-flex flex-wrap rounded-lg border border-neutral-200 bg-neutral-100 p-0.5 dark:border-neutral-800 dark:bg-neutral-900"
-      >
-        {tabs.map((item) => {
-          const selectedTab = tab === item.id;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              role="tab"
-              aria-selected={selectedTab}
-              onClick={() => setTab(item.id)}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                selectedTab
-                  ? "bg-white text-neutral-900 shadow-sm dark:bg-neutral-800 dark:text-neutral-50"
-                  : "text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200",
-              )}
-            >
-              {item.label}
-            </button>
-          );
-        })}
-      </div>
+      {error ? <ErrorBlock>{error}</ErrorBlock> : null}
 
-      {error ? (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
-          {error}
-        </div>
-      ) : null}
-
+      <TabsPanel id="repos-tab-panel" aria-labelledby={`repos-tab-${tab}`}>
       {tab === "favorites" ? (
-        <section className="space-y-2">
-          <h2 className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-neutral-500 uppercase">
-            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-            Favorite repos
-          </h2>
-          <div className="max-h-[min(36rem,65vh)] overflow-y-auto rounded-lg border border-amber-200 bg-amber-50/40 dark:border-amber-900 dark:bg-amber-950/20">
+        <Card padding="none" className="overflow-hidden border-warning/30">
+          <div className="flex items-center gap-1.5 border-b border-border bg-warning-container/40 px-3 py-2">
+            <Star className={cn("h-3.5 w-3.5", favoriteStarClass(true))} />
+            <h2 className="text-label-sm tracking-wide text-on-warning-container uppercase">
+              Favorite repos
+            </h2>
+          </div>
+          <div className="max-h-[min(36rem,65vh)] overflow-y-auto">
             {visibleFavorites.length === 0 ? (
-              <div className="px-4 py-8 text-center text-sm text-neutral-500">
-                No favorite repos. Restore defaults in Settings.
+              <div className="px-4 py-8 text-center text-body-md text-on-surface-variant">
+                {query.trim()
+                  ? "No favorite repos match your search."
+                  : "No favorite repos. Restore defaults in Settings."}
               </div>
             ) : (
               <ul>
@@ -177,22 +193,21 @@ export function ReposPage() {
               </ul>
             )}
           </div>
-        </section>
+        </Card>
       ) : null}
 
       {tab === "all" ? (
-        <section className="space-y-2">
-          <h2 className="text-xs font-semibold tracking-wide text-neutral-500 uppercase">
-            All repos
-          </h2>
-          <div className="max-h-[min(36rem,65vh)] overflow-y-auto rounded-lg border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
+        <Card padding="none" className="overflow-hidden">
+          <div className="border-b border-border bg-surface-container-low/40 px-3 py-2">
+            <h2 className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+              All repos
+            </h2>
+          </div>
+          <div className="max-h-[min(36rem,65vh)] overflow-y-auto">
             {loading && repos.length === 0 ? (
-              <div className="flex items-center justify-center gap-2 px-4 py-16 text-sm text-neutral-500">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Loading repositories…
-              </div>
+              <LoadingBlock embedded>Loading repositories…</LoadingBlock>
             ) : sorted.length === 0 ? (
-              <div className="px-4 py-16 text-center text-sm text-neutral-500">
+              <div className="px-4 py-12 text-center text-body-md text-on-surface-variant">
                 {query.trim()
                   ? "No repos match your search."
                   : "No repositories found."}
@@ -210,8 +225,9 @@ export function ReposPage() {
               </ul>
             )}
           </div>
-        </section>
+        </Card>
       ) : null}
+      </TabsPanel>
     </PageShell>
   );
 }

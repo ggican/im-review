@@ -93,12 +93,12 @@ export function AuthorFilterBar({
           className="h-8 text-xs"
         />
         {open && suggestions.length > 0 ? (
-          <ul className="absolute z-20 mt-1 max-h-56 w-56 overflow-y-auto rounded-md border border-neutral-200 bg-white py-1 shadow-md dark:border-neutral-800 dark:bg-neutral-950">
+          <ul className="absolute z-20 mt-1 max-h-56 w-56 overflow-y-auto rounded-md border border-border bg-surface-container-lowest py-1 shadow-md">
             {suggestions.map((a) => (
               <li key={a.login}>
                 <button
                   type="button"
-                  className="flex w-full items-center gap-2 px-2 py-1.5 text-left text-xs hover:bg-neutral-100 dark:hover:bg-neutral-900"
+                  className="flex w-full items-center gap-2 px-2 py-1.5 text-left text-xs text-on-surface hover:bg-surface-container-low focus-visible:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-container/70"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => {
                     const inTab = tabItems.some((pr) =>
@@ -114,7 +114,10 @@ export function AuthorFilterBar({
                       className="h-4 w-4 rounded-full"
                     />
                   ) : (
-                    <span className="h-4 w-4 rounded-full bg-neutral-200 dark:bg-neutral-800" />
+                    <span
+                      className="h-4 w-4 rounded-full bg-surface-container-high"
+                      aria-hidden
+                    />
                   )}
                   @{a.login}
                 </button>
@@ -141,6 +144,12 @@ export function AuthorFilterBar({
           <button
             key={user.login}
             type="button"
+            aria-pressed={selected}
+            aria-label={
+              selected
+                ? `Clear author filter @${user.login}`
+                : `Filter by @${user.login}`
+            }
             onClick={() => {
               if (selected) {
                 onChange(null, "filter");
@@ -152,10 +161,10 @@ export function AuthorFilterBar({
               onChange(user.login, inTab ? "filter" : "search");
             }}
             className={cn(
-              "inline-flex max-w-[9rem] items-center gap-1 rounded-full border px-2 py-0.5 text-xs",
+              "inline-flex max-w-[9rem] items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-container/70",
               selected
-                ? "border-neutral-900 bg-neutral-900 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900"
-                : "border-neutral-200 text-neutral-600 hover:border-neutral-400 dark:border-neutral-800 dark:text-neutral-300",
+                ? "border-primary bg-primary text-on-primary"
+                : "border-border text-on-surface-variant hover:border-outline-variant hover:text-on-surface",
             )}
           >
             {user.avatarUrl ? (
@@ -170,7 +179,7 @@ export function AuthorFilterBar({
         );
       })}
       {extra > 0 ? (
-        <span className="text-xs text-neutral-400">+{extra}</span>
+        <span className="text-xs text-on-surface-variant">+{extra}</span>
       ) : null}
     </div>
   );

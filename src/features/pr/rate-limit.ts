@@ -11,7 +11,7 @@ export function isGithubRateLimitError(err: unknown): boolean {
 
 export function rateLimitUserMessage(err: unknown): string {
   if (isGithubRateLimitError(err)) {
-    return "GitHub rate limit — tunggu beberapa menit, lalu coba lagi. Tidak auto-retry.";
+    return "GitHub rate limit — wait a few minutes, then try again. No auto-retry.";
   }
   return String(err);
 }
