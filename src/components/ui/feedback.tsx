@@ -18,7 +18,7 @@ export function LoadingBlock({
   const body = (
     <div
       className={cn(
-        "flex items-center justify-center gap-2 py-12 text-body-md text-on-surface-variant",
+        "text-body-md text-on-surface-variant flex items-center justify-center gap-2 py-12",
         embedded && "px-4",
         !embedded && className,
       )}
@@ -51,7 +51,7 @@ export function ErrorBlock({
     <div
       role="alert"
       className={cn(
-        "rounded-lg border px-4 py-3 text-body-sm",
+        "text-body-sm rounded-lg border px-4 py-3",
         tone === "error" &&
           "border-error/30 bg-error-container text-on-error-container",
         tone === "warning" &&

@@ -141,11 +141,11 @@ export function AppChrome() {
       <div className="mx-auto flex h-14 w-full max-w-[1140px] items-center gap-3 px-4">
         <Link
           to="/"
-          className="flex shrink-0 items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-container"
+          className="focus-visible:ring-primary-container flex shrink-0 items-center gap-2 rounded-md focus-visible:ring-2 focus-visible:outline-none"
           aria-label="IM Review home"
         >
           <img src={imReviewLogo} alt="" className="h-7 w-7 rounded-md" />
-          <span className="font-headline hidden text-sm font-semibold tracking-tight text-chrome-foreground sm:inline">
+          <span className="font-headline text-chrome-foreground hidden text-sm font-semibold tracking-tight sm:inline">
             IM Review
           </span>
         </Link>
@@ -166,8 +166,8 @@ export function AppChrome() {
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
                   active
-                    ? "bg-white/10 text-chrome-foreground"
-                    : "text-chrome-muted hover:bg-white/5 hover:text-chrome-foreground",
+                    ? "text-chrome-foreground bg-white/10"
+                    : "text-chrome-muted hover:text-chrome-foreground hover:bg-white/5",
                 )}
               >
                 <Icon className="h-3.5 w-3.5 shrink-0 opacity-90" aria-hidden />
@@ -188,7 +188,7 @@ export function AppChrome() {
             variant="ghost"
             size="sm"
             aria-label="Open command palette"
-            className="h-8 gap-1.5 border border-white/10 bg-chrome-recessed px-2.5 text-chrome-muted hover:bg-white/10 hover:text-chrome-foreground"
+            className="bg-chrome-recessed text-chrome-muted hover:text-chrome-foreground h-8 gap-1.5 border border-white/10 px-2.5 hover:bg-white/10"
             onClick={() => openCommandPalette()}
           >
             <Search className="h-3.5 w-3.5" aria-hidden />
@@ -200,7 +200,7 @@ export function AppChrome() {
             size="icon-sm"
             aria-label={themeLabel(settings.theme)}
             title={themeLabel(settings.theme)}
-            className="text-chrome-muted hover:bg-white/10 hover:text-chrome-foreground"
+            className="text-chrome-muted hover:text-chrome-foreground hover:bg-white/10"
             onClick={onToggleTheme}
           >
             {darkUi ? (
@@ -218,13 +218,13 @@ export function AppChrome() {
                 className="h-7 w-7 rounded-full border border-white/15"
               />
             ) : (
-              <div className="h-7 w-7 rounded-full bg-chrome-recessed" />
+              <div className="bg-chrome-recessed h-7 w-7 rounded-full" />
             )}
-            <div className="min-w-0 max-w-[9rem]">
-              <div className="truncate text-xs font-medium text-chrome-foreground">
+            <div className="max-w-[9rem] min-w-0">
+              <div className="text-chrome-foreground truncate text-xs font-medium">
                 {user?.name ?? user?.login ?? "…"}
               </div>
-              <div className="truncate text-[10px] text-chrome-muted">
+              <div className="text-chrome-muted truncate text-[10px]">
                 {user ? `@${user.login}` : "Signed in"}
               </div>
             </div>
@@ -234,7 +234,7 @@ export function AppChrome() {
             variant="ghost"
             size="icon-sm"
             aria-label="Sign out"
-            className="text-chrome-muted hover:bg-white/10 hover:text-chrome-foreground"
+            className="text-chrome-muted hover:text-chrome-foreground hover:bg-white/10"
             onClick={() => void onLogout()}
           >
             <LogOut className="h-4 w-4" />
@@ -257,7 +257,7 @@ export function AppChrome() {
               className={cn(
                 "shrink-0 rounded-md px-2.5 py-1 text-xs font-medium",
                 active
-                  ? "bg-white/10 text-chrome-foreground"
+                  ? "text-chrome-foreground bg-white/10"
                   : "text-chrome-muted",
               )}
             >

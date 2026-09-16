@@ -17,13 +17,13 @@
 
 ## 1. Product (dari kode hari ini)
 
-| Field | Value |
-| --- | --- |
-| **Name** | **IM Review** |
-| **Platform** | Desktop macOS (Tauri 2), window ~1100×800 |
-| **Stack UI** | React 19, Tailwind, Radix/shadcn-style, Lucide, Inter |
-| **One-liner** | Satu tempat triage kerja engineering: GitHub PRs, Jira issues, Gmail, Google Calendar, plus AI review & metrics. |
-| **Primary user** | Software engineer / reviewer yang handle banyak PR + tiket + meeting + email kerja per hari. |
+| Field              | Value                                                                                                                                          |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Name**           | **IM Review**                                                                                                                                  |
+| **Platform**       | Desktop macOS (Tauri 2), window ~1100×800                                                                                                      |
+| **Stack UI**       | React 19, Tailwind, Radix/shadcn-style, Lucide, Inter                                                                                          |
+| **One-liner**      | Satu tempat triage kerja engineering: GitHub PRs, Jira issues, Gmail, Google Calendar, plus AI review & metrics.                               |
+| **Primary user**   | Software engineer / reviewer yang handle banyak PR + tiket + meeting + email kerja per hari.                                                   |
 | **Job to be done** | Buka app → lihat apa yang **needs me** → buka item → aksi (approve / comment / status / baca mail / join Meet) → lanjut tanpa tab-hop browser. |
 
 ### Positioning
@@ -65,10 +65,12 @@ Dashboard / PR lists          ← home hari ini (PR-centric)
 ## 3. Screen inventory (as-built)
 
 ### 3.1 Onboarding
+
 - Centered form: paste GitHub PAT → Continue.
 - Logo + short trust copy (token stays local).
 
 ### 3.2 Dashboard (PR hub) — `/`
+
 **Header:** Logo · user name/@login · avatar · nav: People, Jira, Calendar, Gmail, Metrics, Repos, Settings, Sign out.
 
 **Optional:** Red CI failure banner (your open PRs).
@@ -84,58 +86,66 @@ Dashboard / PR lists          ← home hari ini (PR-centric)
 **Toolbar:** Mark seen · Refresh · updated time · author filter chips.
 
 ### 3.3 PR detail — `/review/:owner/:repo/:number`
+
 **Header:** Back · repo# · title · your-review badge/banner · meta (author, branches, +/− files) · Approve LGTM · Favorite branch · Open GitHub.
 
 **Tabs:** PR detail · Files · CI · Reviews · AI review.
 
-| Tab | Content |
-| --- | --- |
-| Detail | Own-PR controls · Quick approve + templates · description · metadata |
-| Files | Diffs · line comment gutters · conversation · pending review bar |
-| CI | Check runs |
-| Reviews | GitHub reviews snapshot |
-| AI | Run AI · findings checklist · refine · confirm · Submit |
+| Tab     | Content                                                              |
+| ------- | -------------------------------------------------------------------- |
+| Detail  | Own-PR controls · Quick approve + templates · description · metadata |
+| Files   | Diffs · line comment gutters · conversation · pending review bar     |
+| CI      | Check runs                                                           |
+| Reviews | GitHub reviews snapshot                                              |
+| AI      | Run AI · findings checklist · refine · confirm · Submit              |
 
 ### 3.4 Jira — `/jira` + `/jira/:issueKey`
+
 **List:** Saved filters · type · label · include done · extra JQL · status tabs · grouped rows.  
 **Row:** type icon · KEY · summary · status · assignee · points · parent · dates.  
 **Detail:** chips · transition status · parent/subtasks · description · fields table · Open in Jira.
 
 ### 3.5 Gmail — `/gmail` + `/gmail/:messageId`
+
 **Tabs:** Inbox · Unread (default) · Starred · Sent.  
 **Controls:** Label · Gmail search · Refresh · Load more.  
 **Row:** unread dot · from · subject · snippet · time.  
 **Detail:** Mark read · Star · Archive · Open in Gmail · headers · body (text/HTML).
 
 ### 3.6 Calendar — `/calendar` + event detail
+
 **Tabs:** Today · Upcoming · This week · All-day.  
 **Controls:** Calendar picker · search · Refresh.  
 **Row:** time · title · Meet tag · location.  
 **Detail:** Join Meet · Open in Calendar · description · attendees.
 
 ### 3.7 People — `/people`
+
 Favorites / Search · list + side panel open PRs by author.
 
 ### 3.8 Repos — `/repos`
+
 Favorites / All · search · star · open PRs for repo.
 
 ### 3.9 Metrics — `/metrics`
+
 Windows Today/7/14/30 · Scorecard / Suggestions / CI Health · 4 category cards · charts.
 
 ### 3.10 Settings — `/settings`
+
 General · AI providers · Jira connect · Google OAuth · Templates · Favorites · History.
 
 ---
 
 ## 4. Visual system incumbents (jangan ditiru buta — ini “as-is”)
 
-| Token | Current |
-| --- | --- |
-| Font | Inter 400/500/600 · mono for keys/branches |
-| Layout | Centered column `max-w-3xl`/`4xl`, `px-6 py-8`, dense `text-xs`/`sm` |
-| Surface | Neutral light/dark · bordered lists · pill tab tracks |
+| Token    | Current                                                                            |
+| -------- | ---------------------------------------------------------------------------------- |
+| Font     | Inter 400/500/600 · mono for keys/branches                                         |
+| Layout   | Centered column `max-w-3xl`/`4xl`, `px-6 py-8`, dense `text-xs`/`sm`               |
+| Surface  | Neutral light/dark · bordered lists · pill tab tracks                              |
 | Semantic | Sky=new/reviewed · Emerald=approve/+ · Red=CI/errors · Amber=favorites · Violet=AI |
-| Logo | Cyan geometric “IM” mark on black square |
+| Logo     | Cyan geometric “IM” mark on black square                                           |
 
 **Pain untuk redesign (observasi kode):**  
 Nav horizontal crowded · tiap sumber (PR/Jira/Gmail/Calendar) silo · belum ada **Today unified inbox** · shell masih “PR app + halaman samping”, belum “work OS”.
@@ -172,16 +182,16 @@ Nav horizontal crowded · tiap sumber (PR/Jira/Gmail/Calendar) silo · belum ada
 
 ## 7. Priority screens untuk Stitch (urutan generate)
 
-| P | Screen | Why |
-| --- | --- | --- |
-| P0 | App shell + Dashboard/Today | First impression |
-| P0 | PR detail (Files + AI tabs) | Core differentiator |
-| P1 | Jira list + issue detail | Parity work items |
-| P1 | Gmail list + message read | Email triage |
-| P1 | Calendar agenda + event | Meetings |
-| P2 | Settings connections | Trust / onboarding accounts |
-| P2 | Metrics scorecard | Secondary |
-| P3 | Onboarding · People · Repos · ⌘K | Supporting |
+| P   | Screen                           | Why                         |
+| --- | -------------------------------- | --------------------------- |
+| P0  | App shell + Dashboard/Today      | First impression            |
+| P0  | PR detail (Files + AI tabs)      | Core differentiator         |
+| P1  | Jira list + issue detail         | Parity work items           |
+| P1  | Gmail list + message read        | Email triage                |
+| P1  | Calendar agenda + event          | Meetings                    |
+| P2  | Settings connections             | Trust / onboarding accounts |
+| P2  | Metrics scorecard                | Secondary                   |
+| P3  | Onboarding · People · Repos · ⌘K | Supporting                  |
 
 ---
 
@@ -270,6 +280,7 @@ OUTPUT
 ## 12. STITCH PER-SCREEN PROMPTS (opsional)
 
 ### 12.1 Dashboard
+
 ```text
 IM Review desktop dashboard for GitHub PR triage. macOS window 1100x800.
 Top chrome: cyan-black logo “IM Review”, user chip, nav links (People, Jira, Calendar, Gmail, Metrics, Repos, Settings).
@@ -278,6 +289,7 @@ Dense operate UI, light theme, then dark theme variant. No marketing hero.
 ```
 
 ### 12.2 PR detail + AI
+
 ```text
 IM Review PR detail screen. Left back button, title, Already reviewed badge, Approve and Open on GitHub actions.
 Tabs: PR detail | Files | CI | Reviews | AI review.
@@ -286,16 +298,19 @@ Include a Files tab concept with diff lines and comment gutter. Dark theme prefe
 ```
 
 ### 12.3 Gmail
+
 ```text
 IM Review Gmail triage screen (not full Gmail clone). Tabs Inbox Unread Starred Sent. Message list: unread dot, from, subject, snippet, time. Detail pane or page: subject, headers, body, actions Mark read / Star / Archive / Open in Gmail. Match IM Review desktop shell and cyan-black brand.
 ```
 
 ### 12.4 Calendar
+
 ```text
 IM Review Calendar agenda. Tabs Today Upcoming This week. Event rows with time, title, Meet tag. Event detail with Join Meet and Open in Calendar. Same desktop shell as IM Review. Calm dense layout.
 ```
 
 ### 12.5 Jira
+
 ```text
 IM Review Jira My Work. Filter bar: saved filters, issue type, labels. Status tabs. Rows with ISSUE-KEY, summary, status chip, parent. Detail with transitions and Open in Jira. Same shell/brand as other IM Review screens.
 ```
@@ -317,14 +332,14 @@ IM Review Jira My Work. Filter bar: saved filters, issue type, labels. Status ta
 
 ## 14. Related docs
 
-| Doc | Role |
-| --- | --- |
-| [PRD.md](./PRD.md) | Master product |
-| [PRD-jira.md](./PRD-jira.md) | Jira behavior |
-| [PRD-google-calendar.md](./PRD-google-calendar.md) | Calendar behavior |
-| [PRD-gmail.md](./PRD-gmail.md) | Gmail behavior |
-| [PRD-github-review-comments.md](./PRD-github-review-comments.md) | Review/comment depth |
-| This file | **Design / Stitch brief from current code** |
+| Doc                                                              | Role                                        |
+| ---------------------------------------------------------------- | ------------------------------------------- |
+| [PRD.md](./PRD.md)                                               | Master product                              |
+| [PRD-jira.md](./PRD-jira.md)                                     | Jira behavior                               |
+| [PRD-google-calendar.md](./PRD-google-calendar.md)               | Calendar behavior                           |
+| [PRD-gmail.md](./PRD-gmail.md)                                   | Gmail behavior                              |
+| [PRD-github-review-comments.md](./PRD-github-review-comments.md) | Review/comment depth                        |
+| This file                                                        | **Design / Stitch brief from current code** |
 
 ---
 

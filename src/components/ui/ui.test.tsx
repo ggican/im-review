@@ -143,6 +143,42 @@ describe("ui components", () => {
     );
   });
 
+  it("supports Home/End keys and callback refs", async () => {
+    const user = userEvent.setup();
+    const listRef = vi.fn();
+    function Demo() {
+      const [tab, setTab] = useState("a");
+      return (
+        <TabsList ref={listRef} size="sm">
+          <TabsTrigger active={tab === "a"} onClick={() => setTab("a")}>
+            One
+          </TabsTrigger>
+          <TabsTrigger active={tab === "b"} onClick={() => setTab("b")}>
+            Two
+          </TabsTrigger>
+          <TabsTrigger active={tab === "c"} onClick={() => setTab("c")}>
+            Three
+          </TabsTrigger>
+        </TabsList>
+      );
+    }
+    render(
+      <>
+        <Demo />
+        <TabsPanel active={false}>Hidden</TabsPanel>
+      </>,
+    );
+    expect(listRef).toHaveBeenCalled();
+    const one = screen.getByRole("tab", { name: "One" });
+    one.focus();
+    await user.keyboard("{End}");
+    expect(screen.getByRole("tab", { name: "Three" })).toHaveFocus();
+    await user.keyboard("{Home}");
+    expect(screen.getByRole("tab", { name: "One" })).toHaveFocus();
+    await user.keyboard("{ArrowLeft}");
+    expect(screen.getByRole("tab", { name: "Three" })).toHaveFocus();
+  });
+
   it("renders Card surface", () => {
     render(
       <Card>

@@ -45,7 +45,7 @@ export function MetricSummaryBanner({
             <CardDescription className="mb-1 opacity-90">
               Overall score
             </CardDescription>
-            <CardTitle className="flex flex-wrap items-baseline gap-2 font-headline text-headline-xl">
+            <CardTitle className="font-headline text-headline-xl flex flex-wrap items-baseline gap-2">
               <span className="tabular-nums">{overall}</span>
               <span className="text-body-md font-normal opacity-80">/ 100</span>
               <DeltaBadge trend={trend} />
@@ -53,7 +53,7 @@ export function MetricSummaryBanner({
                 {scoreBand(overall)}
               </Badge>
             </CardTitle>
-            <p className="mt-2 text-body-sm opacity-90">
+            <p className="text-body-sm mt-2 opacity-90">
               {login ? `@${login}` : "…"} · {aggregationLabel} · {windowLabel}
               {previousLabel ? ` vs ${previousLabel}` : ""}
               {generatedAt
@@ -61,7 +61,7 @@ export function MetricSummaryBanner({
                 : ""}
             </p>
           </div>
-          <div className="space-y-0.5 font-keycap text-body-sm opacity-90">
+          <div className="font-keycap text-body-sm space-y-0.5 opacity-90">
             <div>25% Speed</div>
             <div>40% Throughput</div>
             <div>15% Quality</div>

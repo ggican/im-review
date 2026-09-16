@@ -17,34 +17,34 @@ Auth Google = **OAuth** (bukan API key paste). Satu Connect Google di Settings m
 
 Engineer sering bolak-balik tab: PR, Jira, lalu Calendar untuk “meeting apa hari ini / jam berapa Meet-nya”. IM Review harus punya **agenda work** dengan pola interaksi yang sama dengan list lain di app:
 
-| #   | Kemampuan                    | Perilaku                                                                  |
-| --- | ---------------------------- | ------------------------------------------------------------------------- |
-| 1   | **Connect Google** (sekali)  | OAuth Desktop client; simpan refresh token lokal; disconnect.             |
-| 2   | **List events**              | Agenda tergrup per hari; row: judul, waktu, lokasi/Meet hint.             |
-| 3   | **Filter tabs**              | Today / Upcoming (7d) / This week / All-day only — ganti window query.    |
-| 4   | **Filter calendar source**   | Dropdown primary + calendars lain yang user subscribe (multi-select TBC). |
+| #   | Kemampuan                   | Perilaku                                                                  |
+| --- | --------------------------- | ------------------------------------------------------------------------- |
+| 1   | **Connect Google** (sekali) | OAuth Desktop client; simpan refresh token lokal; disconnect.             |
+| 2   | **List events**             | Agenda tergrup per hari; row: judul, waktu, lokasi/Meet hint.             |
+| 3   | **Filter tabs**             | Today / Upcoming (7d) / This week / All-day only — ganti window query.    |
+| 4   | **Filter calendar source**  | Dropdown primary + calendars lain yang user subscribe (multi-select TBC). |
 | 5   | **Search / query**          | Cari judul event (client-side dulu; API `q=` jika perlu).                 |
-| 6   | **Open / detail**            | In-app detail: waktu, deskripsi, attendees, Meet link, Open in Calendar.  |
-| 7   | **Quick actions**            | Join Meet (jika ada), copy link, refresh.                                 |
-| 8   | **Saved views (opsional)**   | Chip lokal: nama + tab + calendar filter — pola sama saved filter lain.   |
+| 6   | **Open / detail**           | In-app detail: waktu, deskripsi, attendees, Meet link, Open in Calendar.  |
+| 7   | **Quick actions**           | Join Meet (jika ada), copy link, refresh.                                 |
+| 8   | **Saved views (opsional)**  | Chip lokal: nama + tab + calendar filter — pola sama saved filter lain.   |
 
 ---
 
 ## 2. Baseline (sudah ada)
 
-| Capability                                      | Bukti                                           | Status             |
-| ----------------------------------------------- | ----------------------------------------------- | ------------------ |
-| Google OAuth PKCE + localhost redirect          | `src-tauri/src/google.rs`                       | ✅                 |
-| Scope Calendar readonly + userinfo              | `SCOPES` di `google.rs`                         | ✅                 |
-| Secrets + hydrate Google tokens                 | `src/lib/secrets.ts`, hydrate command           | ✅                 |
-| Settings tab Calendar (connect/disconnect)      | `src/routes/settings.tsx`                       | ✅                 |
-| Route `/calendar` + nav dari dashboard          | `src/router.tsx`, `dashboard.tsx`               | ✅                 |
-| List next 7 days, group by day, open htmlLink   | `src/features/calendar/CalendarPage.tsx`        | ✅ MVP             |
-| Fetch `primary` events only                     | `google_calendar_events`                        | ✅ MVP             |
-| Tabs Today / Week / calendar picker / detail UI | —                                               | ❌                 |
-| Event detail route/panel (in-app)               | — (klik langsung buka browser)                  | ❌                 |
-| Meet link parse + Join button                   | —                                               | ❌                 |
-| Gmail scopes / Gmail routes                     | —                                               | ❌ (lihat Gmail)   |
+| Capability                                      | Bukti                                    | Status           |
+| ----------------------------------------------- | ---------------------------------------- | ---------------- |
+| Google OAuth PKCE + localhost redirect          | `src-tauri/src/google.rs`                | ✅               |
+| Scope Calendar readonly + userinfo              | `SCOPES` di `google.rs`                  | ✅               |
+| Secrets + hydrate Google tokens                 | `src/lib/secrets.ts`, hydrate command    | ✅               |
+| Settings tab Calendar (connect/disconnect)      | `src/routes/settings.tsx`                | ✅               |
+| Route `/calendar` + nav dari dashboard          | `src/router.tsx`, `dashboard.tsx`        | ✅               |
+| List next 7 days, group by day, open htmlLink   | `src/features/calendar/CalendarPage.tsx` | ✅ MVP           |
+| Fetch `primary` events only                     | `google_calendar_events`                 | ✅ MVP           |
+| Tabs Today / Week / calendar picker / detail UI | —                                        | ❌               |
+| Event detail route/panel (in-app)               | — (klik langsung buka browser)           | ❌               |
+| Meet link parse + Join button                   | —                                        | ❌               |
+| Gmail scopes / Gmail routes                     | —                                        | ❌ (lihat Gmail) |
 
 ---
 
@@ -82,13 +82,13 @@ Engineer sering bolak-balik tab: PR, Jira, lalu Calendar untuk “meeting apa ha
 
 ## 5. Inventory Google Calendar API
 
-| Call          | Path                                         | Pakai untuk        |
-| ------------- | -------------------------------------------- | ------------------ |
-| OAuth token   | `oauth2.googleapis.com/token`                | connect + refresh ✅ |
-| Userinfo      | `oauth2/v2/userinfo`                         | email/name ✅      |
-| Events list   | `calendar/v3/calendars/{id}/events`          | list ✅ primary    |
-| Event get     | `calendar/v3/calendars/{id}/events/{eventId}`| detail 📝          |
-| Calendar list | `calendar/v3/users/me/calendarList`          | source filter 📝   |
+| Call          | Path                                          | Pakai untuk          |
+| ------------- | --------------------------------------------- | -------------------- |
+| OAuth token   | `oauth2.googleapis.com/token`                 | connect + refresh ✅ |
+| Userinfo      | `oauth2/v2/userinfo`                          | email/name ✅        |
+| Events list   | `calendar/v3/calendars/{id}/events`           | list ✅ primary      |
+| Event get     | `calendar/v3/calendars/{id}/events/{eventId}` | detail 📝            |
+| Calendar list | `calendar/v3/users/me/calendarList`           | source filter 📝     |
 
 Query list: `timeMin`, `timeMax`, `singleEvents=true`, `orderBy=startTime`, `maxResults`.
 
@@ -159,7 +159,7 @@ MVP type hari ini belum punya `description` / `hangoutLink` / `calendarId` — d
 | C2  | Upcoming = 7 hari; This week = batas minggu lokal                       | Must     |
 | C3  | Klik event → detail in-app; Open in Calendar → `htmlLink`               | Must     |
 | C4  | Meet link tampil sebagai Join jika ada                                  | Must     |
-| C5  | Disconnect → empty + CTA Settings; token cleared                             | Must     |
+| C5  | Disconnect → empty + CTA Settings; token cleared                        | Must     |
 | C6  | Error API not enabled punya copy + link enable                          | Should   |
 | C7  | Unit tests: map event, group by day, tab window helpers                 | Must     |
 
@@ -167,17 +167,19 @@ MVP type hari ini belum punya `description` / `hangoutLink` / `calendarId` — d
 
 ## 9. Milestones
 
-| Slice  | Scope                                         | Status  |
-| ------ | --------------------------------------------- | ------- |
-| M13a.0 | OAuth + primary 7d list + open browser        | ✅ Done |
-| M13a.1 | Tabs Today / Upcoming / This week             | 📝      |
-| M13a.2 | In-app detail + Meet join                     | 📝      |
-| M13a.3 | calendarList filter + search                  | 📝      |
-| M13a.4 | Shared Google settings + scope bundle w/ Gmail| 📝      |
+| Slice  | Scope                                          | Status         |
+| ------ | ---------------------------------------------- | -------------- |
+| M13a.0 | OAuth + primary 7d list + open browser         | ✅ Done        |
+| M13a.1 | Tabs Today / Upcoming / This week              | ✅ Implemented |
+| M13a.2 | In-app detail + Meet join                      | ✅ Implemented |
+| M13a.3 | calendarList filter + search                   | ✅ Implemented |
+| M13a.4 | Shared Google settings + scope bundle w/ Gmail | ✅ Implemented |
 
 ---
 
 ## 10. Risks
+
+> Status “Implemented” berarti tercakup oleh source dan unit test lokal; verifikasi OAuth/Calendar API dengan akun nyata tetap mengikuti [GOOGLE_OAUTH.md](./GOOGLE_OAUTH.md).
 
 - OAuth Testing mode: refresh token / test user limit.
 - `primary` saja bisa miss calendar kerja shared → calendarList.
@@ -188,9 +190,9 @@ MVP type hari ini belum punya `description` / `hangoutLink` / `calendarId` — d
 
 ## 11. Open questions
 
-| #   | Pertanyaan                         | Jawaban sementara      |
-| --- | ---------------------------------- | --------------------- |
-| QC1 | Detail = route atau drawer?        | Route `/calendar/:id` |
-| QC2 | Default tab saat buka?             | Today                 |
-| QC3 | Multi-calendar default?            | Primary only dulu     |
-| QC4 | Notif “meeting soon”?              | TBC M14               |
+| #   | Pertanyaan                  | Jawaban sementara     |
+| --- | --------------------------- | --------------------- |
+| QC1 | Detail = route atau drawer? | Route `/calendar/:id` |
+| QC2 | Default tab saat buka?      | Today                 |
+| QC3 | Multi-calendar default?     | Primary only dulu     |
+| QC4 | Notif “meeting soon”?       | TBC M14               |

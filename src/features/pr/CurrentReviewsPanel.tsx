@@ -215,19 +215,19 @@ function InlineCommentBlock({
   return (
     <li
       className={cn(
-        "rounded-lg border border-border bg-surface-container-lowest p-3",
-        indent && "ml-4 border-l-2 border-l-primary-container/50",
+        "border-border bg-surface-container-lowest rounded-lg border p-3",
+        indent && "border-l-primary-container/50 ml-4 border-l-2",
       )}
     >
-      <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-keycap text-on-surface-variant">
+      <div className="font-keycap text-on-surface-variant mb-1 flex flex-wrap items-center gap-x-2 gap-y-1">
         <span className="truncate font-mono text-xs">{comment.path}</span>
         {comment.line != null ? (
           <span className="font-mono text-xs">:{comment.line}</span>
         ) : null}
-        <span className="font-sans text-body-sm text-on-surface-variant">
+        <span className="text-body-sm text-on-surface-variant font-sans">
           · {comment.user}
         </span>
-        <span className="font-sans text-body-sm">
+        <span className="text-body-sm font-sans">
           {relativeTime(comment.createdAt)}
         </span>
       </div>
@@ -263,7 +263,7 @@ function InlineCommentBlock({
           </div>
         </div>
       ) : (
-        <pre className="text-body-sm leading-relaxed whitespace-pre-wrap text-on-surface">
+        <pre className="text-body-sm text-on-surface leading-relaxed whitespace-pre-wrap">
           {comment.body || "(empty comment)"}
         </pre>
       )}
@@ -316,7 +316,7 @@ function InlineCommentBlock({
         </div>
       ) : null}
       {replying ? (
-        <div className="mt-2 space-y-2 border-t border-border pt-2">
+        <div className="border-border mt-2 space-y-2 border-t pt-2">
           <Textarea
             rows={2}
             value={replyBody}
@@ -390,18 +390,18 @@ function ReviewCard({
   }
 
   return (
-    <article className="space-y-3 border-b border-border px-4 py-3 last:border-b-0">
+    <article className="border-border space-y-3 border-b px-4 py-3 last:border-b-0">
       <header className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2.5">
           {review.avatarUrl ? (
             <img
               src={review.avatarUrl}
               alt=""
-              className="h-8 w-8 rounded-full border border-border"
+              className="border-border h-8 w-8 rounded-full border"
             />
           ) : (
             <div
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-container-high font-keycap text-on-surface-variant"
+              className="bg-surface-container-high font-keycap text-on-surface-variant flex h-8 w-8 items-center justify-center rounded-full"
               aria-hidden
             >
               {(review.user.slice(0, 2) || "?").toUpperCase()}
@@ -409,7 +409,7 @@ function ReviewCard({
           )}
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-body-md font-medium text-on-surface">
+              <span className="text-body-md text-on-surface font-medium">
                 {review.user}
               </span>
               <ReviewStateBadge state={review.state} />
@@ -449,7 +449,7 @@ function ReviewCard({
       </header>
 
       {dismissOpen ? (
-        <div className="space-y-2 rounded-lg border border-warning/40 bg-warning-container/80 p-3">
+        <div className="border-warning/40 bg-warning-container/80 space-y-2 rounded-lg border p-3">
           <Input
             value={dismissMsg}
             onChange={(e) => setDismissMsg(e.target.value)}
@@ -480,7 +480,7 @@ function ReviewCard({
       ) : null}
 
       {review.body ? (
-        <pre className="rounded-lg border border-border bg-surface-container-low/60 p-3 text-body-sm leading-relaxed whitespace-pre-wrap text-on-surface">
+        <pre className="border-border bg-surface-container-low/60 text-body-sm text-on-surface rounded-lg border p-3 leading-relaxed whitespace-pre-wrap">
           {review.body}
         </pre>
       ) : (
@@ -550,9 +550,9 @@ export function CurrentReviewsPanel({
       <Card padding="default">
         <CardHeader className="mb-3 flex-row flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 space-y-1">
-            <CardTitle className="flex items-center gap-2 text-title-md font-semibold">
+            <CardTitle className="text-title-md flex items-center gap-2 font-semibold">
               <MessageSquareText
-                className="h-4 w-4 text-on-surface-variant"
+                className="text-on-surface-variant h-4 w-4"
                 aria-hidden
               />
               Reviews
@@ -582,14 +582,14 @@ export function CurrentReviewsPanel({
           {error ? (
             <div
               role="alert"
-              className="rounded-lg border border-warning/30 bg-warning-container px-3 py-2 text-body-sm text-on-warning-container"
+              className="border-warning/30 bg-warning-container text-body-sm text-on-warning-container rounded-lg border px-3 py-2"
             >
               {error}
             </div>
           ) : null}
 
           {loading && !snapshot ? (
-            <div className="flex items-center gap-2 py-8 text-body-md text-on-surface-variant">
+            <div className="text-body-md text-on-surface-variant flex items-center gap-2 py-8">
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
               Loading reviews from GitHub…
             </div>
@@ -598,7 +598,7 @@ export function CurrentReviewsPanel({
           {snapshot && summary ? (
             <>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+                <span className="text-label-sm text-on-surface-variant tracking-wide uppercase">
                   Current status
                 </span>
                 {summary.overall.state === "NONE" ? (
@@ -609,29 +609,29 @@ export function CurrentReviewsPanel({
               </div>
 
               <div className="grid gap-2 sm:grid-cols-3">
-                <div className="rounded-lg border border-border bg-surface-container-low/50 px-3 py-2">
+                <div className="border-border bg-surface-container-low/50 rounded-lg border px-3 py-2">
                   <p className="text-label-sm text-on-surface-variant uppercase">
                     Approved
                   </p>
-                  <p className="mt-0.5 font-headline text-headline-sm text-success tabular-nums">
+                  <p className="font-headline text-headline-sm text-success mt-0.5 tabular-nums">
                     {summary.approved}
                   </p>
                 </div>
-                <div className="rounded-lg border border-border bg-surface-container-low/50 px-3 py-2">
+                <div className="border-border bg-surface-container-low/50 rounded-lg border px-3 py-2">
                   <p className="text-label-sm text-on-surface-variant uppercase">
                     Changes requested
                   </p>
-                  <p className="mt-0.5 font-headline text-headline-sm text-error tabular-nums">
+                  <p className="font-headline text-headline-sm text-error mt-0.5 tabular-nums">
                     {summary.changes}
                   </p>
                 </div>
-                <div className="rounded-lg border border-border bg-surface-container-low/50 px-3 py-2">
+                <div className="border-border bg-surface-container-low/50 rounded-lg border px-3 py-2">
                   <p className="text-label-sm text-on-surface-variant uppercase">
                     Comments
                   </p>
-                  <p className="mt-0.5 font-headline text-headline-sm text-on-surface tabular-nums">
+                  <p className="font-headline text-headline-sm text-on-surface mt-0.5 tabular-nums">
                     {summary.commented}
-                    <span className="ml-1 text-body-sm font-normal text-on-surface-variant">
+                    <span className="text-body-sm text-on-surface-variant ml-1 font-normal">
                       · {snapshot.inlineCount} inline
                     </span>
                   </p>
@@ -640,31 +640,31 @@ export function CurrentReviewsPanel({
 
               {snapshot.latestByUser.length > 0 ? (
                 <div>
-                  <p className="mb-2 text-label-sm tracking-wide text-on-surface-variant uppercase">
+                  <p className="text-label-sm text-on-surface-variant mb-2 tracking-wide uppercase">
                     Reviewers
                   </p>
                   <ul className="space-y-1.5">
                     {snapshot.latestByUser.map((u) => (
                       <li
                         key={u.user}
-                        className="flex items-center justify-between gap-2 rounded-lg border border-border/70 bg-surface-container-lowest px-2.5 py-1.5"
+                        className="border-border/70 bg-surface-container-lowest flex items-center justify-between gap-2 rounded-lg border px-2.5 py-1.5"
                       >
                         <span className="inline-flex min-w-0 items-center gap-2">
                           {u.avatarUrl ? (
                             <img
                               src={u.avatarUrl}
                               alt=""
-                              className="h-6 w-6 rounded-full border border-border"
+                              className="border-border h-6 w-6 rounded-full border"
                             />
                           ) : (
                             <span
-                              className="flex h-6 w-6 items-center justify-center rounded-full bg-surface-container-high font-keycap text-on-surface-variant"
+                              className="bg-surface-container-high font-keycap text-on-surface-variant flex h-6 w-6 items-center justify-center rounded-full"
                               aria-hidden
                             >
                               {(u.user.slice(0, 2) || "?").toUpperCase()}
                             </span>
                           )}
-                          <span className="truncate text-body-sm font-medium text-on-surface">
+                          <span className="text-body-sm text-on-surface truncate font-medium">
                             {u.user}
                           </span>
                         </span>
@@ -690,16 +690,16 @@ export function CurrentReviewsPanel({
 
       {snapshot ? (
         <Card padding="none" className="overflow-hidden">
-          <div className="border-b border-border px-4 py-3">
-            <h3 className="font-headline text-title-md font-semibold text-on-surface">
+          <div className="border-border border-b px-4 py-3">
+            <h3 className="font-headline text-title-md text-on-surface font-semibold">
               Timeline
             </h3>
-            <p className="mt-0.5 text-body-sm text-on-surface-variant">
+            <p className="text-body-sm text-on-surface-variant mt-0.5">
               Newest submissions first. Reply, edit, or dismiss from each row.
             </p>
           </div>
           {snapshot.reviews.length === 0 ? (
-            <p className="px-4 py-10 text-center text-body-md text-on-surface-variant">
+            <p className="text-body-md text-on-surface-variant px-4 py-10 text-center">
               No reviews yet on this PR.
             </p>
           ) : (

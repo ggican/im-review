@@ -155,7 +155,7 @@ export function PRDetailDrawer({ pr, open, onOpenChange }: Props) {
             </DialogHeader>
 
             <div className="flex-1 space-y-5 overflow-y-auto px-5 py-4">
-              <div className="flex flex-wrap items-center gap-2 text-body-sm text-on-surface-variant">
+              <div className="text-body-sm text-on-surface-variant flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1.5">
                   {shown.author.avatarUrl ? (
                     <img
@@ -183,7 +183,7 @@ export function PRDetailDrawer({ pr, open, onOpenChange }: Props) {
               </div>
 
               {loading && !detail ? (
-                <div className="flex items-center gap-2 text-body-sm text-on-surface-variant">
+                <div className="text-body-sm text-on-surface-variant flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Loading details…
                 </div>
@@ -196,7 +196,7 @@ export function PRDetailDrawer({ pr, open, onOpenChange }: Props) {
                     description={detail.ciDescription}
                   />
                   <div>
-                    <h3 className="mb-1 text-label-sm font-medium tracking-wide text-on-surface-variant uppercase">
+                    <h3 className="text-label-sm text-on-surface-variant mb-1 font-medium tracking-wide uppercase">
                       Reviewers
                     </h3>
                     <p className="text-body-sm text-on-surface">
@@ -206,10 +206,10 @@ export function PRDetailDrawer({ pr, open, onOpenChange }: Props) {
                     </p>
                   </div>
                   <div>
-                    <h3 className="mb-1 text-label-sm font-medium tracking-wide text-on-surface-variant uppercase">
+                    <h3 className="text-label-sm text-on-surface-variant mb-1 font-medium tracking-wide uppercase">
                       Description
                     </h3>
-                    <pre className="max-h-48 overflow-auto rounded-md bg-surface-container-low p-3 text-body-sm leading-relaxed whitespace-pre-wrap text-on-surface">
+                    <pre className="bg-surface-container-low text-body-sm text-on-surface max-h-48 overflow-auto rounded-md p-3 leading-relaxed whitespace-pre-wrap">
                       {detail.body || "No description."}
                     </pre>
                   </div>
@@ -217,7 +217,7 @@ export function PRDetailDrawer({ pr, open, onOpenChange }: Props) {
               ) : null}
 
               <div className="space-y-2">
-                <h3 className="text-label-sm font-medium tracking-wide text-on-surface-variant uppercase">
+                <h3 className="text-label-sm text-on-surface-variant font-medium tracking-wide uppercase">
                   Cursor AI
                 </h3>
                 <p className="text-body-sm text-on-surface-variant">
@@ -233,7 +233,7 @@ export function PRDetailDrawer({ pr, open, onOpenChange }: Props) {
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-label-sm font-medium tracking-wide text-on-surface-variant uppercase">
+                <h3 className="text-label-sm text-on-surface-variant font-medium tracking-wide uppercase">
                   Review comment
                 </h3>
                 {templates.length > 0 ? (
@@ -244,7 +244,7 @@ export function PRDetailDrawer({ pr, open, onOpenChange }: Props) {
                         type="button"
                         disabled={Boolean(busy)}
                         onClick={() => setComment(t.body)}
-                        className="rounded-md border border-border bg-surface-container-low px-2 py-1 text-label-sm font-medium text-on-surface hover:bg-surface-container-high"
+                        className="border-border bg-surface-container-low text-label-sm text-on-surface hover:bg-surface-container-high rounded-md border px-2 py-1 font-medium"
                         title={t.body}
                       >
                         {t.name}
@@ -262,7 +262,7 @@ export function PRDetailDrawer({ pr, open, onOpenChange }: Props) {
               </div>
             </div>
 
-            <div className="space-y-2 border-t border-border px-5 py-4">
+            <div className="border-border space-y-2 border-t px-5 py-4">
               <div className="flex flex-wrap gap-2">
                 <Button
                   type="button"

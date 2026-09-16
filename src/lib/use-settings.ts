@@ -16,6 +16,7 @@ import {
   getGooglePublic,
   getJiraPublic,
   getJiraSavedFilters,
+  getJiraStatusTabOrder,
   getSavedReviews,
   getSettings,
   getTemplates,
@@ -59,6 +60,14 @@ export function useJiraSavedFilters(): JiraSavedFilter[] {
     subscribeSettings,
     getJiraSavedFilters,
     getJiraSavedFilters,
+  );
+}
+
+export function useJiraStatusTabOrder(): string[] {
+  return useSyncExternalStore(
+    subscribeSettings,
+    getJiraStatusTabOrder,
+    getJiraStatusTabOrder,
   );
 }
 

@@ -52,4 +52,33 @@ describe("UNIT-API-015 scanMineCiFailures", () => {
     expect(hits[0]?.pr.repo).toBe("b/app");
     expect(hits[0]?.description).toContain("ci");
   });
+
+  it("maps error and pending states and generic failure copy", async () => {
+    const mine = [
+      makePr({ repo: "acme/a", number: 10 }),
+      makePr({ repo: "acme/b", number: 11 }),
+      makePr({ repo: "invalid", number: 12 }),
+    ];
+    githubGet.mockImplementation(async (...args: unknown[]) => {
+      const path = String(args[0] ?? "");
+      if (path.includes("/pulls/10")) {
+        return { head: { sha: "sha10" }, title: "Err PR" };
+      }
+      if (path.includes("/commits/sha10/status")) {
+        return { state: "error", statuses: [] };
+      }
+      if (path.includes("/pulls/11")) {
+        return { head: { sha: "sha11" }, title: "Pending PR" };
+      }
+      if (path.includes("/commits/sha11/status")) {
+        return { state: "pending", statuses: [] };
+      }
+      return { head: { sha: "x" }, title: "x" };
+    });
+
+    const hits = await scanMineCiFailures(mine, 6);
+    expect(hits).toHaveLength(1);
+    expect(hits[0]?.pr.number).toBe(10);
+    expect(hits[0]?.description).toBe("CI failed");
+  });
 });

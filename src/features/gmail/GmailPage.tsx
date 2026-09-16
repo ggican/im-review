@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 import { PageHeader, PageShell } from "@/components/layout/PageShell";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -150,8 +149,8 @@ export function GmailPage() {
 
   if (!connected) {
     return (
-      <PageShell>
-        <PageHeader backTo="/" title="Gmail" subtitle="Connect Google" />
+      <PageShell width="full">
+        <PageHeader title="Gmail" subtitle="Connect Google" />
         <Card padding="default" className="border-stream-gmail-border/80">
           <CardHeader className="mb-2">
             <CardTitle className="text-title-md">Gmail not connected</CardTitle>
@@ -170,16 +169,10 @@ export function GmailPage() {
   }
 
   return (
-    <PageShell width="lg" className="gap-5">
+    <PageShell width="full" className="gap-5">
       <PageHeader
-        backTo="/"
         title="Gmail"
         subtitle={`Email triage · ${connected.name || connected.email}`}
-        leading={
-          <Badge variant="gmail" className="mt-1">
-            Gmail
-          </Badge>
-        }
         actions={
           <Button
             type="button"
@@ -259,7 +252,7 @@ export function GmailPage() {
                 onChange={(e) => setSearchDraft(e.target.value)}
                 placeholder="Gmail search…"
                 aria-label="Gmail search"
-                className="h-8 text-xs"
+                className="text-body-sm h-8"
               />
               <Button type="submit" size="sm" variant="outline">
                 Apply
@@ -272,7 +265,7 @@ export function GmailPage() {
       </Card>
 
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="font-keycap text-body-sm text-on-surface-variant">
+        <p className="text-body-sm text-on-surface-variant">
           {loading && messages.length === 0
             ? "Loading…"
             : `${messages.length} message${messages.length === 1 ? "" : "s"}`}
@@ -288,7 +281,7 @@ export function GmailPage() {
           {loading && messages.length === 0 ? (
             <LoadingBlock embedded>Loading messages…</LoadingBlock>
           ) : messages.length === 0 ? (
-            <p className="px-4 py-12 text-center text-body-md text-on-surface-variant">
+            <p className="text-body-md text-on-surface-variant px-4 py-12 text-center">
               {emptyCopy(tab, search)}
             </p>
           ) : (

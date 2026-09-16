@@ -324,12 +324,12 @@ export function DashboardPage() {
         />
 
         {ciFails.length > 0 ? (
-          <div className="rounded-lg border border-error/30 bg-error-container px-4 py-3 text-body-md text-on-error-container">
+          <div className="border-error/30 bg-error-container text-body-md text-on-error-container rounded-lg border px-4 py-3">
             <p className="font-medium">
               {ciFails.length} of your open PR
               {ciFails.length === 1 ? "" : "s"} have failing CI
             </p>
-            <ul className="mt-2 space-y-1 text-body-sm">
+            <ul className="text-body-sm mt-2 space-y-1">
               {ciFails.slice(0, 4).map((hit) => (
                 <li key={`${hit.pr.repo}#${hit.pr.number}`}>
                   <button
@@ -392,12 +392,12 @@ export function DashboardPage() {
       />
 
       {ciFails.length > 0 ? (
-        <div className="rounded-lg border border-error/30 bg-error-container px-4 py-3 text-body-md text-on-error-container">
+        <div className="border-error/30 bg-error-container text-body-md text-on-error-container rounded-lg border px-4 py-3">
           <p className="font-medium">
             {ciFails.length} of your open PR
             {ciFails.length === 1 ? "" : "s"} have failing CI
           </p>
-          <ul className="mt-2 space-y-1 text-body-sm">
+          <ul className="text-body-sm mt-2 space-y-1">
             {ciFails.slice(0, 4).map((hit) => (
               <li key={`${hit.pr.repo}#${hit.pr.number}`}>
                 <button

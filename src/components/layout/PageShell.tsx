@@ -59,11 +59,11 @@ export function PageHeader({
         ) : null}
         {leading}
         <div className="min-w-0">
-          <h1 className="font-headline text-headline-sm font-semibold tracking-tight text-on-surface">
+          <h1 className="font-headline text-headline-sm text-on-surface font-semibold tracking-tight">
             {title}
           </h1>
           {subtitle ? (
-            <div className="mt-0.5 text-body-sm text-on-surface-variant">
+            <div className="text-body-sm text-on-surface-variant mt-0.5">
               {subtitle}
             </div>
           ) : null}

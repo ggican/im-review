@@ -6,12 +6,18 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  type DragEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 import { PageHeader, PageShell } from "@/components/layout/PageShell";
-import { Badge } from "@/components/ui/badge";
 import { Button, IconButton } from "@/components/ui/button";
 import {
   Card,
@@ -33,12 +39,18 @@ import {
 } from "@/components/ui/select";
 import { TabsList, TabsPanel, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/cn";
 import {
   deleteJiraSavedFilter,
   newJiraFilterId,
+  saveJiraStatusTabOrder,
   upsertJiraSavedFilter,
 } from "@/lib/settings";
-import { useJiraPublic, useJiraSavedFilters } from "@/lib/use-settings";
+import {
+  useJiraPublic,
+  useJiraSavedFilters,
+  useJiraStatusTabOrder,
+} from "@/lib/use-settings";
 
 import {
   fetchJiraIssueTypes,
@@ -51,6 +63,11 @@ import {
 } from "./api";
 import { JiraIssueRow } from "./JiraIssueRow";
 import { compileJql, extraJqlHasAssignee, sanitizeJql } from "./jql";
+import {
+  applyStatusTabOrder,
+  mergeStatusTabOrder,
+  reorderStatusTab,
+} from "./status-tab-order";
 import type {
   JiraIssue,
   JiraIssueType,
@@ -81,6 +98,9 @@ export function JiraPage() {
   const [remote, setRemote] = useState<JiraRemoteFilter[]>([]);
   const [configureOpen, setConfigureOpen] = useState(false);
   const [statusTab, setStatusTab] = useState("all");
+  const [draggingStatus, setDraggingStatus] = useState<string | null>(null);
+  const dragStatusRef = useRef<string | null>(null);
+  const statusTabOrder = useJiraStatusTabOrder();
 
   const selectedType = types.find((t) => t.name === typeId) ?? null;
   const typeNames = typeId !== "all" ? [typeId] : [];
@@ -96,18 +116,20 @@ export function JiraPage() {
   const grouped = useMemo(() => groupIssuesByStatus(issues), [issues]);
   const assigneeNeedle = assigneeDraft.trim().toLowerCase();
   const filteredGrouped = useMemo(() => {
-    if (!assigneeNeedle) return grouped;
-    return grouped
-      .map((group) => ({
-        ...group,
-        items: group.items.filter((issue) => {
-          const name = issue.assignee?.displayName?.toLowerCase() ?? "";
-          if (assigneeNeedle === "unassigned") return !issue.assignee;
-          return name.includes(assigneeNeedle);
-        }),
-      }))
-      .filter((group) => group.items.length > 0);
-  }, [grouped, assigneeNeedle]);
+    const base = !assigneeNeedle
+      ? grouped
+      : grouped
+          .map((group) => ({
+            ...group,
+            items: group.items.filter((issue) => {
+              const name = issue.assignee?.displayName?.toLowerCase() ?? "";
+              if (assigneeNeedle === "unassigned") return !issue.assignee;
+              return name.includes(assigneeNeedle);
+            }),
+          }))
+          .filter((group) => group.items.length > 0);
+    return applyStatusTabOrder(base, statusTabOrder);
+  }, [grouped, assigneeNeedle, statusTabOrder]);
   const visibleGrouped = useMemo(
     () =>
       statusTab === "all"
@@ -126,6 +148,38 @@ export function JiraPage() {
       setStatusTab("all");
     }
   }, [filteredGrouped, statusTab]);
+
+  function onStatusTabDragStart(
+    status: string,
+    e: DragEvent<HTMLButtonElement>,
+  ) {
+    dragStatusRef.current = status;
+    setDraggingStatus(status);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", status);
+  }
+
+  function onStatusTabDragEnd() {
+    dragStatusRef.current = null;
+    setDraggingStatus(null);
+  }
+
+  function onStatusTabDrop(
+    targetStatus: string,
+    e: DragEvent<HTMLButtonElement>,
+  ) {
+    e.preventDefault();
+    const from =
+      e.dataTransfer.getData("text/plain") || dragStatusRef.current || "";
+    if (!from || from === targetStatus) {
+      onStatusTabDragEnd();
+      return;
+    }
+    const visibleOrder = filteredGrouped.map((group) => group.status);
+    const reordered = reorderStatusTab(visibleOrder, from, targetStatus);
+    saveJiraStatusTabOrder(mergeStatusTabOrder(statusTabOrder, reordered));
+    onStatusTabDragEnd();
+  }
 
   useEffect(() => {
     document.title = "Jira · IM Review";
@@ -281,15 +335,13 @@ export function JiraPage() {
 
   if (!connected) {
     return (
-      <PageShell>
-        <PageHeader
-          backTo="/"
-          title="Jira"
-          subtitle="Connect your Atlassian site"
-        />
+      <PageShell width="full">
+        <PageHeader title="Jira" subtitle="Connect your Atlassian site" />
         <Card padding="default" variant="streamJira">
           <CardHeader className="mb-2">
-            <CardTitle className="text-title-md">No connected account</CardTitle>
+            <CardTitle className="text-title-md">
+              No connected account
+            </CardTitle>
             <CardDescription className="text-stream-jira-fg/80">
               Link your Jira site to triage assigned issues beside PR review.
             </CardDescription>
@@ -305,16 +357,10 @@ export function JiraPage() {
   }
 
   return (
-    <PageShell width="lg" className="gap-5">
+    <PageShell width="full" className="gap-5">
       <PageHeader
-        backTo="/"
         title="Jira"
         subtitle={`Engineering issues · ${connected.displayName} · ${connected.host.replace(/^https:\/\//, "")}`}
-        leading={
-          <Badge variant="jira" className="mt-1">
-            Jira
-          </Badge>
-        }
         actions={
           <Button
             type="button"
@@ -419,7 +465,11 @@ export function JiraPage() {
                   <SelectItem key={type.name} value={type.name}>
                     <span className="flex items-center gap-2">
                       {type.iconUrl ? (
-                        <img src={type.iconUrl} alt="" className="h-3.5 w-3.5" />
+                        <img
+                          src={type.iconUrl}
+                          alt=""
+                          className="h-3.5 w-3.5"
+                        />
                       ) : null}
                       {type.name}
                     </span>
@@ -494,7 +544,7 @@ export function JiraPage() {
                 <button
                   key={label}
                   type="button"
-                  className="rounded-full border border-stream-jira-border bg-stream-jira px-2 py-0.5 text-xs text-stream-jira-fg"
+                  className="border-stream-jira-border bg-stream-jira text-stream-jira-fg rounded-full border px-2 py-0.5 text-xs"
                   onClick={() => {
                     setLabels(labels.filter((l) => l !== label));
                     onControlChange();
@@ -511,7 +561,7 @@ export function JiraPage() {
                 <button
                   key={hint}
                   type="button"
-                  className="rounded-md border border-border bg-surface-container-low px-2 py-0.5 text-xs text-on-surface"
+                  className="border-border bg-surface-container-low text-on-surface rounded-md border px-2 py-0.5 text-xs"
                   onClick={() => {
                     if (!labels.includes(hint)) setLabels([...labels, hint]);
                     setLabelDraft("");
@@ -525,9 +575,9 @@ export function JiraPage() {
           ) : null}
 
           {configureOpen ? (
-            <div className="space-y-2 rounded-lg border border-border bg-surface-container-low/50 p-3">
+            <div className="border-border bg-surface-container-low/50 space-y-2 rounded-lg border p-3">
               <div className="flex items-center justify-between gap-2">
-                <p className="text-label-sm font-semibold tracking-wide text-on-surface-variant uppercase">
+                <p className="text-label-sm text-on-surface-variant font-semibold tracking-wide uppercase">
                   Filter configuration
                 </p>
                 <IconButton
@@ -556,7 +606,7 @@ export function JiraPage() {
                   currentUser() only.
                 </p>
               ) : null}
-              <p className="font-mono text-xs break-all text-on-surface-variant">
+              <p className="text-on-surface-variant font-mono text-xs break-all">
                 {jql}
               </p>
               <div className="flex flex-wrap items-center gap-2">
@@ -617,22 +667,37 @@ export function JiraPage() {
               onClick={() => setStatusTab("all")}
             >
               All
-              <span className="tabular-nums text-on-surface-variant">
+              <span className="text-on-surface-variant tabular-nums">
                 {assigneeNeedle ? visibleCount : issues.length}
               </span>
             </TabsTrigger>
             {filteredGrouped.map((group) => {
               const selected = statusTab === group.status;
+              const dragging = draggingStatus === group.status;
               return (
                 <TabsTrigger
                   key={group.status}
                   id={`jira-tab-${group.status}`}
                   aria-controls="jira-tab-panel"
+                  aria-grabbed={dragging || undefined}
+                  title="Drag to reorder status tabs"
+                  draggable
                   active={selected}
                   onClick={() => setStatusTab(group.status)}
+                  onDragStart={(e) => onStatusTabDragStart(group.status, e)}
+                  onDragEnd={onStatusTabDragEnd}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "move";
+                  }}
+                  onDrop={(e) => onStatusTabDrop(group.status, e)}
+                  className={cn(
+                    "cursor-grab active:cursor-grabbing",
+                    dragging && "opacity-50",
+                  )}
                 >
                   {group.status}
-                  <span className="tabular-nums text-on-surface-variant">
+                  <span className="text-on-surface-variant tabular-nums">
                     {group.items.length}
                   </span>
                 </TabsTrigger>
@@ -651,42 +716,42 @@ export function JiraPage() {
           statusTab === "all" ? "jira-tab-all" : `jira-tab-${statusTab}`
         }
       >
-      <Card padding="none" className="overflow-hidden">
-        {loading && issues.length === 0 ? (
-          <LoadingBlock embedded>Loading Jira issues…</LoadingBlock>
-        ) : visibleGrouped.length === 0 ? (
-          <p className="px-4 py-12 text-center text-body-md text-on-surface-variant">
-            No issues match this filter.
-          </p>
-        ) : (
-          visibleGrouped.map((group) => (
-            <div key={group.status}>
-              {statusTab === "all" ? (
-                <div className="border-b border-border bg-surface-container-low/60 px-3 py-2 text-label-sm font-semibold tracking-wide text-on-surface-variant uppercase">
-                  {group.status} ({group.items.length})
-                </div>
-              ) : null}
-              <ul>
-                {group.items.map((issue) => (
-                  <JiraIssueRow key={issue.id} issue={issue} />
-                ))}
-              </ul>
-            </div>
-          ))
-        )}
-      </Card>
+        <Card padding="none" className="overflow-hidden">
+          {loading && issues.length === 0 ? (
+            <LoadingBlock embedded>Loading Jira issues…</LoadingBlock>
+          ) : visibleGrouped.length === 0 ? (
+            <p className="text-body-md text-on-surface-variant px-4 py-12 text-center">
+              No issues match this filter.
+            </p>
+          ) : (
+            visibleGrouped.map((group) => (
+              <div key={group.status}>
+                {statusTab === "all" ? (
+                  <div className="border-border bg-surface-container-low/60 text-label-sm text-on-surface-variant border-b px-3 py-2 font-semibold tracking-wide uppercase">
+                    {group.status} ({group.items.length})
+                  </div>
+                ) : null}
+                <ul>
+                  {group.items.map((issue) => (
+                    <JiraIssueRow key={issue.id} issue={issue} />
+                  ))}
+                </ul>
+              </div>
+            ))
+          )}
+        </Card>
 
-      {nextToken ? (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={loading}
-          onClick={() => void load(false, nextToken)}
-        >
-          Load more
-        </Button>
-      ) : null}
+        {nextToken ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={loading}
+            onClick={() => void load(false, nextToken)}
+          >
+            Load more
+          </Button>
+        ) : null}
       </TabsPanel>
     </PageShell>
   );

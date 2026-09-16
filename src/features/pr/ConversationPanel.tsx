@@ -97,8 +97,11 @@ export function ConversationPanel({
   return (
     <Card padding="default" className="space-y-3">
       <div className="flex items-center gap-2">
-        <MessageSquare className="h-4 w-4 text-on-surface-variant" aria-hidden />
-        <h2 className="font-headline text-title-md font-semibold text-on-surface">
+        <MessageSquare
+          className="text-on-surface-variant h-4 w-4"
+          aria-hidden
+        />
+        <h2 className="font-headline text-title-md text-on-surface font-semibold">
           Conversation
         </h2>
         <span className="text-body-sm text-on-surface-variant">
@@ -111,7 +114,7 @@ export function ConversationPanel({
       </p>
 
       {loading ? (
-        <div className="flex items-center gap-2 text-body-md text-on-surface-variant">
+        <div className="text-body-md text-on-surface-variant flex items-center gap-2">
           <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
           Loading comments…
         </div>
@@ -120,14 +123,14 @@ export function ConversationPanel({
       {error ? (
         <div
           role="alert"
-          className="rounded-lg border border-warning/30 bg-warning-container px-3 py-2 text-body-sm text-on-warning-container"
+          className="border-warning/30 bg-warning-container text-body-sm text-on-warning-container rounded-lg border px-3 py-2"
         >
           {error}
         </div>
       ) : null}
 
       {!loading && !error && comments.length === 0 ? (
-        <p className="py-4 text-center text-body-md text-on-surface-variant">
+        <p className="text-body-md text-on-surface-variant py-4 text-center">
           No conversation comments yet.
         </p>
       ) : null}
@@ -137,9 +140,9 @@ export function ConversationPanel({
           {comments.map((c) => (
             <li
               key={c.id}
-              className="rounded-lg border border-border bg-surface-container-low/40 px-3 py-2.5"
+              className="border-border bg-surface-container-low/40 rounded-lg border px-3 py-2.5"
             >
-              <div className="flex flex-wrap items-center gap-2 text-body-sm text-on-surface-variant">
+              <div className="text-body-sm text-on-surface-variant flex flex-wrap items-center gap-2">
                 {c.avatarUrl ? (
                   <img
                     src={c.avatarUrl}
@@ -147,14 +150,14 @@ export function ConversationPanel({
                     className="h-4 w-4 rounded-full"
                   />
                 ) : null}
-                <span className="font-medium text-on-surface">{c.user}</span>
+                <span className="text-on-surface font-medium">{c.user}</span>
                 <span aria-hidden>·</span>
                 <span>{relativeTime(c.createdAt)}</span>
                 <a
                   href={c.htmlUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="ml-auto underline underline-offset-2 hover:text-on-surface"
+                  className="hover:text-on-surface ml-auto underline underline-offset-2"
                 >
                   GitHub
                 </a>
@@ -190,7 +193,7 @@ export function ConversationPanel({
                 </div>
               ) : (
                 <>
-                  <p className="mt-2 text-body-md whitespace-pre-wrap text-on-surface">
+                  <p className="text-body-md text-on-surface mt-2 whitespace-pre-wrap">
                     {c.body}
                   </p>
                   {c.isOwn ? (
@@ -225,7 +228,7 @@ export function ConversationPanel({
         </ul>
       ) : null}
 
-      <div className="space-y-2 border-t border-border pt-3">
+      <div className="border-border space-y-2 border-t pt-3">
         {templates.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {templates.map((t) => (
@@ -234,7 +237,7 @@ export function ConversationPanel({
                 type="button"
                 disabled={posting || writeDisabled}
                 onClick={() => setBody(t.body)}
-                className="rounded-md border border-border bg-surface-container-lowest px-2 py-1 text-xs font-medium text-on-surface hover:bg-surface-container-low"
+                className="border-border bg-surface-container-lowest text-on-surface hover:bg-surface-container-low rounded-md border px-2 py-1 text-xs font-medium"
                 title={t.body}
               >
                 {t.name}

@@ -33,10 +33,10 @@ export function MetricCard({
     >
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+          <p className="text-label-sm text-on-surface-variant tracking-wide uppercase">
             {subscore.label}
           </p>
-          <p className="mt-1 font-headline text-headline-md text-on-surface tabular-nums">
+          <p className="font-headline text-headline-md text-on-surface mt-1 tabular-nums">
             {subscore.score}
           </p>
         </div>
@@ -49,13 +49,13 @@ export function MetricCard({
           </div>
         </div>
       </div>
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-container-high">
+      <div className="bg-surface-container-high mt-3 h-1.5 overflow-hidden rounded-full">
         <div
           className={cn("h-full rounded-full", barClass(subscore.score))}
           style={{ width: `${subscore.score}%` }}
         />
       </div>
-      <p className="mt-2 text-label-sm tracking-wide text-on-surface-variant uppercase">
+      <p className="text-label-sm text-on-surface-variant mt-2 tracking-wide uppercase">
         {scoreBand(subscore.score)}
       </p>
     </button>

@@ -256,16 +256,16 @@ export function CommandPalette() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent
         side="center"
-        className="max-h-[min(32rem,80vh)] gap-0 overflow-hidden border-border p-0 shadow-xl"
+        className="border-border max-h-[min(32rem,80vh)] gap-0 overflow-hidden p-0 shadow-xl"
       >
-        <DialogHeader className="border-b border-border bg-chrome px-4 py-3 pr-12 text-chrome-foreground">
+        <DialogHeader className="border-border bg-chrome text-chrome-foreground border-b px-4 py-3 pr-12">
           <DialogTitle className="sr-only">Command palette</DialogTitle>
           <DialogDescription className="sr-only">
             Jump to pages, pull requests, or favorite repos
           </DialogDescription>
           <div className="flex items-center gap-2">
             <Search
-              className="h-4 w-4 shrink-0 text-chrome-muted"
+              className="text-chrome-muted h-4 w-4 shrink-0"
               aria-hidden
             />
             <input
@@ -274,10 +274,10 @@ export function CommandPalette() {
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={onKeyDown}
               placeholder="Jump to PR, repo, or page…"
-              className="w-full bg-transparent text-body-md text-chrome-foreground outline-none placeholder:text-chrome-muted"
+              className="text-body-md text-chrome-foreground placeholder:text-chrome-muted w-full bg-transparent outline-none"
               aria-label="Search commands"
             />
-            <kbd className="hidden rounded border border-chrome-recessed bg-chrome-recessed px-1.5 py-0.5 font-keycap text-chrome-muted sm:inline">
+            <kbd className="border-chrome-recessed bg-chrome-recessed font-keycap text-chrome-muted hidden rounded border px-1.5 py-0.5 sm:inline">
               esc
             </kbd>
           </div>
@@ -286,10 +286,10 @@ export function CommandPalette() {
         <div
           role="listbox"
           aria-label="Commands"
-          className="max-h-[min(24rem,60vh)] overflow-y-auto bg-surface-container-lowest p-2"
+          className="bg-surface-container-lowest max-h-[min(24rem,60vh)] overflow-y-auto p-2"
         >
           {items.length === 0 ? (
-            <p className="px-3 py-8 text-center text-body-md text-on-surface-variant">
+            <p className="text-body-md text-on-surface-variant px-3 py-8 text-center">
               No matches.
             </p>
           ) : (
@@ -301,7 +301,7 @@ export function CommandPalette() {
               return (
                 <div key={item.id}>
                   {showGroup ? (
-                    <div className="px-2 pt-2 pb-1 text-label-sm tracking-wide text-on-surface-variant uppercase">
+                    <div className="text-label-sm text-on-surface-variant px-2 pt-2 pb-1 tracking-wide uppercase">
                       {item.group}
                     </div>
                   ) : null}
@@ -312,7 +312,7 @@ export function CommandPalette() {
                     onMouseEnter={() => setActive(index)}
                     onClick={() => runItem(item)}
                     className={cn(
-                      "flex w-full items-center gap-3 rounded-md px-2 py-2 text-left text-body-md",
+                      "text-body-md flex w-full items-center gap-3 rounded-md px-2 py-2 text-left",
                       selected
                         ? "bg-primary text-on-primary"
                         : "text-on-surface hover:bg-surface-container-low",
@@ -330,7 +330,7 @@ export function CommandPalette() {
                     {item.hint ? (
                       <span
                         className={cn(
-                          "hidden max-w-[40%] truncate text-body-sm sm:inline",
+                          "text-body-sm hidden max-w-[40%] truncate sm:inline",
                           selected ? "opacity-80" : "text-on-surface-variant",
                         )}
                       >
@@ -344,7 +344,7 @@ export function CommandPalette() {
           )}
         </div>
 
-        <div className="border-t border-border bg-surface-container-low/50 px-4 py-2 text-body-sm text-on-surface-variant">
+        <div className="border-border bg-surface-container-low/50 text-body-sm text-on-surface-variant border-t px-4 py-2">
           <span className="font-keycap">⌘K</span> /{" "}
           <span className="font-keycap">Ctrl+K</span> · ↑↓ · Enter
         </div>

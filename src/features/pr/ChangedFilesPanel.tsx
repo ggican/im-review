@@ -1,8 +1,4 @@
-import {
-  FileCode2,
-  MessageSquarePlus,
-  X,
-} from "lucide-react";
+import { FileCode2, MessageSquarePlus, X } from "lucide-react";
 import { Fragment, useEffect, useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -147,7 +143,7 @@ function FileDiff({
 
   if (!file.patch) {
     return (
-      <p className="px-4 py-8 text-center text-body-sm text-on-surface-variant">
+      <p className="text-body-sm text-on-surface-variant px-4 py-8 text-center">
         No patch available (binary file, or diff too large for the GitHub API).
       </p>
     );
@@ -175,7 +171,7 @@ function FileDiff({
   }
 
   return (
-    <div className="max-h-[min(32rem,60vh)] overflow-auto bg-surface-container-low/40 dark:bg-chrome/40">
+    <div className="bg-surface-container-low/40 dark:bg-chrome/40 max-h-[min(32rem,60vh)] overflow-auto">
       <table className="w-full min-w-[40rem] border-collapse font-mono text-xs leading-5">
         <tbody>
           {lines.map((line, i) => {
@@ -207,22 +203,22 @@ function FileDiff({
                     line.kind === "ctx" && "text-on-surface",
                   )}
                 >
-                  <td className="w-8 border-r border-border/60 px-1 text-center align-top">
+                  <td className="border-border/60 w-8 border-r px-1 text-center align-top">
                     {commentable ? (
                       <button
                         type="button"
                         aria-label={`Add comment on line ${line.newLine}`}
-                        className="mt-0.5 rounded p-0.5 text-on-surface-variant opacity-0 transition-opacity group-hover:opacity-100 hover:bg-primary-container/30 hover:text-on-primary-container focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-container"
+                        className="text-on-surface-variant hover:bg-primary-container/30 hover:text-on-primary-container focus-visible:ring-primary-container mt-0.5 rounded p-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:outline-none"
                         onClick={() => startCompose(line.newLine!)}
                       >
                         <MessageSquarePlus className="h-3.5 w-3.5" />
                       </button>
                     ) : null}
                   </td>
-                  <td className="w-10 border-r border-border/40 px-2 text-right text-on-surface-variant/70 tabular-nums select-none">
+                  <td className="border-border/40 text-on-surface-variant/70 w-10 border-r px-2 text-right tabular-nums select-none">
                     {line.oldLine ?? ""}
                   </td>
-                  <td className="w-10 border-r border-border/40 px-2 text-right text-on-surface-variant/70 tabular-nums select-none">
+                  <td className="border-border/40 text-on-surface-variant/70 w-10 border-r px-2 text-right tabular-nums select-none">
                     {line.newLine ?? ""}
                   </td>
                   <td
@@ -245,7 +241,7 @@ function FileDiff({
                   >
                     <td
                       colSpan={5}
-                      className="px-3 py-2 text-body-sm text-on-warning-container"
+                      className="text-body-sm text-on-warning-container px-3 py-2"
                     >
                       Pending · L{p.line}: {p.body}
                     </td>
@@ -345,29 +341,29 @@ export function ChangedFilesPanel({
   }
 
   return (
-    <section className="overflow-hidden rounded-xl border border-border bg-surface-container-lowest shadow-card">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3">
+    <section className="border-border bg-surface-container-lowest shadow-card overflow-hidden rounded-xl border">
+      <div className="border-border flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
         <div>
-          <h2 className="font-headline text-title-md font-semibold text-on-surface">
+          <h2 className="font-headline text-title-md text-on-surface font-semibold">
             Changed files ({files.length})
           </h2>
-          <p className="mt-0.5 font-keycap text-body-sm tabular-nums text-on-surface-variant">
+          <p className="font-keycap text-body-sm text-on-surface-variant mt-0.5 tabular-nums">
             <span className="text-success">+{totals.add}</span>{" "}
             <span className="text-error">−{totals.del}</span>
           </p>
         </div>
         {files.length > 0 ? (
-          <div className="flex gap-2 text-body-sm">
+          <div className="text-body-sm flex gap-2">
             <button
               type="button"
-              className="text-on-surface-variant underline underline-offset-2 hover:text-on-surface"
+              className="text-on-surface-variant hover:text-on-surface underline underline-offset-2"
               onClick={expandAll}
             >
               Expand all
             </button>
             <button
               type="button"
-              className="text-on-surface-variant underline underline-offset-2 hover:text-on-surface"
+              className="text-on-surface-variant hover:text-on-surface underline underline-offset-2"
               onClick={collapse}
             >
               Collapse
@@ -377,14 +373,14 @@ export function ChangedFilesPanel({
       </div>
 
       {files.length === 0 ? (
-        <p className="px-4 py-12 text-center text-body-md text-on-surface-variant">
+        <p className="text-body-md text-on-surface-variant px-4 py-12 text-center">
           No changed files loaded.
         </p>
       ) : (
         <div className="grid lg:grid-cols-12">
           <nav
             aria-label="Changed files"
-            className="border-b border-border lg:col-span-4 lg:max-h-[min(36rem,70vh)] lg:overflow-y-auto lg:border-r lg:border-b-0"
+            className="border-border border-b lg:col-span-4 lg:max-h-[min(36rem,70vh)] lg:overflow-y-auto lg:border-r lg:border-b-0"
           >
             <ul>
               {files.map((f) => {
@@ -393,7 +389,10 @@ export function ChangedFilesPanel({
                   (p) => p.path === f.filename,
                 ).length;
                 return (
-                  <li key={f.filename} className="border-b border-border/70 last:border-b-0">
+                  <li
+                    key={f.filename}
+                    className="border-border/70 border-b last:border-b-0"
+                  >
                     <button
                       type="button"
                       onClick={() => selectFile(f.filename)}
@@ -402,13 +401,13 @@ export function ChangedFilesPanel({
                       className={cn(
                         "flex w-full items-start gap-2 px-3 py-2.5 text-left transition-colors",
                         isActive
-                          ? "bg-stream-github/60 ring-1 ring-inset ring-primary-container/40"
+                          ? "bg-stream-github/60 ring-primary-container/40 ring-1 ring-inset"
                           : "hover:bg-surface-container-low",
                       )}
                     >
                       <span
                         className={cn(
-                          "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded font-keycap text-[10px] font-bold",
+                          "font-keycap mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded text-[10px] font-bold",
                           f.status === "added" &&
                             "bg-success-container text-on-success-container",
                           f.status === "removed" &&
@@ -427,7 +426,7 @@ export function ChangedFilesPanel({
                         {statusLetter(f.status)}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <div className="truncate font-keycap text-body-sm text-on-surface">
+                        <div className="font-keycap text-body-sm text-on-surface truncate">
                           {f.filename}
                         </div>
                         <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
@@ -438,18 +437,21 @@ export function ChangedFilesPanel({
                             {statusLabel(f.status)}
                           </Badge>
                           {!f.patch ? (
-                            <span className="text-[10px] text-on-surface-variant">
+                            <span className="text-on-surface-variant text-[10px]">
                               no patch
                             </span>
                           ) : null}
                           {pendingCount > 0 ? (
-                            <Badge variant="warning" className="px-1.5 py-0 text-[10px]">
+                            <Badge
+                              variant="warning"
+                              className="px-1.5 py-0 text-[10px]"
+                            >
                               {pendingCount} pending
                             </Badge>
                           ) : null}
                         </div>
                       </div>
-                      <div className="shrink-0 font-keycap text-body-sm tabular-nums">
+                      <div className="font-keycap text-body-sm shrink-0 tabular-nums">
                         <span className="text-success">+{f.additions}</span>{" "}
                         <span className="text-error">−{f.deletions}</span>
                       </div>
@@ -463,9 +465,9 @@ export function ChangedFilesPanel({
           <div className="lg:col-span-8">
             {active ? (
               <>
-                <div className="flex flex-wrap items-center gap-2 border-b border-border bg-surface-container-low/50 px-3 py-2">
+                <div className="border-border bg-surface-container-low/50 flex flex-wrap items-center gap-2 border-b px-3 py-2">
                   <FileCode2
-                    className="h-3.5 w-3.5 text-on-surface-variant"
+                    className="text-on-surface-variant h-3.5 w-3.5"
                     aria-hidden
                   />
                   <span className="font-keycap text-body-sm text-on-surface">
@@ -474,7 +476,7 @@ export function ChangedFilesPanel({
                   <Badge variant={statusBadgeVariant(active.status)}>
                     {statusLabel(active.status)}
                   </Badge>
-                  <span className="ml-auto font-keycap text-body-sm tabular-nums">
+                  <span className="font-keycap text-body-sm ml-auto tabular-nums">
                     <span className="text-success">+{active.additions}</span>{" "}
                     <span className="text-error">−{active.deletions}</span>
                   </span>
@@ -489,9 +491,9 @@ export function ChangedFilesPanel({
               <Card
                 padding="default"
                 variant="ghost"
-                className="m-4 border border-dashed border-border"
+                className="border-border m-4 border border-dashed"
               >
-                <p className="text-center text-body-md text-on-surface-variant">
+                <p className="text-body-md text-on-surface-variant text-center">
                   Select a file to review the diff.
                 </p>
               </Card>

@@ -1,6 +1,6 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { ExternalLink, Loader2 } from "lucide-react";
-import { type ReactNode,useCallback, useEffect, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -31,7 +31,11 @@ import {
   jiraErrorMessage,
   transitionJiraIssue,
 } from "./api";
-import type { JiraIssueDetail, JiraStatusCategory, JiraTransition } from "./types";
+import type {
+  JiraIssueDetail,
+  JiraStatusCategory,
+  JiraTransition,
+} from "./types";
 
 function statusBadgeVariant(
   category: JiraStatusCategory,
@@ -113,11 +117,13 @@ export function JiraIssuePage() {
 
   if (!connected) {
     return (
-      <PageShell>
+      <PageShell width="full">
         <PageHeader backTo="/jira" title="Jira" subtitle="Connect first" />
         <Card padding="default" variant="streamJira">
           <CardHeader className="mb-2">
-            <CardTitle className="text-title-md">No connected account</CardTitle>
+            <CardTitle className="text-title-md">
+              No connected account
+            </CardTitle>
             <CardDescription className="text-stream-jira-fg/80">
               Connect Jira in Settings to open issue detail.
             </CardDescription>
@@ -133,16 +139,11 @@ export function JiraIssuePage() {
   }
 
   return (
-    <PageShell width="lg" className="gap-5">
+    <PageShell width="full" className="gap-5">
       <PageHeader
         backTo="/jira"
         title={detail?.key ?? issueKey}
         subtitle={detail?.summary}
-        leading={
-          <Badge variant="jira" className="mt-1">
-            Jira
-          </Badge>
-        }
         actions={
           <Button
             type="button"
@@ -166,7 +167,7 @@ export function JiraIssuePage() {
           <Card padding="default" className="border-stream-jira-border/70">
             <CardHeader className="mb-3">
               <CardDescription className="flex flex-wrap items-center gap-2">
-                <span className="font-mono text-xs text-stream-jira-fg">
+                <span className="text-stream-jira-fg font-mono text-xs">
                   {detail.key}
                 </span>
                 <Badge variant={statusBadgeVariant(detail.status.category)}>
@@ -193,7 +194,7 @@ export function JiraIssuePage() {
                         <img
                           src={detail.assignee.avatarUrl}
                           alt=""
-                          className="h-5 w-5 rounded-full border border-border"
+                          className="border-border h-5 w-5 rounded-full border"
                         />
                       ) : null}
                       {detail.assignee.displayName}
@@ -223,9 +224,9 @@ export function JiraIssuePage() {
                 </MetaTile>
               </div>
 
-              <div className="flex flex-wrap items-end gap-2 rounded-lg border border-border bg-surface-container-low/40 p-3">
+              <div className="border-border bg-surface-container-low/40 flex flex-wrap items-end gap-2 rounded-lg border p-3">
                 <div className="min-w-48 flex-1">
-                  <p className="mb-1 text-label-sm tracking-wide text-on-surface-variant uppercase">
+                  <p className="text-label-sm text-on-surface-variant mb-1 tracking-wide uppercase">
                     Update status
                   </p>
                   <Select
@@ -233,7 +234,10 @@ export function JiraIssuePage() {
                     onValueChange={setTransitionId}
                     disabled={saving || transitions.length === 0}
                   >
-                    <SelectTrigger className="w-full max-w-xs" aria-label="New status">
+                    <SelectTrigger
+                      className="w-full max-w-xs"
+                      aria-label="New status"
+                    >
                       <SelectValue
                         placeholder={
                           transitions.length === 0
@@ -280,7 +284,7 @@ export function JiraIssuePage() {
           <div className="grid gap-4 lg:grid-cols-2">
             <Card padding="default">
               <CardHeader className="mb-2">
-                <CardTitle className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+                <CardTitle className="text-label-sm text-on-surface-variant tracking-wide uppercase">
                   Parent
                 </CardTitle>
               </CardHeader>
@@ -291,7 +295,7 @@ export function JiraIssuePage() {
                       to={`/jira/${detail.parent.key}`}
                       className="underline underline-offset-2"
                     >
-                      <span className="font-mono text-xs text-stream-jira-fg">
+                      <span className="text-stream-jira-fg font-mono text-xs">
                         {detail.parent.key}
                       </span>{" "}
                       — {detail.parent.summary} ({detail.parent.typeName})
@@ -305,18 +309,18 @@ export function JiraIssuePage() {
 
             <Card padding="default">
               <CardHeader className="mb-2">
-                <CardTitle className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+                <CardTitle className="text-label-sm text-on-surface-variant tracking-wide uppercase">
                   Sub-tasks
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {detail.subtaskKeys.length > 0 ? (
-                  <ul className="flex flex-wrap gap-2 text-body-sm">
+                  <ul className="text-body-sm flex flex-wrap gap-2">
                     {detail.subtaskKeys.map((key) => (
                       <li key={key}>
                         <Link
                           to={`/jira/${key}`}
-                          className="font-mono text-xs text-stream-jira-fg underline underline-offset-2"
+                          className="text-stream-jira-fg font-mono text-xs underline underline-offset-2"
                         >
                           {key}
                         </Link>
@@ -334,17 +338,17 @@ export function JiraIssuePage() {
 
           <Card padding="default">
             <CardHeader className="mb-2">
-              <CardTitle className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+              <CardTitle className="text-label-sm text-on-surface-variant tracking-wide uppercase">
                 Description
               </CardTitle>
             </CardHeader>
             <CardContent>
               {detail.descriptionText ? (
-                <pre className="max-h-[28rem] overflow-auto rounded-lg border border-border bg-surface-container-low p-3 font-sans text-body-md leading-relaxed whitespace-pre-wrap text-on-surface">
+                <pre className="border-border bg-surface-container-low text-body-md text-on-surface max-h-[28rem] overflow-auto rounded-lg border p-3 font-sans leading-relaxed whitespace-pre-wrap">
                   {detail.descriptionText}
                 </pre>
               ) : (
-                <p className="rounded-lg border border-dashed border-border px-3 py-8 text-center text-body-md text-on-surface-variant">
+                <p className="border-border text-body-md text-on-surface-variant rounded-lg border border-dashed px-3 py-8 text-center">
                   No description.
                 </p>
               )}
@@ -352,24 +356,24 @@ export function JiraIssuePage() {
           </Card>
 
           <Card padding="none" className="overflow-hidden">
-            <div className="border-b border-border px-4 py-3">
-              <h2 className="font-headline text-title-md font-semibold text-on-surface">
+            <div className="border-border border-b px-4 py-3">
+              <h2 className="font-headline text-title-md text-on-surface font-semibold">
                 All Jira fields ({detail.properties.length})
               </h2>
-              <p className="mt-0.5 text-body-sm text-on-surface-variant">
+              <p className="text-body-sm text-on-surface-variant mt-0.5">
                 Live field values from Jira — nothing invented.
               </p>
             </div>
-            <dl className="divide-y divide-border">
+            <dl className="divide-border divide-y">
               {detail.properties.map((prop) => (
                 <div
                   key={prop.id}
                   className="grid gap-1 px-4 py-2.5 sm:grid-cols-[14rem_minmax(0,1fr)]"
                 >
-                  <dt className="text-label-sm font-medium text-on-surface-variant">
+                  <dt className="text-label-sm text-on-surface-variant font-medium">
                     {prop.name}
                   </dt>
-                  <dd className="font-mono text-xs break-all whitespace-pre-wrap text-on-surface">
+                  <dd className="text-on-surface font-mono text-xs break-all whitespace-pre-wrap">
                     {prop.text}
                   </dd>
                 </div>
@@ -378,7 +382,7 @@ export function JiraIssuePage() {
           </Card>
         </div>
       ) : (
-        <p className="py-10 text-center text-body-md text-on-surface-variant">
+        <p className="text-body-md text-on-surface-variant py-10 text-center">
           No issue found.
         </p>
       )}
@@ -386,19 +390,13 @@ export function JiraIssuePage() {
   );
 }
 
-function MetaTile({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
+function MetaTile({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="rounded-lg border border-border bg-surface-container-low/40 px-3 py-2.5">
-      <p className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+    <div className="border-border bg-surface-container-low/40 rounded-lg border px-3 py-2.5">
+      <p className="text-label-sm text-on-surface-variant tracking-wide uppercase">
         {label}
       </p>
-      <div className="mt-1 text-body-md text-on-surface">{children}</div>
+      <div className="text-body-md text-on-surface mt-1">{children}</div>
     </div>
   );
 }

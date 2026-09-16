@@ -21,20 +21,20 @@ colors:
   chrome-foreground: "#ffffff"
   chrome-muted: "#889096"
   chrome-recessed: "#1e222b"
-  primary: "#006a62"
+  primary: "#3d8b82"
   on-primary: "#ffffff"
-  primary-container: "#00e5d4"
-  on-primary-container: "#00625a"
-  inverse-primary: "#00dece"
-  accent: "#00e5d4"
+  primary-container: "#b6f3ec"
+  on-primary-container: "#2f6b64"
+  inverse-primary: "#9ad9d2"
+  accent: "#b6f3ec"
   secondary: "#5d5e64"
   on-secondary: "#ffffff"
   secondary-container: "#dfdfe6"
   on-secondary-container: "#616269"
-  tertiary: "#006b58"
+  tertiary: "#4a8f82"
   on-tertiary: "#ffffff"
-  tertiary-container: "#00e7c0"
-  on-tertiary-container: "#006351"
+  tertiary-container: "#d4f5ec"
+  on-tertiary-container: "#2a6b5c"
   outline: "#6a7a77"
   outline-variant: "#b9cac6"
   border: "#e5e9e8"
@@ -50,7 +50,7 @@ colors:
   on-warning-container: "#8a4c07"
   stream-github: "#e5faf7"
   stream-github-border: "#b6f3ec"
-  stream-github-fg: "#006e66"
+  stream-github-fg: "#2f6b64"
   stream-jira: "#fef6e9"
   stream-jira-border: "#fde2b8"
   stream-jira-fg: "#8a4c07"
@@ -68,8 +68,8 @@ colors:
   on-surface-dark: "#e5e7eb"
   on-surface-variant-dark: "#9aa3ad"
   border-dark: "#222733"
-  primary-dark: "#00dece"
-  on-primary-dark: "#00201d"
+  primary-dark: "#7ec9c0"
+  on-primary-dark: "#0a1f1d"
 typography:
   headline-xl:
     fontFamily: "Space Grotesk, Inter, ui-sans-serif, system-ui, sans-serif"
@@ -192,7 +192,7 @@ components:
     padding: "0"
   badge:
     rounded: "{rounded.full}"
-    fontSize: "{typography.label-sm.fontSize}"
+    fontSize: "0.625rem"
 ---
 
 # Design System: IM Review
@@ -201,11 +201,11 @@ components:
 
 **Creative North Star: "Technical Workspace"**
 
-Aligned to the Google Stitch export (`docs/design/stitch-export/technical_workspace`) and the product logo cyan. IM Review is a calm engineering work desk: soft chalk canvas, deep chrome navigation, vivid cyan accents, and dense scanable lists for PRs, Jira, Gmail, Calendar, and AI review.
+Aligned to the Google Stitch export (`docs/design/stitch-export/technical_workspace`) with a softer pastel brand. IM Review is a calm engineering work desk: soft chalk canvas, deep chrome navigation, muted mint accents, and dense scanable lists for PRs, Jira, Gmail, Calendar, and AI review.
 
 **Key Characteristics:**
 - Soft off-white canvas with layered surface containers
-- Brand cyan (`#00E5D4`) as primary-container / accent; deep teal (`#006A62`) for primary actions (light)
+- Pastel mint (`#B6F3EC`) as primary-container / accent; muted teal (`#3D8B82`) for primary actions (light)
 - Space Grotesk headlines, Plus Jakarta Sans body, JetBrains Mono metadata (Inter as shipped fallback until font packages land)
 - Lucide icons (not Material Symbols)
 - Soft card elevation + hairline borders; pill status badges
@@ -213,13 +213,13 @@ Aligned to the Google Stitch export (`docs/design/stitch-export/technical_worksp
 ## Colors
 
 ### Brand & chrome
-- **Primary** `#006A62` / dark `#00DECE`: primary actions
-- **Primary container / Accent** `#00E5D4`: focus rings, brand highlights, logo-aligned cyan
+- **Primary** `#3D8B82` / dark `#7EC9C0`: primary actions
+- **Primary container / Accent** `#B6F3EC` / dark `#1F4541`: focus rings, brand highlights, soft washes
 - **Chrome** `#111318`: top navigation shell
 - **Canvas** `#F9F9F8`: work surface background
 
 ### Semantic streams (pastel cards)
-- GitHub: bg `#E5FAF7` / border `#B6F3EC` / fg `#006E66`
+- GitHub: bg `#E5FAF7` / border `#B6F3EC` / fg `#2F6B64`
 - Jira: bg `#FEF6E9` / border `#FDE2B8` / fg `#8A4C07`
 - Gmail: bg `#EDF4FE` / border `#C6DCFC` / fg `#194B8C`
 - Calendar: bg `#F3EFFC` / border `#DDCFF7` / fg `#4B2B85`
@@ -229,7 +229,7 @@ Aligned to the Google Stitch export (`docs/design/stitch-export/technical_worksp
 - Error `#BA1A1A`, Warning `#8A4C07`, Success `#0E6E3E`
 
 ### Named Rules
-**The Cyan Accent Rule.** Large brand washes use `primary-container`; graphite/neutral-only chrome is reserved for the dark top shell, not the whole app.
+**The Pastel Accent Rule.** Large brand washes and focus rings use soft `primary-container` mint — never neon cyan. Graphite/neutral-only chrome stays on the dark top shell, not the whole app.
 
 ## Typography
 

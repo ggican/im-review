@@ -9,14 +9,17 @@ vi.mock("@tauri-apps/api/core", () => ({
 vi.mock("@/lib/google-oauth", () => ({
   GOOGLE_OAUTH_CLIENT_ID: "desktop-id.apps.googleusercontent.com",
   GOOGLE_OAUTH_CLIENT_SECRET: "desktop-secret",
-  isGoogleOAuthConfigured: () => true,
+  isGoogleOAuthConfigured: vi.fn(() => true),
 }));
+
+import { isGoogleOAuthConfigured } from "@/lib/google-oauth";
 
 import { api, hydrateRuntimeSecrets } from "./api";
 import {
   clearAiKey,
   clearGithubToken,
   clearGoogleCreds,
+  clearJiraCreds,
   setAiKey,
   setGithubToken,
 } from "./secrets";
@@ -27,6 +30,8 @@ describe("UNIT-API lib/api", () => {
     clearGithubToken();
     clearAiKey("cursor");
     clearGoogleCreds();
+    clearJiraCreds();
+    vi.mocked(isGoogleOAuthConfigured).mockReturnValue(true);
     invoke.mockReset();
     invoke.mockResolvedValue(undefined);
   });
@@ -134,5 +139,97 @@ describe("UNIT-API lib/api", () => {
     expect(invoke).toHaveBeenCalledWith("google_oauth_cancel");
     await api.deleteGoogle();
     expect(await api.hasGoogle()).toBe(false);
+  });
+
+  it("UNIT-API-006 jira save/validate/delete/hasJira and jiraRequest", async () => {
+    await api.saveJira({
+      host: "https://acme.atlassian.net",
+      email: "alice@example.com",
+      token: "jira-token",
+    });
+    expect(await api.hasJira()).toBe(true);
+
+    invoke.mockResolvedValueOnce({
+      account_id: "acc-1",
+      display_name: "Alice",
+      email: "alice@example.com",
+      avatar_url: "",
+      host: "https://acme.atlassian.net",
+    });
+    await expect(
+      api.validateJira({
+        host: "https://acme.atlassian.net",
+        email: "alice@example.com",
+        token: "jira-token",
+      }),
+    ).resolves.toMatchObject({ display_name: "Alice" });
+
+    invoke.mockResolvedValueOnce({ issues: [] });
+    await api.jiraRequest("POST", "/rest/api/3/search", { jql: "project = X" });
+    expect(invoke).toHaveBeenCalledWith("jira_request", {
+      method: "POST",
+      path: "/rest/api/3/search",
+      body: { jql: "project = X" },
+    });
+
+    await api.deleteJira();
+    expect(await api.hasJira()).toBe(false);
+  });
+
+  it("UNIT-API-007 gmail helpers and googleApiRequest", async () => {
+    invoke.mockResolvedValueOnce({ messages: [] });
+    await api.gmailListMessages({
+      query: "in:inbox",
+      labelIds: ["INBOX"],
+      pageToken: "tok",
+      maxResults: 10,
+    });
+    expect(invoke).toHaveBeenCalledWith("gmail_list_messages", {
+      query: "in:inbox",
+      labelIds: ["INBOX"],
+      pageToken: "tok",
+      maxResults: 10,
+    });
+
+    invoke.mockResolvedValueOnce({ id: "msg-1" });
+    await api.gmailGetMessage("msg-1", "metadata", ["Subject"]);
+    expect(invoke).toHaveBeenCalledWith("gmail_get_message", {
+      id: "msg-1",
+      format: "metadata",
+      metadataHeaders: ["Subject"],
+    });
+
+    invoke.mockResolvedValueOnce({});
+    await api.gmailModifyMessage("msg-1", {
+      addLabelIds: ["STARRED"],
+      removeLabelIds: ["UNREAD"],
+    });
+    expect(invoke).toHaveBeenCalledWith("gmail_modify_message", {
+      id: "msg-1",
+      addLabelIds: ["STARRED"],
+      removeLabelIds: ["UNREAD"],
+    });
+
+    invoke.mockResolvedValueOnce({ labels: [] });
+    await api.gmailListLabels();
+
+    invoke.mockResolvedValueOnce({ items: [] });
+    await api.googleApiRequest("GET", "calendar/v3/users/me/calendarList");
+    expect(invoke).toHaveBeenCalledWith("google_api_request_command", {
+      method: "GET",
+      urlOrPath: "calendar/v3/users/me/calendarList",
+      body: null,
+    });
+  });
+
+  it("UNIT-API-008 connectGoogle throws when OAuth is not configured", async () => {
+    vi.mocked(isGoogleOAuthConfigured).mockReturnValue(false);
+    await expect(api.connectGoogle()).rejects.toThrow(
+      /Google is not configured in this build/,
+    );
+    expect(invoke).not.toHaveBeenCalledWith(
+      "google_oauth_connect",
+      expect.anything(),
+    );
   });
 });

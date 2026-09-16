@@ -49,6 +49,7 @@ const SAVED_REVIEWS_KEY = "im-review:saved-reviews";
 const FAVORITE_USERS_KEY = "im-review:favorite-users";
 const JIRA_PUBLIC_KEY = "im-review:jira-public";
 const JIRA_FILTERS_KEY = "im-review:jira-saved-filters";
+const JIRA_STATUS_TAB_ORDER_KEY = "im-review:jira-status-tab-order";
 const GOOGLE_PUBLIC_KEY = "im-review:google-public";
 
 export const MAX_FAVORITE_USERS = 50;
@@ -535,6 +536,27 @@ export function upsertJiraSavedFilter(
 export function deleteJiraSavedFilter(id: string): JiraSavedFilter[] {
   saveJiraSavedFilters(jiraSavedFiltersCache.filter((f) => f.id !== id));
   return jiraSavedFiltersCache;
+}
+
+function loadJiraStatusTabOrder(): string[] {
+  const raw = readJson<unknown>(JIRA_STATUS_TAB_ORDER_KEY, []);
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((value): value is string => typeof value === "string");
+}
+
+let jiraStatusTabOrderCache: string[] = loadJiraStatusTabOrder();
+
+export function getJiraStatusTabOrder(): string[] {
+  return jiraStatusTabOrderCache;
+}
+
+export function saveJiraStatusTabOrder(next: string[]): void {
+  jiraStatusTabOrderCache = [...next];
+  localStorage.setItem(
+    JIRA_STATUS_TAB_ORDER_KEY,
+    JSON.stringify(jiraStatusTabOrderCache),
+  );
+  emit();
 }
 
 export function newJiraFilterId(): string {

@@ -205,9 +205,7 @@ export const AUTHOR_SEARCH_BATCH_SIZE = 8;
 
 export function normalizeAuthorLogins(logins: readonly string[]): string[] {
   return [
-    ...new Set(
-      logins.map((l) => l.trim().replace(/^@+/, "")).filter(Boolean),
-    ),
+    ...new Set(logins.map((l) => l.trim().replace(/^@+/, "")).filter(Boolean)),
   ];
 }
 

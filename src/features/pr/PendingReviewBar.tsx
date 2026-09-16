@@ -39,20 +39,20 @@ export function PendingReviewBar({
     (!needsBodyOrComments || Boolean(body.trim()) || pending.length > 0);
 
   return (
-    <div className="sticky bottom-0 z-20 space-y-3 rounded-xl border border-warning/40 bg-warning-container/95 p-4 shadow-float backdrop-blur-sm dark:border-amber-800 dark:bg-amber-950/90">
+    <div className="border-warning/40 bg-warning-container/95 shadow-float sticky bottom-0 z-20 space-y-3 rounded-xl border p-4 backdrop-blur-sm dark:border-amber-800 dark:bg-amber-950/90">
       <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h3 className="text-title-md font-semibold text-on-warning-container dark:text-amber-100">
-              Pending review ({pending.length})
-            </h3>
-            <p className="mt-0.5 text-body-sm text-on-warning-container/90 dark:text-amber-200">
-              You can approve and still leave line comments (same as GitHub).
-            </p>
-          </div>
+        <div>
+          <h3 className="text-title-md text-on-warning-container font-semibold dark:text-amber-100">
+            Pending review ({pending.length})
+          </h3>
+          <p className="text-body-sm text-on-warning-container/90 mt-0.5 dark:text-amber-200">
+            You can approve and still leave line comments (same as GitHub).
+          </p>
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <select
             className={cn(
-              "h-8 rounded-md border border-warning/50 bg-surface-container-lowest px-2 text-xs text-on-surface",
+              "border-warning/50 bg-surface-container-lowest text-on-surface h-8 rounded-md border px-2 text-xs",
               "dark:border-amber-700 dark:bg-neutral-950",
             )}
             value={event}
@@ -81,13 +81,13 @@ export function PendingReviewBar({
         </div>
       </div>
 
-      <ul className="max-h-32 space-y-1 overflow-y-auto text-body-sm">
+      <ul className="text-body-sm max-h-32 space-y-1 overflow-y-auto">
         {pending.map((p) => (
           <li
             key={p.id}
-            className="flex items-start justify-between gap-2 rounded-lg border border-border/60 bg-surface-container-lowest/80 px-2 py-1.5 dark:bg-neutral-950/50"
+            className="border-border/60 bg-surface-container-lowest/80 flex items-start justify-between gap-2 rounded-lg border px-2 py-1.5 dark:bg-neutral-950/50"
           >
-            <span className="min-w-0 text-on-surface">
+            <span className="text-on-surface min-w-0">
               <span className="font-keycap text-on-surface-variant">
                 {p.path}:{p.line}
               </span>{" "}
@@ -95,7 +95,7 @@ export function PendingReviewBar({
             </span>
             <button
               type="button"
-              className="shrink-0 text-on-surface-variant underline underline-offset-2 hover:text-on-surface"
+              className="text-on-surface-variant hover:text-on-surface shrink-0 underline underline-offset-2"
               disabled={submitting}
               onClick={() => onRemove(p.id)}
             >

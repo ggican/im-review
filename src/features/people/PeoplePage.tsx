@@ -59,7 +59,7 @@ function PersonRow({
   onOpen: () => void;
 }) {
   return (
-    <li className="border-b border-border last:border-b-0">
+    <li className="border-border border-b last:border-b-0">
       <div
         className={cn(
           "flex items-center gap-3 px-3 py-2.5",
@@ -75,21 +75,21 @@ function PersonRow({
             <img
               src={user.avatarUrl}
               alt=""
-              className="h-8 w-8 rounded-full border border-border"
+              className="border-border h-8 w-8 rounded-full border"
             />
           ) : (
             <span
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-stream-github font-keycap text-[10px] text-stream-github-fg"
+              className="bg-stream-github font-keycap text-stream-github-fg flex h-8 w-8 items-center justify-center rounded-full text-[10px]"
               aria-hidden
             >
               {initials(user)}
             </span>
           )}
           <span className="min-w-0">
-            <span className="block truncate text-body-md font-medium text-on-surface">
+            <span className="text-body-md text-on-surface block truncate font-medium">
               {user.name ?? user.login}
             </span>
-            <span className="block truncate font-mono text-xs text-on-surface-variant">
+            <span className="text-on-surface-variant block truncate font-mono text-xs">
               @{user.login}
             </span>
           </span>
@@ -113,9 +113,7 @@ function PersonRow({
             });
           }}
         >
-          <Star
-            className={cn("h-4 w-4", favoriteStarClass(favorited))}
-          />
+          <Star className={cn("h-4 w-4", favoriteStarClass(favorited))} />
         </Button>
       </div>
     </li>
@@ -282,7 +280,7 @@ export function PeoplePage() {
         <Card padding="none" className="overflow-hidden">
           {tab === "favorites" ? (
             favorites.length === 0 ? (
-              <p className="px-4 py-12 text-center text-body-md text-on-surface-variant">
+              <p className="text-body-md text-on-surface-variant px-4 py-12 text-center">
                 No favorite people yet. Star an author on the dashboard or
                 search.
               </p>
@@ -302,7 +300,7 @@ export function PeoplePage() {
           ) : searching && results.length === 0 ? (
             <LoadingBlock embedded>Searching…</LoadingBlock>
           ) : results.length === 0 ? (
-            <p className="px-4 py-12 text-center text-body-md text-on-surface-variant">
+            <p className="text-body-md text-on-surface-variant px-4 py-12 text-center">
               {query.trim().length < 2
                 ? "Type at least 2 characters."
                 : "No users match."}
@@ -323,18 +321,18 @@ export function PeoplePage() {
         </Card>
 
         <Card padding="none" className="overflow-hidden">
-          <div className="border-b border-border bg-surface-container-low/40 px-3 py-2">
-            <h2 className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+          <div className="border-border bg-surface-container-low/40 border-b px-3 py-2">
+            <h2 className="text-label-sm text-on-surface-variant tracking-wide uppercase">
               Open PRs
               {selected ? (
-                <span className="ml-2 font-mono normal-case tracking-normal">
+                <span className="ml-2 font-mono tracking-normal normal-case">
                   @{selected}
                 </span>
               ) : null}
             </h2>
           </div>
           {!selected ? (
-            <p className="px-4 py-12 text-center text-body-md text-on-surface-variant">
+            <p className="text-body-md text-on-surface-variant px-4 py-12 text-center">
               Select a person to list their open PRs.
             </p>
           ) : prLoading ? (
@@ -342,22 +340,25 @@ export function PeoplePage() {
           ) : prError ? (
             <ErrorBlock className="m-3">{prError}</ErrorBlock>
           ) : prs.length === 0 ? (
-            <p className="px-4 py-12 text-center text-body-md text-on-surface-variant">
+            <p className="text-body-md text-on-surface-variant px-4 py-12 text-center">
               No open PRs by @{selected}.
             </p>
           ) : (
             <ul>
               {prs.map((pr) => (
-                <li key={`${pr.repo}#${pr.number}`} className="border-b border-border last:border-b-0">
+                <li
+                  key={`${pr.repo}#${pr.number}`}
+                  className="border-border border-b last:border-b-0"
+                >
                   <button
                     type="button"
-                    className="flex w-full flex-col items-start gap-0.5 px-3 py-2.5 text-left hover:bg-surface-container-low/60"
+                    className="hover:bg-surface-container-low/60 flex w-full flex-col items-start gap-0.5 px-3 py-2.5 text-left"
                     onClick={() => navigate(reviewPath(pr))}
                   >
-                    <span className="text-body-md font-medium text-on-surface">
+                    <span className="text-body-md text-on-surface font-medium">
                       {pr.title}
                     </span>
-                    <span className="font-mono text-xs text-on-surface-variant">
+                    <span className="text-on-surface-variant font-mono text-xs">
                       {pr.repo}#{pr.number} · {relativeTime(pr.updatedAt)}
                     </span>
                   </button>

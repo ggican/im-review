@@ -33,7 +33,9 @@ const draft: AiReviewDraft = {
   ],
 };
 
-function renderTab(overrides: Partial<ComponentProps<typeof AiReviewTab>> = {}) {
+function renderTab(
+  overrides: Partial<ComponentProps<typeof AiReviewTab>> = {},
+) {
   const props: ComponentProps<typeof AiReviewTab> = {
     phase: "ready",
     draft: null,
@@ -74,9 +76,7 @@ describe("AiReviewTab", () => {
     renderTab();
     expect(screen.getByText("AI review")).toBeInTheDocument();
     expect(screen.getByText("Not run")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /Run AI review/ }),
-    ).toBeEnabled();
+    expect(screen.getByRole("button", { name: /Run AI review/ })).toBeEnabled();
   });
 
   it("shows running state and logs", () => {
@@ -123,9 +123,7 @@ describe("AiReviewTab", () => {
       },
       confirmed: true,
     });
-    expect(
-      screen.getByText(/No findings selected/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/No findings selected/)).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Submit review to GitHub" }),
     ).toBeEnabled();

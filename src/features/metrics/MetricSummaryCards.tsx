@@ -71,7 +71,8 @@ export function buildMetricSummaryItems(
   const unreviewed = findMetric(scorecard, "unreviewedRate");
   const coverage = reviewCoverageLabel(unreviewed);
 
-  const reviewedAvailable = Boolean(reviewed) && !isUnavailable(reviewed?.rawValue);
+  const reviewedAvailable =
+    Boolean(reviewed) && !isUnavailable(reviewed?.rawValue);
   const reviewTimeAvailable =
     Boolean(reviewTime) && !isUnavailable(reviewTime?.rawValue);
 

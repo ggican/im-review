@@ -26,7 +26,7 @@ export function DeltaBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 text-body-sm font-medium",
+        "text-body-sm inline-flex items-center gap-1 font-medium",
         up && "text-success",
         down && "text-error",
         !up && !down && "text-on-surface-variant",

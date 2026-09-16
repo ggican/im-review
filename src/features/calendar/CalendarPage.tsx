@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 import { PageHeader, PageShell } from "@/components/layout/PageShell";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -130,16 +129,9 @@ export function CalendarPage() {
 
   if (!connected) {
     return (
-      <PageShell>
-        <PageHeader
-          backTo="/"
-          title="Calendar"
-          subtitle="Connect Google Calendar"
-        />
-        <Card
-          padding="default"
-          className="border-stream-calendar-border/80"
-        >
+      <PageShell width="full">
+        <PageHeader title="Calendar" subtitle="Connect Google Calendar" />
+        <Card padding="default" className="border-stream-calendar-border/80">
           <CardHeader className="mb-2">
             <CardTitle className="text-title-md">
               Google Calendar not connected
@@ -159,16 +151,10 @@ export function CalendarPage() {
   }
 
   return (
-    <PageShell width="lg" className="gap-5">
+    <PageShell width="full" className="gap-5">
       <PageHeader
-        backTo="/"
         title="Calendar"
         subtitle={`Meeting triage · ${connected.name || connected.email} · ${win.label}`}
-        leading={
-          <Badge variant="calendar" className="mt-1">
-            Calendar
-          </Badge>
-        }
         actions={
           <Button
             type="button"
@@ -187,10 +173,7 @@ export function CalendarPage() {
         }
       />
 
-      <Card
-        padding="default"
-        className="border-stream-calendar-border/80"
-      >
+      <Card padding="default" className="border-stream-calendar-border/80">
         <CardHeader className="mb-3">
           <CardTitle className="text-title-md font-semibold">Agenda</CardTitle>
           <CardDescription>
@@ -260,7 +243,7 @@ export function CalendarPage() {
             : `${filtered.length} event${filtered.length === 1 ? "" : "s"}`}
         </p>
         {activeSource ? (
-          <span className="inline-flex items-center gap-1.5 text-body-sm text-on-surface-variant">
+          <span className="text-body-sm text-on-surface-variant inline-flex items-center gap-1.5">
             <span
               className="h-2.5 w-2.5 rounded-full"
               style={{
@@ -283,7 +266,7 @@ export function CalendarPage() {
           <LoadingBlock>Loading events…</LoadingBlock>
         ) : groups.length === 0 ? (
           <Card padding="default">
-            <p className="py-12 text-center text-body-md text-on-surface-variant">
+            <p className="text-body-md text-on-surface-variant py-12 text-center">
               {emptyCopy(tab, query)}
             </p>
           </Card>
@@ -291,10 +274,10 @@ export function CalendarPage() {
           <div className="space-y-4">
             {groups.map((group) => (
               <Card key={group.key} padding="none" className="overflow-hidden">
-                <div className="border-b border-border bg-surface-container-low/50 px-3 py-2">
-                  <h2 className="text-label-sm font-semibold tracking-wide text-on-surface-variant uppercase">
+                <div className="border-border bg-surface-container-low/50 border-b px-3 py-2">
+                  <h2 className="text-label-sm text-on-surface-variant font-semibold tracking-wide uppercase">
                     {group.label}
-                    <span className="ml-2 font-keycap normal-case tracking-normal text-on-surface-variant">
+                    <span className="font-keycap text-on-surface-variant ml-2 tracking-normal normal-case">
                       {group.items.length}
                     </span>
                   </h2>

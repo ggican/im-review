@@ -64,16 +64,13 @@ export function CalendarEventPage() {
 
   if (!connected) {
     return (
-      <PageShell>
+      <PageShell width="full">
         <PageHeader
           backTo="/calendar"
           title="Calendar"
           subtitle="Connect first"
         />
-        <Card
-          padding="default"
-          className="border-stream-calendar-border/80"
-        >
+        <Card padding="default" className="border-stream-calendar-border/80">
           <CardHeader className="mb-2">
             <CardTitle className="text-title-md">
               Google Calendar not connected
@@ -96,16 +93,11 @@ export function CalendarEventPage() {
   const duration = event ? formatDuration(event) : null;
 
   return (
-    <PageShell width="lg" className="gap-5">
+    <PageShell width="full" className="gap-5">
       <PageHeader
         backTo="/calendar"
         title={event?.title ?? "Event"}
         subtitle={event ? formatEventWhen(event) : undefined}
-        leading={
-          <Badge variant="calendar" className="mt-1">
-            Calendar
-          </Badge>
-        }
         actions={
           event ? (
             <div className="flex flex-wrap gap-2">
@@ -223,17 +215,17 @@ export function CalendarEventPage() {
 
           <Card padding="default">
             <CardHeader className="mb-2">
-              <CardTitle className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+              <CardTitle className="text-label-sm text-on-surface-variant tracking-wide uppercase">
                 Description
               </CardTitle>
             </CardHeader>
             <CardContent>
               {event.description ? (
-                <p className="whitespace-pre-wrap text-body-md text-on-surface">
+                <p className="text-body-md text-on-surface whitespace-pre-wrap">
                   {event.description.replace(/<[^>]+>/g, "")}
                 </p>
               ) : (
-                <p className="rounded-lg border border-dashed border-border px-3 py-8 text-center text-body-md text-on-surface-variant">
+                <p className="border-border text-body-md text-on-surface-variant rounded-lg border border-dashed px-3 py-8 text-center">
                   No description.
                 </p>
               )}
@@ -242,7 +234,7 @@ export function CalendarEventPage() {
 
           <Card padding="default">
             <CardHeader className="mb-2">
-              <CardTitle className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+              <CardTitle className="text-label-sm text-on-surface-variant tracking-wide uppercase">
                 Attendees
                 {event.attendees.length > 0
                   ? ` (${event.attendees.length})`
@@ -255,12 +247,12 @@ export function CalendarEventPage() {
                   {event.attendees.slice(0, 20).map((a) => (
                     <li
                       key={a.email}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border px-3 py-2 text-body-sm"
+                      className="border-border text-body-sm flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2"
                     >
                       <span className="text-on-surface">
                         {a.displayName || a.email}
                         {a.self ? (
-                          <span className="ml-1 text-on-surface-variant">
+                          <span className="text-on-surface-variant ml-1">
                             (you)
                           </span>
                         ) : null}
@@ -287,7 +279,7 @@ export function CalendarEventPage() {
           </Card>
         </div>
       ) : (
-        <p className="py-10 text-center text-body-md text-on-surface-variant">
+        <p className="text-body-md text-on-surface-variant py-10 text-center">
           Event not found.
         </p>
       )}
@@ -305,8 +297,8 @@ function MetaTile({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-surface-container-low/40 px-3 py-2.5">
-      <p className="mb-1 inline-flex items-center gap-1.5 text-label-sm tracking-wide text-on-surface-variant uppercase">
+    <div className="border-border bg-surface-container-low/40 rounded-lg border px-3 py-2.5">
+      <p className="text-label-sm text-on-surface-variant mb-1 inline-flex items-center gap-1.5 tracking-wide uppercase">
         {icon}
         {label}
       </p>

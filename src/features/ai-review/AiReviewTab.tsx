@@ -1,10 +1,4 @@
-import {
-  CheckCircle2,
-  Circle,
-  Loader2,
-  Sparkles,
-  XCircle,
-} from "lucide-react";
+import { CheckCircle2, Circle, Loader2, Sparkles, XCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { Badge } from "@/components/ui/badge";
@@ -111,7 +105,11 @@ function reviewStatus(props: {
   phase: AiTabPhase;
   draft: AiReviewDraft | null;
   runError: string | null;
-}): { label: string; detail: string; tone: "neutral" | "ai" | "success" | "error" | "warning" } {
+}): {
+  label: string;
+  detail: string;
+  tone: "neutral" | "ai" | "success" | "error" | "warning";
+} {
   if (props.phase === "ai_running") {
     return {
       label: "Running",
@@ -201,7 +199,7 @@ export function AiReviewTab({
       <Card padding="default" className="border-stream-ai-border/80">
         <CardHeader className="mb-3 flex-row flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 space-y-1">
-            <CardTitle className="flex items-center gap-2 text-title-md font-semibold">
+            <CardTitle className="text-title-md flex items-center gap-2 font-semibold">
               <Sparkles
                 className="h-4 w-4 text-violet-600 dark:text-violet-300"
                 aria-hidden
@@ -272,19 +270,19 @@ export function AiReviewTab({
                   aria-hidden
                 />
               ) : status.tone === "success" ? (
-                <CheckCircle2 className="h-4 w-4 text-success" aria-hidden />
+                <CheckCircle2 className="text-success h-4 w-4" aria-hidden />
               ) : status.tone === "error" ? (
-                <XCircle className="h-4 w-4 text-error" aria-hidden />
+                <XCircle className="text-error h-4 w-4" aria-hidden />
               ) : (
                 <Circle
-                  className="h-4 w-4 text-on-surface-variant"
+                  className="text-on-surface-variant h-4 w-4"
                   aria-hidden
                 />
               )}
             </div>
             <div className="min-w-0 flex-1 space-y-1">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+                <span className="text-label-sm text-on-surface-variant tracking-wide uppercase">
                   Status
                 </span>
                 <Badge variant={statusBadgeVariant(status.tone)}>
@@ -306,16 +304,12 @@ export function AiReviewTab({
               active={phase === "draft"}
               label="You check findings"
             />
-            <Step
-              done={false}
-              active={false}
-              label="Submit after confirm"
-            />
+            <Step done={false} active={false} label="Submit after confirm" />
           </ol>
 
           {phase === "ai_running" ? (
             <div className="space-y-2 rounded-lg border border-violet-300/40 bg-violet-50/40 p-3 dark:border-violet-800 dark:bg-violet-950/20">
-              <div className="flex items-center gap-2 text-body-md text-violet-900 dark:text-violet-200">
+              <div className="text-body-md flex items-center gap-2 text-violet-900 dark:text-violet-200">
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
                 Cursor AI is reviewing patches…
               </div>
@@ -324,7 +318,7 @@ export function AiReviewTab({
                 submit.
               </p>
               {logs.length > 0 ? (
-                <div className="max-h-36 overflow-y-auto rounded-lg border border-border bg-surface-container-lowest p-3 font-mono text-xs text-on-surface-variant">
+                <div className="border-border bg-surface-container-lowest text-on-surface-variant max-h-36 overflow-y-auto rounded-lg border p-3 font-mono text-xs">
                   {logs.map((l, i) => (
                     <div key={`${l.step}-${i}`}>
                       <span className="opacity-70">[{l.step}]</span> {l.message}
@@ -339,7 +333,7 @@ export function AiReviewTab({
           ) : null}
 
           {phase === "ready" && !draft ? (
-            <p className="rounded-lg border border-dashed border-border px-3 py-8 text-center text-body-md text-on-surface-variant">
+            <p className="border-border text-body-md text-on-surface-variant rounded-lg border border-dashed px-3 py-8 text-center">
               {runError
                 ? "AI review failed. Fix the issue, then run again."
                 : "No AI draft yet. Run AI review when you are ready to inspect findings."}
@@ -352,7 +346,7 @@ export function AiReviewTab({
         <>
           <Card padding="default">
             <CardHeader className="mb-3">
-              <CardTitle className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+              <CardTitle className="text-label-sm text-on-surface-variant tracking-wide uppercase">
                 Summary
               </CardTitle>
             </CardHeader>
@@ -369,12 +363,12 @@ export function AiReviewTab({
           </Card>
 
           <Card padding="none" className="overflow-hidden">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3">
+            <div className="border-border flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
               <div>
-                <h3 className="font-headline text-title-md font-semibold text-on-surface">
+                <h3 className="font-headline text-title-md text-on-surface font-semibold">
                   Findings
                 </h3>
-                <p className="mt-0.5 text-body-sm text-on-surface-variant">
+                <p className="text-body-sm text-on-surface-variant mt-0.5">
                   {selectedCount}/{totalFindings} selected · ignored findings
                   stay out of the submit payload
                 </p>
@@ -383,7 +377,7 @@ export function AiReviewTab({
             </div>
 
             {draft.findings.length === 0 ? (
-              <p className="px-4 py-10 text-center text-body-md text-on-surface-variant">
+              <p className="text-body-md text-on-surface-variant px-4 py-10 text-center">
                 No findings returned.
               </p>
             ) : (
@@ -401,9 +395,12 @@ export function AiReviewTab({
             )}
           </Card>
 
-          <Card padding="default" className="border-dashed border-stream-ai-border">
+          <Card
+            padding="default"
+            className="border-stream-ai-border border-dashed"
+          >
             <CardHeader className="mb-2">
-              <CardTitle className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+              <CardTitle className="text-label-sm text-on-surface-variant tracking-wide uppercase">
                 Refine draft
               </CardTitle>
               <CardDescription>
@@ -452,7 +449,7 @@ export function AiReviewTab({
                 </Button>
               </div>
               {refining ? (
-                <p className="flex items-center gap-2 text-body-sm text-violet-800 dark:text-violet-200">
+                <p className="text-body-sm flex items-center gap-2 text-violet-800 dark:text-violet-200">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
                   Refining draft…
                 </p>
@@ -462,7 +459,7 @@ export function AiReviewTab({
 
           <Card padding="default">
             <CardHeader className="mb-3">
-              <CardTitle className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+              <CardTitle className="text-label-sm text-on-surface-variant tracking-wide uppercase">
                 Human confirmation
               </CardTitle>
               <CardDescription>
@@ -488,7 +485,7 @@ export function AiReviewTab({
                 ))}
               </div>
 
-              <label className="flex items-start gap-2 rounded-lg border border-border bg-surface-container-low/40 px-3 py-2.5 text-body-md">
+              <label className="border-border bg-surface-container-low/40 text-body-md flex items-start gap-2 rounded-lg border px-3 py-2.5">
                 <input
                   type="checkbox"
                   className="mt-1"
@@ -510,7 +507,7 @@ export function AiReviewTab({
               {selectedCount === 0 ? (
                 <p
                   role="status"
-                  className="rounded-lg border border-warning/30 bg-warning-container px-3 py-2 text-body-sm text-on-warning-container"
+                  className="border-warning/30 bg-warning-container text-body-sm text-on-warning-container rounded-lg border px-3 py-2"
                 >
                   No findings selected. Select at least one finding, or discard
                   and write a manual review on the Files tab.
@@ -569,7 +566,7 @@ function Step({
   return (
     <li
       className={cn(
-        "flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-body-sm",
+        "border-border text-body-sm flex items-center gap-2 rounded-lg border px-3 py-2",
         active &&
           "border-violet-300/60 bg-violet-50/50 dark:border-violet-800 dark:bg-violet-950/20",
       )}
@@ -580,10 +577,10 @@ function Step({
           aria-hidden
         />
       ) : done ? (
-        <CheckCircle2 className="h-4 w-4 shrink-0 text-success" aria-hidden />
+        <CheckCircle2 className="text-success h-4 w-4 shrink-0" aria-hidden />
       ) : (
         <Circle
-          className="h-4 w-4 shrink-0 text-on-surface-variant"
+          className="text-on-surface-variant h-4 w-4 shrink-0"
           aria-hidden
         />
       )}
@@ -612,7 +609,7 @@ function FindingRow({
   return (
     <li
       className={cn(
-        "flex gap-3 border-b border-border px-4 py-3 last:border-b-0",
+        "border-border flex gap-3 border-b px-4 py-3 last:border-b-0",
         !finding.included && "bg-surface-container-low/40 opacity-80",
         finding.included &&
           finding.severity === "critical" &&
@@ -638,17 +635,17 @@ function FindingRow({
           <Badge variant={finding.included ? "outline" : "secondary"}>
             {finding.included ? "Included" : "Ignored"}
           </Badge>
-          <span className="text-body-md font-medium text-on-surface">
+          <span className="text-body-md text-on-surface font-medium">
             {finding.title}
           </span>
         </div>
         {finding.path ? (
-          <div className="font-mono text-xs text-on-surface-variant">
+          <div className="text-on-surface-variant font-mono text-xs">
             {finding.path}
             {finding.line != null ? `:${finding.line}` : ""}
           </div>
         ) : null}
-        <p className="text-body-sm whitespace-pre-wrap text-on-surface-variant">
+        <p className="text-body-sm text-on-surface-variant whitespace-pre-wrap">
           {finding.body}
         </p>
         {finding.included ? (

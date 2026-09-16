@@ -47,7 +47,12 @@ export const TabsList = React.forwardRef<HTMLDivElement, TabsListProps>(
     function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
       onKeyDown?.(e);
       if (e.defaultPrevented) return;
-      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft" && e.key !== "Home" && e.key !== "End") {
+      if (
+        e.key !== "ArrowRight" &&
+        e.key !== "ArrowLeft" &&
+        e.key !== "Home" &&
+        e.key !== "End"
+      ) {
         return;
       }
       const root = listRef.current;
@@ -59,9 +64,11 @@ export const TabsList = React.forwardRef<HTMLDivElement, TabsListProps>(
       const current = document.activeElement as HTMLElement | null;
       const index = current ? tabs.indexOf(current) : -1;
       let next = index;
-      if (e.key === "ArrowRight") next = index < 0 ? 0 : (index + 1) % tabs.length;
+      if (e.key === "ArrowRight")
+        next = index < 0 ? 0 : (index + 1) % tabs.length;
       if (e.key === "ArrowLeft")
-        next = index < 0 ? tabs.length - 1 : (index - 1 + tabs.length) % tabs.length;
+        next =
+          index < 0 ? tabs.length - 1 : (index - 1 + tabs.length) % tabs.length;
       if (e.key === "Home") next = 0;
       if (e.key === "End") next = tabs.length - 1;
       if (next === index || next < 0) return;

@@ -80,7 +80,7 @@ export function PrDetailTab({
       <div className="flex flex-col gap-4 lg:col-span-7">
         <Card padding="default">
           <CardHeader className="mb-2 flex-row items-center justify-between gap-2">
-            <CardTitle className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+            <CardTitle className="text-label-sm text-on-surface-variant tracking-wide uppercase">
               Pull request description
             </CardTitle>
             <span className="text-body-sm text-on-surface-variant">
@@ -89,11 +89,11 @@ export function PrDetailTab({
           </CardHeader>
           <CardContent>
             {detail?.body?.trim() ? (
-              <pre className="max-h-[28rem] overflow-auto rounded-lg border border-border bg-surface-container-low p-3 text-body-md leading-relaxed whitespace-pre-wrap text-on-surface">
+              <pre className="border-border bg-surface-container-low text-body-md text-on-surface max-h-[28rem] overflow-auto rounded-lg border p-3 leading-relaxed whitespace-pre-wrap">
                 {detail.body}
               </pre>
             ) : (
-              <p className="rounded-lg border border-dashed border-border px-3 py-8 text-center text-body-md text-on-surface-variant">
+              <p className="border-border text-body-md text-on-surface-variant rounded-lg border border-dashed px-3 py-8 text-center">
                 No description.
               </p>
             )}
@@ -102,7 +102,7 @@ export function PrDetailTab({
 
         <Card padding="default">
           <CardHeader className="mb-2">
-            <CardTitle className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+            <CardTitle className="text-label-sm text-on-surface-variant tracking-wide uppercase">
               Modified files ({files.length || detail?.changedFiles || 0})
             </CardTitle>
             <CardDescription>
@@ -115,16 +115,16 @@ export function PrDetailTab({
                 {detail ? "No file list loaded yet." : "Loading files…"}
               </p>
             ) : (
-              <ul className="divide-y divide-border rounded-lg border border-border">
+              <ul className="divide-border border-border divide-y rounded-lg border">
                 {filePreview.map((f) => (
                   <li
                     key={f.filename}
                     className="flex items-center justify-between gap-2 px-3 py-2"
                   >
-                    <span className="font-keycap truncate text-body-sm text-on-surface">
+                    <span className="font-keycap text-body-sm text-on-surface truncate">
                       {f.filename}
                     </span>
-                    <span className="shrink-0 font-keycap text-body-sm">
+                    <span className="font-keycap text-body-sm shrink-0">
                       <span className="text-success">+{f.additions}</span>{" "}
                       <span className="text-error">−{f.deletions}</span>
                     </span>
@@ -133,7 +133,7 @@ export function PrDetailTab({
               </ul>
             )}
             {files.length > filePreview.length ? (
-              <p className="mt-2 text-body-sm text-on-surface-variant">
+              <p className="text-body-sm text-on-surface-variant mt-2">
                 +{files.length - filePreview.length} more in Files tab
               </p>
             ) : null}
@@ -144,15 +144,15 @@ export function PrDetailTab({
       <div className="flex flex-col gap-4 lg:col-span-5">
         <Card padding="default">
           <CardHeader className="mb-2">
-            <CardTitle className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+            <CardTitle className="text-label-sm text-on-surface-variant tracking-wide uppercase">
               Review status
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {yourReviewEvent ? (
-              <div className="rounded-lg border border-stream-ai-border bg-stream-ai/50 px-3 py-2">
+              <div className="border-stream-ai-border bg-stream-ai/50 rounded-lg border px-3 py-2">
                 <p className="text-label-md text-stream-ai-fg">Your review</p>
-                <p className="mt-1 text-body-sm text-on-surface">
+                <p className="text-body-sm text-on-surface mt-1">
                   {yourReviewEvent === "APPROVE"
                     ? "Approved"
                     : yourReviewEvent === "REQUEST_CHANGES"
@@ -161,11 +161,11 @@ export function PrDetailTab({
                 </p>
               </div>
             ) : (
-              <div className="rounded-lg border border-stream-github-border bg-stream-github/50 px-3 py-2">
+              <div className="border-stream-github-border bg-stream-github/50 rounded-lg border px-3 py-2">
                 <p className="text-label-md text-stream-github-fg">
                   Not reviewed yet
                 </p>
-                <p className="mt-1 text-body-sm text-on-surface-variant">
+                <p className="text-body-sm text-on-surface-variant mt-1">
                   No review submitted from IM Review for this PR.
                 </p>
               </div>
@@ -179,7 +179,7 @@ export function PrDetailTab({
                   {reviews.latestByUser.map((r) => (
                     <li
                       key={r.user}
-                      className="flex items-center justify-between gap-2 text-body-sm"
+                      className="text-body-sm flex items-center justify-between gap-2"
                     >
                       <span className="inline-flex items-center gap-1.5">
                         {r.avatarUrl ? (
@@ -196,11 +196,11 @@ export function PrDetailTab({
                   ))}
                 </ul>
               ) : detail?.reviewers?.length ? (
-                <p className="mt-1 text-body-sm text-on-surface">
+                <p className="text-body-sm text-on-surface mt-1">
                   {detail.reviewers.join(", ")}
                 </p>
               ) : (
-                <p className="mt-1 text-body-sm text-on-surface-variant">
+                <p className="text-body-sm text-on-surface-variant mt-1">
                   None listed
                 </p>
               )}
@@ -211,12 +211,12 @@ export function PrDetailTab({
         {detail ? (
           <Card padding="default">
             <CardHeader className="mb-2">
-              <CardTitle className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+              <CardTitle className="text-label-sm text-on-surface-variant tracking-wide uppercase">
                 Metadata
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <dl className="grid gap-3 text-body-sm">
+              <dl className="text-body-sm grid gap-3">
                 <MetaRow label="Author">
                   <span className="inline-flex items-center gap-1.5">
                     {detail.author.avatarUrl ? (
@@ -246,7 +246,7 @@ export function PrDetailTab({
                 <MetaRow label="CI">
                   <button
                     type="button"
-                    className="underline underline-offset-2 hover:text-on-surface"
+                    className="hover:text-on-surface underline underline-offset-2"
                     onClick={onOpenCiTab}
                   >
                     {ci?.overall ?? detail.ciStatus} ·{" "}
@@ -278,15 +278,15 @@ export function PrDetailTab({
                 for review. Only shown on PRs you authored.
               </CardDescription>
               {detail.state === "closed" ? (
-                <p className="mt-2 text-body-sm font-medium text-error">
+                <p className="text-body-sm text-error mt-2 font-medium">
                   Status: closed
                 </p>
               ) : detail.isDraft ? (
-                <p className="mt-2 text-body-sm font-medium text-warning">
+                <p className="text-body-sm text-warning mt-2 font-medium">
                   Status: draft
                 </p>
               ) : (
-                <p className="mt-2 text-body-sm font-medium text-success">
+                <p className="text-body-sm text-success mt-2 font-medium">
                   Status: open
                 </p>
               )}
@@ -384,7 +384,7 @@ export function PrDetailTab({
                     type="button"
                     disabled={approving || posting}
                     onClick={() => setApproveBody(t.body)}
-                    className="rounded-md border border-border bg-surface-container-lowest px-2 py-1 text-xs font-medium text-on-surface hover:bg-surface-container-low"
+                    className="border-border bg-surface-container-lowest text-on-surface hover:bg-surface-container-low rounded-md border px-2 py-1 text-xs font-medium"
                     title={t.body}
                   >
                     {t.name}
@@ -427,10 +427,10 @@ export function PrDetailTab({
 function MetaRow({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <dt className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+      <dt className="text-label-sm text-on-surface-variant tracking-wide uppercase">
         {label}
       </dt>
-      <dd className="mt-1 text-on-surface">{children}</dd>
+      <dd className="text-on-surface mt-1">{children}</dd>
     </div>
   );
 }

@@ -42,7 +42,7 @@ function GroupedScoreChart({
     <div className="space-y-3">
       {rows.map((row) => (
         <div key={row.label}>
-          <div className="mb-1 flex items-center justify-between text-body-sm text-on-surface-variant">
+          <div className="text-body-sm text-on-surface-variant mb-1 flex items-center justify-between">
             <span>{row.label}</span>
             <span className="font-keycap tabular-nums">
               {row.current}
@@ -50,16 +50,16 @@ function GroupedScoreChart({
             </span>
           </div>
           <div className="flex h-4 gap-1">
-            <div className="relative flex-1 overflow-hidden rounded-md bg-surface-container-high">
+            <div className="bg-surface-container-high relative flex-1 overflow-hidden rounded-md">
               <div
-                className="absolute inset-y-0 left-0 rounded-md bg-primary"
+                className="bg-primary absolute inset-y-0 left-0 rounded-md"
                 style={{ width: `${row.current}%` }}
               />
             </div>
             {previous && row.previous != null ? (
-              <div className="relative flex-1 overflow-hidden rounded-md bg-surface-container-high">
+              <div className="bg-surface-container-high relative flex-1 overflow-hidden rounded-md">
                 <div
-                  className="absolute inset-y-0 left-0 rounded-md bg-outline-variant"
+                  className="bg-outline-variant absolute inset-y-0 left-0 rounded-md"
                   style={{ width: `${row.previous}%` }}
                 />
               </div>
@@ -67,14 +67,14 @@ function GroupedScoreChart({
           </div>
         </div>
       ))}
-      <div className="flex gap-3 text-body-sm text-on-surface-variant">
+      <div className="text-body-sm text-on-surface-variant flex gap-3">
         <span className="inline-flex items-center gap-1">
-          <span className="h-2 w-2 rounded-sm bg-primary" />
+          <span className="bg-primary h-2 w-2 rounded-sm" />
           Current
         </span>
         {previous ? (
           <span className="inline-flex items-center gap-1">
-            <span className="h-2 w-2 rounded-sm bg-outline-variant" />
+            <span className="bg-outline-variant h-2 w-2 rounded-sm" />
             Previous
           </span>
         ) : null}
@@ -106,17 +106,18 @@ function polyline(
 function ActivityChart({ points }: { points: DailyActivityPoint[] }) {
   if (points.length === 0) {
     return (
-      <p className="py-8 text-center text-body-md text-on-surface-variant">
+      <p className="text-body-md text-on-surface-variant py-8 text-center">
         No activity in this window.
       </p>
     );
   }
 
-  const hasAny =
-    points.some((p) => p.created > 0 || p.merged > 0 || p.reviewed > 0);
+  const hasAny = points.some(
+    (p) => p.created > 0 || p.merged > 0 || p.reviewed > 0,
+  );
   if (!hasAny) {
     return (
-      <p className="py-8 text-center text-body-md text-on-surface-variant">
+      <p className="text-body-md text-on-surface-variant py-8 text-center">
         No activity in this window.
       </p>
     );
@@ -172,7 +173,7 @@ function ActivityChart({ points }: { points: DailyActivityPoint[] }) {
           points={polyline(reviewed, width, height, pad)}
         />
       </svg>
-      <div className="mt-2 flex flex-wrap justify-between gap-2 text-body-sm text-on-surface-variant">
+      <div className="text-body-sm text-on-surface-variant mt-2 flex flex-wrap justify-between gap-2">
         <span className="font-keycap">{points[0]?.date}</span>
         <span className="inline-flex items-center gap-3">
           <span>Bars: created</span>
@@ -198,7 +199,9 @@ export function MetricsCharts({
     <div className="grid gap-4 lg:grid-cols-2">
       <Card padding="default">
         <CardHeader className="mb-3">
-          <CardTitle className="text-title-md">Score vs previous period</CardTitle>
+          <CardTitle className="text-title-md">
+            Score vs previous period
+          </CardTitle>
           <CardDescription>
             Teal bar is current window. Gray bar is the previous window of the
             same length.

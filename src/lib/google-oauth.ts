@@ -10,13 +10,14 @@
  * Desktop client_secret is required by Google token endpoint (not truly secret
  * in shipped desktop apps; still keep it out of git).
  */
-export const GOOGLE_OAUTH_CLIENT_ID = (
-  import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID as string | undefined
-)?.trim() ?? "";
+export const GOOGLE_OAUTH_CLIENT_ID =
+  (import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID as string | undefined)?.trim() ??
+  "";
 
-export const GOOGLE_OAUTH_CLIENT_SECRET = (
-  import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_SECRET as string | undefined
-)?.trim() ?? "";
+export const GOOGLE_OAUTH_CLIENT_SECRET =
+  (
+    import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_SECRET as string | undefined
+  )?.trim() ?? "";
 
 /** UNIT-GOOGLE-001 */
 export function isValidGoogleOAuthClientId(id: string): boolean {

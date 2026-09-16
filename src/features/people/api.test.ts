@@ -34,4 +34,23 @@ describe("people/api", () => {
     await expect(fetchGithubUser("nope login")).rejects.toThrow(/Invalid/);
     expect(githubGet).not.toHaveBeenCalled();
   });
+
+  it("maps fetchGithubUser response", async () => {
+    githubGet.mockResolvedValue({
+      login: "carol",
+      name: "Carol Dev",
+      avatar_url: "https://avatars/carol",
+      html_url: "https://github.com/carol",
+    });
+
+    const user = await fetchGithubUser("carol");
+
+    expect(githubGet).toHaveBeenCalledWith("/users/carol");
+    expect(user).toEqual({
+      login: "carol",
+      name: "Carol Dev",
+      avatarUrl: "https://avatars/carol",
+      htmlUrl: "https://github.com/carol",
+    });
+  });
 });

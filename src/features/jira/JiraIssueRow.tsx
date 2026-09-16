@@ -44,8 +44,8 @@ export function JiraIssueRow({ issue }: { issue: JiraIssue }) {
   }
 
   return (
-    <li className="border-b border-border last:border-b-0">
-      <div className="flex items-start gap-2 px-3 py-2.5 hover:bg-surface-container-low/60">
+    <li className="border-border border-b last:border-b-0">
+      <div className="hover:bg-surface-container-low/60 flex items-start gap-2 px-3 py-2.5">
         <Link
           to={`/jira/${issue.key}`}
           className="flex min-w-0 flex-1 items-start gap-3 text-left"
@@ -64,10 +64,10 @@ export function JiraIssueRow({ issue }: { issue: JiraIssue }) {
           )}
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-              <span className="font-mono text-xs text-stream-jira-fg">
+              <span className="text-stream-jira-fg font-mono text-xs">
                 {issue.key}
               </span>
-              <span className="truncate text-body-md font-medium text-on-surface">
+              <span className="text-body-md text-on-surface truncate font-medium">
                 {issue.summary}
               </span>
               <Badge variant={statusBadgeVariant(issue.status.category)}>
@@ -77,18 +77,18 @@ export function JiraIssueRow({ issue }: { issue: JiraIssue }) {
                 {issue.type.name}
               </Badge>
             </div>
-            <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-body-sm text-on-surface-variant">
+            <p className="text-body-sm text-on-surface-variant mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
               {issue.assignee ? (
                 <span className="inline-flex items-center gap-1.5">
                   {issue.assignee.avatarUrl ? (
                     <img
                       src={issue.assignee.avatarUrl}
                       alt=""
-                      className="h-4 w-4 rounded-full border border-border"
+                      className="border-border h-4 w-4 rounded-full border"
                     />
                   ) : (
                     <span
-                      className="flex h-4 w-4 items-center justify-center rounded-full bg-stream-jira font-keycap text-stream-jira-fg"
+                      className="bg-stream-jira font-keycap text-stream-jira-fg flex h-4 w-4 items-center justify-center rounded-full"
                       aria-hidden
                     >
                       {initials(issue.assignee.displayName)}

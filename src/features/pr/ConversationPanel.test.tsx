@@ -104,7 +104,10 @@ describe("ConversationPanel", () => {
       isOwn: true,
     });
     mockDelete.mockResolvedValue(undefined);
-    vi.stubGlobal("confirm", vi.fn(() => true));
+    vi.stubGlobal(
+      "confirm",
+      vi.fn(() => true),
+    );
 
     render(
       <ConversationPanel

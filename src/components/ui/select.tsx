@@ -15,7 +15,7 @@ export const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex h-8 w-full items-center justify-between gap-2 rounded-md border border-border bg-surface-container-lowest px-3 text-xs font-medium text-on-surface outline-none hover:bg-surface-container-low focus-visible:ring-2 focus-visible:ring-primary-container/70 disabled:cursor-not-allowed disabled:opacity-50",
+      "border-border bg-surface-container-lowest text-on-surface hover:bg-surface-container-low focus-visible:ring-primary-container/70 inline-flex h-8 w-full items-center justify-between gap-2 rounded-md border px-3 text-xs font-medium outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50",
       className,
     )}
     {...props}
@@ -37,7 +37,7 @@ export const SelectContent = React.forwardRef<
       ref={ref}
       position={position}
       className={cn(
-        "z-50 min-w-[12rem] overflow-hidden rounded-md border border-border bg-surface-container-lowest text-on-surface shadow-md",
+        "border-border bg-surface-container-lowest text-on-surface z-50 min-w-[12rem] overflow-hidden rounded-md border shadow-md",
         className,
       )}
       {...props}
@@ -57,7 +57,7 @@ export const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex cursor-pointer items-center rounded-sm py-2 pr-8 pl-2 text-xs outline-none select-none data-[highlighted]:bg-surface-container-low data-[state=checked]:font-medium",
+      "data-[highlighted]:bg-surface-container-low relative flex cursor-pointer items-center rounded-sm py-2 pr-8 pl-2 text-xs outline-none select-none data-[state=checked]:font-medium",
       className,
     )}
     {...props}
@@ -77,7 +77,7 @@ export const SelectLabel = React.forwardRef<
   <SelectPrimitive.Label
     ref={ref}
     className={cn(
-      "px-2 py-1.5 text-xs font-semibold tracking-wide text-on-surface-variant uppercase",
+      "text-on-surface-variant px-2 py-1.5 text-xs font-semibold tracking-wide uppercase",
       className,
     )}
     {...props}

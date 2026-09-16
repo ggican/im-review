@@ -211,7 +211,9 @@ describe("useMyPRs", () => {
   });
 
   it("loads people tab from favorite authors", async () => {
-    const peoplePrs = [makePr({ repo: "acme/p", number: 5, title: "From Bob" })];
+    const peoplePrs = [
+      makePr({ repo: "acme/p", number: 5, title: "From Bob" }),
+    ];
     toggleFavoriteUser({
       login: "bob",
       name: "Bob",

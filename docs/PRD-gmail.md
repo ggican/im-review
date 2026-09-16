@@ -82,14 +82,14 @@ Konteks kerja sering masuk lewat email: review request, Jira notify, CI fail, un
 
 Semua lewat Rust proxy (extend `google.rs`):
 
-| Call          | Path                                     | Pakai untuk       |
-| ------------- | ---------------------------------------- | ----------------- |
-| Profile       | `gmail/v1/users/me/profile`              | email address     |
-| Labels list   | `gmail/v1/users/me/labels`               | label filter      |
-| Messages list | `gmail/v1/users/me/messages?q=&labelIds=`| list ids          |
-| Messages get  | `gmail/v1/users/me/messages/{id}?format=`| metadata / full   |
-| Modify        | `POST .../messages/{id}/modify`          | read/star/archive |
-| Threads get   | `gmail/v1/users/me/threads/{id}`         | optional thread   |
+| Call          | Path                                      | Pakai untuk       |
+| ------------- | ----------------------------------------- | ----------------- |
+| Profile       | `gmail/v1/users/me/profile`               | email address     |
+| Labels list   | `gmail/v1/users/me/labels`                | label filter      |
+| Messages list | `gmail/v1/users/me/messages?q=&labelIds=` | list ids          |
+| Messages get  | `gmail/v1/users/me/messages/{id}?format=` | metadata / full   |
+| Modify        | `POST .../messages/{id}/modify`           | read/star/archive |
+| Threads get   | `gmail/v1/users/me/threads/{id}`          | optional thread   |
 
 **Default queries per tab:**
 
@@ -197,20 +197,22 @@ type GmailSavedView = {
 
 ## 9. Milestones
 
-| Slice  | Scope                                            | Status |
-| ------ | ------------------------------------------------ | ------ |
-| M13b.0 | Scope + reconnect + Settings Google rename       | 📝     |
-| M13b.1 | `/gmail` list + tabs + search                    | 📝     |
-| M13b.2 | `/gmail/:id` read view + Open in Gmail           | 📝     |
-| M13b.3 | Mark read / star / archive                       | 📝     |
-| M13b.4 | Labels + saved views                             | 📝     |
-| M14    | Reply plain + cross-link Jira/PR + unified notif | TBC    |
+| Slice  | Scope                                            | Status         |
+| ------ | ------------------------------------------------ | -------------- |
+| M13b.0 | Scope + reconnect + Settings Google rename       | ✅ Implemented |
+| M13b.1 | `/gmail` list + tabs + search                    | ✅ Implemented |
+| M13b.2 | `/gmail/:id` read view + Open in Gmail           | ✅ Implemented |
+| M13b.3 | Mark read / star / archive                       | ✅ Implemented |
+| M13b.4 | Labels + saved views                             | ✅ Implemented |
+| M14    | Reply plain + cross-link Jira/PR + unified notif | TBC            |
 
 **Dependency:** M13a Calendar OAuth foundation ✅. Gmail builds on same `google.rs` token store.
 
 ---
 
 ## 10. Risks
+
+> Status “Implemented” berarti tercakup oleh source dan unit test lokal; verifikasi OAuth/Gmail API dengan akun nyata tetap mengikuti [GOOGLE_OAUTH.md](./GOOGLE_OAUTH.md).
 
 - Gmail scope sensitif — copy readonly/modify harus jelas.
 - HTML email XSS — sanitize atau text-only v1.
@@ -222,10 +224,10 @@ type GmailSavedView = {
 
 ## 11. Open questions
 
-| #   | Pertanyaan                                | Jawaban sementara                |
-| --- | ----------------------------------------- | ------------------------------- |
-| QG1 | List by **message** atau **thread**?      | Message dulu; thread TBC        |
-| QG2 | Start readonly only atau langsung modify? | Readonly list+read; modify .3   |
-| QG3 | Body HTML sanitize?                       | Text-first v1                   |
-| QG4 | Default tab?                              | **Unread**                      |
+| #   | Pertanyaan                                | Jawaban sementara                  |
+| --- | ----------------------------------------- | ---------------------------------- |
+| QG1 | List by **message** atau **thread**?      | Message dulu; thread TBC           |
+| QG2 | Start readonly only atau langsung modify? | Readonly list+read; modify .3      |
+| QG3 | Body HTML sanitize?                       | Text-first v1                      |
+| QG4 | Default tab?                              | **Unread**                         |
 | QG5 | Nav “Google” vs “Gmail” + “Calendar”?     | Terpisah: **Gmail** · **Calendar** |

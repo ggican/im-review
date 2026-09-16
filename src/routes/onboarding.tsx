@@ -49,10 +49,10 @@ export function OnboardingPage() {
   return (
     <PageShell
       width="md"
-      className="max-w-md justify-center gap-6 bg-gradient-to-b from-stream-github/40 via-background to-background"
+      className="from-stream-github/40 via-background to-background max-w-md justify-center gap-6 bg-gradient-to-b"
     >
       <div className="space-y-4 text-center">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl border border-stream-github-border bg-surface-container-lowest shadow-sm">
+        <div className="border-stream-github-border bg-surface-container-lowest mx-auto flex h-14 w-14 items-center justify-center rounded-xl border shadow-sm">
           <img
             src={imReviewLogo}
             alt="IM Review"
@@ -69,7 +69,10 @@ export function OnboardingPage() {
         </div>
       </div>
 
-      <Card padding="default" className="border-stream-github-border/80 text-left">
+      <Card
+        padding="default"
+        className="border-stream-github-border/80 text-left"
+      >
         <CardHeader className="mb-3">
           <div className="mb-1 flex flex-wrap items-center gap-2">
             <Badge variant="github">GitHub</Badge>
@@ -112,7 +115,7 @@ export function OnboardingPage() {
             {error ? (
               <div
                 role="alert"
-                className="rounded-lg border border-error/30 bg-error-container px-3 py-2 text-body-sm text-on-error-container"
+                className="border-error/30 bg-error-container text-body-sm text-on-error-container rounded-lg border px-3 py-2"
               >
                 {error}
               </div>
@@ -135,7 +138,7 @@ export function OnboardingPage() {
         href="https://github.com/settings/tokens/new?scopes=repo,read:user&description=IM Review"
         target="_blank"
         rel="noreferrer"
-        className="text-center text-body-sm text-on-surface-variant underline underline-offset-2 hover:text-on-surface"
+        className="text-body-sm text-on-surface-variant hover:text-on-surface text-center underline underline-offset-2"
       >
         Create a new token on GitHub →
       </a>

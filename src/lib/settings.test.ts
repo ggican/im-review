@@ -1,30 +1,42 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { JiraSavedFilter } from "@/features/jira/types";
 import {
   applyTheme,
+  deleteJiraSavedFilter,
   deleteSavedReview,
   deleteTemplate,
   getFavoriteBranches,
   getFavorites,
   getFavoriteUsers,
   getGooglePublic,
+  getJiraPublic,
+  getJiraSavedFilters,
+  getJiraStatusTabOrder,
   getSavedReviews,
   getSettings,
   getTemplates,
   isFavorite,
   isFavoriteBranch,
+  isFavoriteUser,
+  MAX_FAVORITE_USERS,
+  newJiraFilterId,
   newTemplateId,
   removeFavorite,
   removeFavoriteBranch,
   removeFavoriteUser,
   restoreDefaultFavorites,
   saveGooglePublic,
+  saveJiraPublic,
+  saveJiraSavedFilters,
+  saveJiraStatusTabOrder,
   saveReviewLocally,
   saveSettings,
   subscribeSettings,
   toggleFavorite,
   toggleFavoriteBranch,
   toggleFavoriteUser,
+  upsertJiraSavedFilter,
   upsertTemplate,
 } from "@/lib/settings";
 
@@ -122,6 +134,19 @@ describe("UNIT-SETTINGS store", () => {
     const id = next.find((b) => b.branch === "feat/x")!.id;
     removeFavoriteBranch(id);
     expect(isFavoriteBranch("acme/web", "feat/x")).toBe(false);
+  });
+
+  it("isFavoriteUser reflects stored people", () => {
+    expect(isFavoriteUser("nobody")).toBe(false);
+    toggleFavoriteUser({
+      login: "dana",
+      name: "Dana",
+      avatarUrl: "",
+      htmlUrl: "https://github.com/dana",
+    });
+    expect(isFavoriteUser("Dana")).toBe(true);
+    removeFavoriteUser("dana");
+    expect(isFavoriteUser("dana")).toBe(false);
   });
 
   it("favorite people toggle/remove and cap", () => {
@@ -251,5 +276,152 @@ describe("UNIT-SETTINGS store", () => {
     expect(mod.getFavoriteBranches()).toEqual([]);
     expect(mod.getSavedReviews()).toEqual([]);
     expect(mod.getTemplates().length).toBeGreaterThan(0);
+  });
+
+  it("persists jira public profile and saved filters CRUD", () => {
+    saveJiraPublic({
+      host: "https://acme.atlassian.net",
+      email: "alice@example.com",
+      displayName: "Alice",
+      accountId: "acc-1",
+      avatarUrl: "",
+    });
+    expect(getJiraPublic()?.displayName).toBe("Alice");
+    saveJiraPublic(null);
+    expect(getJiraPublic()).toBeNull();
+
+    const older: JiraSavedFilter = {
+      id: "jf_old",
+      name: "Older",
+      jql: "assignee = currentUser()",
+      typeIds: [],
+      typeNames: [],
+      labels: [],
+      extraJql: "",
+      includeDone: false,
+      groupBy: "status",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    };
+    const newer: JiraSavedFilter = {
+      ...older,
+      id: "jf_new",
+      name: "Newer",
+      updatedAt: "2026-02-01T00:00:00.000Z",
+      groupBy: "statusCategory",
+    };
+    saveJiraSavedFilters([older, newer]);
+    expect(getJiraSavedFilters().map((f) => f.name)).toEqual([
+      "Newer",
+      "Older",
+    ]);
+    expect(getJiraSavedFilters()[0]?.groupBy).toBe("statusCategory");
+
+    upsertJiraSavedFilter({ ...newer, name: "Updated" });
+    expect(getJiraSavedFilters().find((f) => f.id === "jf_new")?.name).toBe(
+      "Updated",
+    );
+
+    upsertJiraSavedFilter({
+      ...older,
+      id: "jf_third",
+      name: "Third",
+      updatedAt: "2026-03-01T00:00:00.000Z",
+    });
+    expect(getJiraSavedFilters().some((f) => f.id === "jf_third")).toBe(true);
+
+    deleteJiraSavedFilter("jf_old");
+    expect(getJiraSavedFilters().some((f) => f.id === "jf_old")).toBe(false);
+    expect(newJiraFilterId().startsWith("jf_")).toBe(true);
+  });
+
+  it("persists jira status tab order", () => {
+    saveJiraStatusTabOrder(["Done", "In Progress", "To Do"]);
+    expect(getJiraStatusTabOrder()).toEqual(["Done", "In Progress", "To Do"]);
+  });
+
+  it("removeFavoriteUser and favorite cap branches", () => {
+    toggleFavoriteUser({
+      login: "carol",
+      name: "Carol",
+      avatarUrl: "",
+      htmlUrl: "https://github.com/carol",
+    });
+    expect(getFavoriteUsers().some((u) => u.login === "carol")).toBe(true);
+    removeFavoriteUser("carol");
+    expect(getFavoriteUsers().some((u) => u.login === "carol")).toBe(false);
+
+    for (let i = 0; i < MAX_FAVORITE_USERS; i += 1) {
+      toggleFavoriteUser({
+        login: `cap${i}`,
+        name: null,
+        avatarUrl: "",
+        htmlUrl: `https://github.com/cap${i}`,
+      });
+    }
+    const before = getFavoriteUsers().length;
+    toggleFavoriteUser({
+      login: "overflow",
+      name: null,
+      avatarUrl: "",
+      htmlUrl: "https://github.com/overflow",
+    });
+    expect(getFavoriteUsers().length).toBe(before);
+    expect(getFavoriteUsers().some((u) => u.login === "overflow")).toBe(false);
+  });
+
+  it("recovers invalid jira/google/filter storage on load", async () => {
+    localStorage.clear();
+    localStorage.setItem(
+      "im-review:jira-public",
+      JSON.stringify({ host: "x", email: "y" }),
+    );
+    localStorage.setItem(
+      "im-review:jira-saved-filters",
+      JSON.stringify([
+        { id: "bad" },
+        {
+          id: "ok",
+          name: "Valid",
+          jql: "project = X",
+          typeIds: [],
+          labels: [],
+          extraJql: "",
+          includeDone: true,
+          updatedAt: "2026-01-01T00:00:00.000Z",
+          createdAt: "2026-01-01T00:00:00.000Z",
+        },
+      ]),
+    );
+    localStorage.setItem(
+      "im-review:jira-status-tab-order",
+      JSON.stringify(["To Do", 42, null]),
+    );
+    localStorage.setItem(
+      "im-review:google-public",
+      JSON.stringify({ email: 123 }),
+    );
+    localStorage.setItem(
+      "im-review:favorite-users",
+      JSON.stringify([
+        { login: "bad", name: 1, avatarUrl: "", htmlUrl: "", favoritedAt: "x" },
+        {
+          login: "good",
+          name: "Good",
+          avatarUrl: "",
+          htmlUrl: "https://github.com/good",
+          favoritedAt: "2026-01-01T00:00:00.000Z",
+        },
+      ]),
+    );
+    vi.resetModules();
+    const mod = await import("@/lib/settings");
+    expect(mod.getJiraPublic()).toBeNull();
+    expect(mod.getGooglePublic()).toBeNull();
+    expect(mod.getJiraSavedFilters()).toHaveLength(1);
+    expect(mod.getJiraSavedFilters()[0]?.name).toBe("Valid");
+    expect(mod.getJiraStatusTabOrder()).toEqual(["To Do"]);
+    expect(mod.getFavoriteUsers()).toHaveLength(1);
+    expect(mod.getFavoriteUsers()[0]?.login).toBe("good");
   });
 });

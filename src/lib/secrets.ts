@@ -1,6 +1,9 @@
 import type { AiProviderId } from "@/features/ai-review/providers";
 import { AI_PROVIDERS } from "@/features/ai-review/providers";
-import { GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET } from "@/lib/google-oauth";
+import {
+  GOOGLE_OAUTH_CLIENT_ID,
+  GOOGLE_OAUTH_CLIENT_SECRET,
+} from "@/lib/google-oauth";
 
 const GITHUB_KEY = "im-review:github-pat";
 const AI_PREFIX = "im-review:ai-key:";
@@ -150,7 +153,8 @@ export function hasGoogleCreds(): boolean {
 
 /** Persist app-owned client id/secret so hydrate stays consistent after reconnect. */
 export function ensureGoogleOAuthClient(): void {
-  if (GOOGLE_OAUTH_CLIENT_ID) write(GOOGLE_CLIENT_ID_KEY, GOOGLE_OAUTH_CLIENT_ID);
+  if (GOOGLE_OAUTH_CLIENT_ID)
+    write(GOOGLE_CLIENT_ID_KEY, GOOGLE_OAUTH_CLIENT_ID);
   if (GOOGLE_OAUTH_CLIENT_SECRET) {
     write(GOOGLE_CLIENT_SECRET_KEY, GOOGLE_OAUTH_CLIENT_SECRET);
   }

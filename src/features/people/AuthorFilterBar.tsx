@@ -93,12 +93,12 @@ export function AuthorFilterBar({
           className="h-8 text-xs"
         />
         {open && suggestions.length > 0 ? (
-          <ul className="absolute z-20 mt-1 max-h-56 w-56 overflow-y-auto rounded-md border border-border bg-surface-container-lowest py-1 shadow-md">
+          <ul className="border-border bg-surface-container-lowest absolute z-20 mt-1 max-h-56 w-56 overflow-y-auto rounded-md border py-1 shadow-md">
             {suggestions.map((a) => (
               <li key={a.login}>
                 <button
                   type="button"
-                  className="flex w-full items-center gap-2 px-2 py-1.5 text-left text-xs text-on-surface hover:bg-surface-container-low focus-visible:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-container/70"
+                  className="text-on-surface hover:bg-surface-container-low focus-visible:bg-surface-container-low focus-visible:ring-primary-container/70 flex w-full items-center gap-2 px-2 py-1.5 text-left text-xs focus-visible:ring-2 focus-visible:outline-none"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => {
                     const inTab = tabItems.some((pr) =>
@@ -115,7 +115,7 @@ export function AuthorFilterBar({
                     />
                   ) : (
                     <span
-                      className="h-4 w-4 rounded-full bg-surface-container-high"
+                      className="bg-surface-container-high h-4 w-4 rounded-full"
                       aria-hidden
                     />
                   )}
@@ -161,7 +161,7 @@ export function AuthorFilterBar({
               onChange(user.login, inTab ? "filter" : "search");
             }}
             className={cn(
-              "inline-flex max-w-[9rem] items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-container/70",
+              "focus-visible:ring-primary-container/70 inline-flex max-w-[9rem] items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors focus-visible:ring-2 focus-visible:outline-none",
               selected
                 ? "border-primary bg-primary text-on-primary"
                 : "border-border text-on-surface-variant hover:border-outline-variant hover:text-on-surface",
@@ -179,7 +179,7 @@ export function AuthorFilterBar({
         );
       })}
       {extra > 0 ? (
-        <span className="text-xs text-on-surface-variant">+{extra}</span>
+        <span className="text-on-surface-variant text-xs">+{extra}</span>
       ) : null}
     </div>
   );

@@ -752,7 +752,11 @@ describe("UNIT-API pr/api", () => {
       updated_at: "t2",
       html_url: "u",
     });
-    await updateIssueComment(makePr({ repo: "acme/web", number: 1 }), 2, "edited");
+    await updateIssueComment(
+      makePr({ repo: "acme/web", number: 1 }),
+      2,
+      "edited",
+    );
     githubRequest.mockResolvedValueOnce(undefined);
     await deleteIssueComment(makePr({ repo: "acme/web", number: 1 }), 2);
 
@@ -767,7 +771,11 @@ describe("UNIT-API pr/api", () => {
       created_at: "t",
       html_url: "u",
     });
-    await replyToReviewComment(makePr({ repo: "acme/web", number: 1 }), 10, "ok");
+    await replyToReviewComment(
+      makePr({ repo: "acme/web", number: 1 }),
+      10,
+      "ok",
+    );
     githubRequest.mockResolvedValueOnce({
       id: 20,
       pull_request_review_id: 1,
@@ -778,7 +786,11 @@ describe("UNIT-API pr/api", () => {
       created_at: "t",
       html_url: "u",
     });
-    await updateReviewComment(makePr({ repo: "acme/web", number: 1 }), 20, "edited");
+    await updateReviewComment(
+      makePr({ repo: "acme/web", number: 1 }),
+      20,
+      "edited",
+    );
     githubRequest.mockResolvedValueOnce(undefined);
     await deleteReviewComment(makePr({ repo: "acme/web", number: 1 }), 20);
     githubRequest.mockResolvedValueOnce({});

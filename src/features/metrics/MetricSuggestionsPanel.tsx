@@ -83,8 +83,8 @@ export function MetricSuggestionsPanel({
   return (
     <Card padding="default">
       <CardHeader className="mb-3">
-        <CardTitle className="flex items-center gap-2 text-title-md">
-          <Lightbulb className="h-4 w-4 text-warning" aria-hidden />
+        <CardTitle className="text-title-md flex items-center gap-2">
+          <Lightbulb className="text-warning h-4 w-4" aria-hidden />
           Suggestions to raise your score
         </CardTitle>
         <CardDescription>
@@ -94,7 +94,7 @@ export function MetricSuggestionsPanel({
       </CardHeader>
       <CardContent>
         {suggestions.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-border px-3 py-10 text-center text-body-md text-on-surface-variant">
+          <p className="border-border text-body-md text-on-surface-variant rounded-lg border border-dashed px-3 py-10 text-center">
             No urgent actions right now. Keep shipping small reviewed PRs.
           </p>
         ) : (
@@ -108,12 +108,12 @@ export function MetricSuggestionsPanel({
                 )}
               >
                 <div className="flex flex-wrap items-start gap-3">
-                  <div className="mt-0.5 text-on-surface-variant">
+                  <div className="text-on-surface-variant mt-0.5">
                     {actionIcon(item.action)}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-body-md font-medium text-on-surface">
+                      <span className="text-body-md text-on-surface font-medium">
                         {item.title}
                       </span>
                       <Badge variant="outline" className="uppercase">
@@ -126,14 +126,14 @@ export function MetricSuggestionsPanel({
                         {item.priority}
                       </Badge>
                     </div>
-                    <p className="mt-1 text-body-sm text-on-surface-variant">
+                    <p className="text-body-sm text-on-surface-variant mt-1">
                       {item.reason}
                     </p>
-                    <p className="mt-1 text-body-sm font-medium text-on-surface">
+                    <p className="text-body-sm text-on-surface mt-1 font-medium">
                       {item.impact}
                     </p>
                     {item.pr ? (
-                      <p className="mt-1 truncate text-body-sm text-on-surface-variant">
+                      <p className="text-body-sm text-on-surface-variant mt-1 truncate">
                         {item.pr.title}
                       </p>
                     ) : null}

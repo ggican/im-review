@@ -40,6 +40,15 @@ vi.mock("@/lib/settings", async (importOriginal) => {
   return {
     ...actual,
     getFavorites: () => ["acme/fav"],
+    getFavoriteUsers: () => [
+      {
+        login: "devuser",
+        name: "Dev User",
+        avatarUrl: "",
+        htmlUrl: "https://github.com/devuser",
+        favoritedAt: "2026-01-01T00:00:00.000Z",
+      },
+    ],
   };
 });
 
@@ -131,5 +140,68 @@ describe("CommandPalette", () => {
     );
     await user.click(screen.getByRole("option", { name: /acme\/fav/ }));
     expect(mockNavigate).toHaveBeenCalledWith("/repos");
+  });
+
+  it("navigates to Gmail, Calendar, Jira, Metrics, and favorite people", async () => {
+    const user = userEvent.setup();
+    renderPalette();
+    await user.keyboard("{Meta>}k{/Meta}");
+
+    const input = screen.getByRole("textbox", { name: "Search commands" });
+    await user.type(input, "gmail");
+    await user.keyboard("{Enter}");
+    expect(mockNavigate).toHaveBeenCalledWith("/gmail");
+
+    mockNavigate.mockClear();
+    await user.keyboard("{Meta>}k{/Meta}");
+    await user.type(
+      screen.getByRole("textbox", { name: "Search commands" }),
+      "calendar",
+    );
+    await user.keyboard("{Enter}");
+    expect(mockNavigate).toHaveBeenCalledWith("/calendar");
+
+    mockNavigate.mockClear();
+    await user.keyboard("{Meta>}k{/Meta}");
+    await user.type(
+      screen.getByRole("textbox", { name: "Search commands" }),
+      "jira",
+    );
+    await user.keyboard("{Enter}");
+    expect(mockNavigate).toHaveBeenCalledWith("/jira");
+
+    mockNavigate.mockClear();
+    await user.keyboard("{Meta>}k{/Meta}");
+    await user.type(
+      screen.getByRole("textbox", { name: "Search commands" }),
+      "metrics",
+    );
+    await user.keyboard("{Enter}");
+    expect(mockNavigate).toHaveBeenCalledWith("/metrics");
+
+    mockNavigate.mockClear();
+    await user.keyboard("{Meta>}k{/Meta}");
+    await user.click(screen.getByRole("option", { name: /@devuser/ }));
+    expect(mockNavigate).toHaveBeenCalledWith("/?author=devuser");
+  });
+
+  it("supports @author and user-prefix search shortcuts", async () => {
+    const user = userEvent.setup();
+    renderPalette();
+    await user.keyboard("{Meta>}k{/Meta}");
+    await user.type(
+      screen.getByRole("textbox", { name: "Search commands" }),
+      "@octocat",
+    );
+    await user.keyboard("{Enter}");
+    expect(mockNavigate).toHaveBeenCalledWith("/?author=octocat&by=all");
+
+    mockNavigate.mockClear();
+    await user.keyboard("{Meta>}k{/Meta}");
+    await user.type(
+      screen.getByRole("textbox", { name: "Search commands" }),
+      "user alice",
+    );
+    expect(screen.getByText("No matches.")).toBeInTheDocument();
   });
 });

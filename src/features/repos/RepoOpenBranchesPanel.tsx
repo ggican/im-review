@@ -72,7 +72,7 @@ export function RepoOpenBranchesPanel({ repo, onBack }: Props) {
         ) : error ? (
           <ErrorBlock className="m-3">{error}</ErrorBlock>
         ) : prs.length === 0 ? (
-          <div className="px-4 py-12 text-center text-body-md text-on-surface-variant">
+          <div className="text-body-md text-on-surface-variant px-4 py-12 text-center">
             No open pull requests in this repo.
           </div>
         ) : (
@@ -80,23 +80,23 @@ export function RepoOpenBranchesPanel({ repo, onBack }: Props) {
             {prs.map((pr) => (
               <li
                 key={`${pr.repo}#${pr.number}`}
-                className="border-b border-border last:border-b-0"
+                className="border-border border-b last:border-b-0"
               >
                 <button
                   type="button"
                   onClick={() => navigate(reviewPath(pr))}
-                  className="flex w-full items-start gap-3 px-3 py-3 text-left hover:bg-surface-container-low/60"
+                  className="hover:bg-surface-container-low/60 flex w-full items-start gap-3 px-3 py-3 text-left"
                 >
                   <GitBranch
-                    className="mt-0.5 h-4 w-4 shrink-0 text-on-surface-variant"
+                    className="text-on-surface-variant mt-0.5 h-4 w-4 shrink-0"
                     aria-hidden
                   />
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                      <span className="font-mono text-xs font-medium text-primary">
+                      <span className="text-primary font-mono text-xs font-medium">
                         {pr.headBranch ?? "(unknown branch)"}
                       </span>
-                      <span className="font-mono text-xs text-on-surface-variant">
+                      <span className="text-on-surface-variant font-mono text-xs">
                         #{pr.number}
                       </span>
                       {pr.isDraft ? (
@@ -105,10 +105,10 @@ export function RepoOpenBranchesPanel({ repo, onBack }: Props) {
                         </Badge>
                       ) : null}
                     </div>
-                    <p className="mt-0.5 truncate text-body-md text-on-surface">
+                    <p className="text-body-md text-on-surface mt-0.5 truncate">
                       {pr.title}
                     </p>
-                    <p className="mt-0.5 text-body-sm text-on-surface-variant">
+                    <p className="text-body-sm text-on-surface-variant mt-0.5">
                       {pr.author.login} · {relativeTime(pr.updatedAt)}
                     </p>
                   </div>

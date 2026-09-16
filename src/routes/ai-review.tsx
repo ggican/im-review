@@ -48,9 +48,7 @@ import {
   isGithubRateLimitError,
   rateLimitUserMessage,
 } from "@/features/pr/rate-limit";
-import {
-  githubReviewStateToEvent,
-} from "@/features/pr/review-status";
+import { githubReviewStateToEvent } from "@/features/pr/review-status";
 import type {
   CiChecksSnapshot,
   IssueComment,
@@ -777,7 +775,7 @@ export function AiReviewPage() {
       {yourReviewEvent || localSavedReview || githubMyReview ? (
         <div
           data-testid="your-review-banner"
-          className="rounded-xl border border-stream-ai-border bg-stream-ai px-4 py-3 text-body-md text-stream-ai-fg"
+          className="border-stream-ai-border bg-stream-ai text-body-md text-stream-ai-fg rounded-xl border px-4 py-3"
         >
           <p className="font-semibold">
             Already reviewed
@@ -793,7 +791,7 @@ export function AiReviewPage() {
               </>
             ) : null}
           </p>
-          <p className="mt-1 text-body-sm opacity-90">
+          <p className="text-body-sm mt-1 opacity-90">
             You already reviewed this PR. It stays marked on the dashboard so
             you don’t treat it as a fresh request. You can still submit another
             review if needed.
@@ -809,7 +807,10 @@ export function AiReviewPage() {
 
       {phase !== "loading" && phase !== "error" ? (
         <>
-          <TabsList aria-label="PR detail sections" className="h-auto w-full flex-wrap justify-start">
+          <TabsList
+            aria-label="PR detail sections"
+            className="h-auto w-full flex-wrap justify-start"
+          >
             {(
               [
                 { id: "detail" as const, label: "Detail" },
@@ -866,171 +867,176 @@ export function AiReviewPage() {
             id="pr-detail-tab-panel"
             aria-labelledby={`pr-detail-tab-${detailTab}`}
           >
-          {detailTab === "detail" ? (
-            <PrDetailTab
-              detail={detail}
-              pr={pr}
-              files={files}
-              reviews={reviews}
-              ci={ci}
-              canManageOwnPr={Boolean(canManageOwnPr)}
-              ownerAction={ownerAction}
-              approving={approving}
-              posting={posting}
-              approveBody={approveBody}
-              setApproveBody={setApproveBody}
-              templates={templates}
-              yourReviewEvent={yourReviewEvent}
-              onQuickApprove={() => void onQuickApprove()}
-              onSetConfirmAction={setConfirmAction}
-              onMarkReady={() => void onMarkOwnPrReady()}
-              onReopen={() => void onReopenOwnPr()}
-              onOpenCiTab={() => setDetailTab("ci")}
-            />
-          ) : null}
-
-          {detailTab === "files" ? (
-            <div className="space-y-4">
-              <ChangedFilesPanel
+            {detailTab === "detail" ? (
+              <PrDetailTab
+                detail={detail}
+                pr={pr}
                 files={files}
-                totals={totals}
-                pendingComments={pendingComments}
-                onAddPending={(c) => setPendingComments((prev) => [...prev, c])}
+                reviews={reviews}
+                ci={ci}
+                canManageOwnPr={Boolean(canManageOwnPr)}
+                ownerAction={ownerAction}
+                approving={approving}
+                posting={posting}
+                approveBody={approveBody}
+                setApproveBody={setApproveBody}
+                templates={templates}
+                yourReviewEvent={yourReviewEvent}
+                onQuickApprove={() => void onQuickApprove()}
+                onSetConfirmAction={setConfirmAction}
+                onMarkReady={() => void onMarkOwnPrReady()}
+                onReopen={() => void onReopenOwnPr()}
+                onOpenCiTab={() => setDetailTab("ci")}
               />
-              {pr ? (
-                <ConversationPanel
-                  pr={pr}
-                  comments={issueComments}
-                  loading={issueCommentsLoading}
-                  error={issueCommentsError}
-                  templates={templates}
-                  writeDisabled={writesPaused}
-                  onPosted={(c) => setIssueComments((prev) => [...prev, c])}
-                  onUpdated={(c) =>
-                    setIssueComments((prev) =>
-                      prev.map((row) => (row.id === c.id ? c : row)),
-                    )
-                  }
-                  onDeleted={(id) =>
-                    setIssueComments((prev) =>
-                      prev.filter((row) => row.id !== id),
-                    )
+            ) : null}
+
+            {detailTab === "files" ? (
+              <div className="space-y-4">
+                <ChangedFilesPanel
+                  files={files}
+                  totals={totals}
+                  pendingComments={pendingComments}
+                  onAddPending={(c) =>
+                    setPendingComments((prev) => [...prev, c])
                   }
                 />
-              ) : null}
-              <PendingReviewBar
-                pending={pendingComments}
-                event={pendingEvent}
-                body={pendingBody}
-                isDraft={Boolean(detail?.isDraft || pr?.isDraft)}
-                submitting={posting}
-                onEventChange={setPendingEvent}
-                onBodyChange={setPendingBody}
-                onRemove={(id) =>
-                  setPendingComments((prev) => prev.filter((p) => p.id !== id))
+                {pr ? (
+                  <ConversationPanel
+                    pr={pr}
+                    comments={issueComments}
+                    loading={issueCommentsLoading}
+                    error={issueCommentsError}
+                    templates={templates}
+                    writeDisabled={writesPaused}
+                    onPosted={(c) => setIssueComments((prev) => [...prev, c])}
+                    onUpdated={(c) =>
+                      setIssueComments((prev) =>
+                        prev.map((row) => (row.id === c.id ? c : row)),
+                      )
+                    }
+                    onDeleted={(id) =>
+                      setIssueComments((prev) =>
+                        prev.filter((row) => row.id !== id),
+                      )
+                    }
+                  />
+                ) : null}
+                <PendingReviewBar
+                  pending={pendingComments}
+                  event={pendingEvent}
+                  body={pendingBody}
+                  isDraft={Boolean(detail?.isDraft || pr?.isDraft)}
+                  submitting={posting}
+                  onEventChange={setPendingEvent}
+                  onBodyChange={setPendingBody}
+                  onRemove={(id) =>
+                    setPendingComments((prev) =>
+                      prev.filter((p) => p.id !== id),
+                    )
+                  }
+                  onSubmit={() => void onSubmitPendingReview()}
+                />
+              </div>
+            ) : null}
+
+            {detailTab === "ci" ? (
+              <CiChecksPanel
+                snapshot={ci}
+                loading={ciLoading}
+                error={ciError}
+                onRefresh={() => void refreshCi()}
+                headBranch={detail?.headBranch ?? pr?.headBranch}
+              />
+            ) : null}
+
+            {detailTab === "reviews" && pr ? (
+              <div className="space-y-4">
+                <CurrentReviewsPanel
+                  pr={pr}
+                  snapshot={reviews}
+                  loading={reviewsLoading}
+                  error={reviewsError}
+                  writeDisabled={writesPaused}
+                  onRefresh={() => void refreshReviews()}
+                  onMutated={() => void refreshReviews()}
+                />
+                <PendingReviewBar
+                  pending={pendingComments}
+                  event={pendingEvent}
+                  body={pendingBody}
+                  isDraft={Boolean(detail?.isDraft || pr?.isDraft)}
+                  submitting={posting}
+                  onEventChange={setPendingEvent}
+                  onBodyChange={setPendingBody}
+                  onRemove={(id) =>
+                    setPendingComments((prev) =>
+                      prev.filter((p) => p.id !== id),
+                    )
+                  }
+                  onSubmit={() => void onSubmitPendingReview()}
+                />
+              </div>
+            ) : null}
+
+            {detailTab === "ai" ? (
+              <AiReviewTab
+                phase={
+                  phase === "ai_running" || phase === "draft" ? phase : "ready"
                 }
-                onSubmit={() => void onSubmitPendingReview()}
+                draft={draft}
+                logs={logs}
+                hasAiKey={hasAiKey}
+                aiProviderLabel={aiProviderLabel}
+                filesCount={files.length}
+                confirmed={confirmed}
+                posting={posting}
+                refining={refining}
+                refineText={refineText}
+                runError={aiError}
+                pendingInlineCount={pendingComments.length}
+                onConfirmedChange={setConfirmed}
+                onRefineTextChange={setRefineText}
+                onSummaryChange={(summary) => {
+                  if (!draft) return;
+                  setDraft({ ...draft, summary });
+                }}
+                onToggleFinding={(id) => {
+                  if (!draft) return;
+                  setDraft({
+                    ...draft,
+                    findings: draft.findings.map((x) =>
+                      x.id === id ? { ...x, included: !x.included } : x,
+                    ),
+                  });
+                }}
+                onIgnoreFinding={(id) => {
+                  if (!draft) return;
+                  setDraft({
+                    ...draft,
+                    findings: draft.findings.map((x) =>
+                      x.id === id ? { ...x, included: false } : x,
+                    ),
+                  });
+                }}
+                onEventChange={(event) => {
+                  if (!draft) return;
+                  setDraft({ ...draft, suggestedEvent: event });
+                }}
+                onRun={() => void runAi()}
+                onRefine={(instruction) => void refineDraft(instruction)}
+                onSubmit={() => void onSubmit()}
+                onDiscard={() => {
+                  setDraft(null);
+                  setPhase("ready");
+                  setConfirmed(false);
+                  setRefineText("");
+                  setAiError(null);
+                }}
               />
-            </div>
-          ) : null}
-
-          {detailTab === "ci" ? (
-            <CiChecksPanel
-              snapshot={ci}
-              loading={ciLoading}
-              error={ciError}
-              onRefresh={() => void refreshCi()}
-              headBranch={detail?.headBranch ?? pr?.headBranch}
-            />
-          ) : null}
-
-          {detailTab === "reviews" && pr ? (
-            <div className="space-y-4">
-              <CurrentReviewsPanel
-                pr={pr}
-                snapshot={reviews}
-                loading={reviewsLoading}
-                error={reviewsError}
-                writeDisabled={writesPaused}
-                onRefresh={() => void refreshReviews()}
-                onMutated={() => void refreshReviews()}
-              />
-              <PendingReviewBar
-                pending={pendingComments}
-                event={pendingEvent}
-                body={pendingBody}
-                isDraft={Boolean(detail?.isDraft || pr?.isDraft)}
-                submitting={posting}
-                onEventChange={setPendingEvent}
-                onBodyChange={setPendingBody}
-                onRemove={(id) =>
-                  setPendingComments((prev) => prev.filter((p) => p.id !== id))
-                }
-                onSubmit={() => void onSubmitPendingReview()}
-              />
-            </div>
-          ) : null}
-
-          {detailTab === "ai" ? (
-            <AiReviewTab
-              phase={
-                phase === "ai_running" || phase === "draft" ? phase : "ready"
-              }
-              draft={draft}
-              logs={logs}
-              hasAiKey={hasAiKey}
-              aiProviderLabel={aiProviderLabel}
-              filesCount={files.length}
-              confirmed={confirmed}
-              posting={posting}
-              refining={refining}
-              refineText={refineText}
-              runError={aiError}
-              pendingInlineCount={pendingComments.length}
-              onConfirmedChange={setConfirmed}
-              onRefineTextChange={setRefineText}
-              onSummaryChange={(summary) => {
-                if (!draft) return;
-                setDraft({ ...draft, summary });
-              }}
-              onToggleFinding={(id) => {
-                if (!draft) return;
-                setDraft({
-                  ...draft,
-                  findings: draft.findings.map((x) =>
-                    x.id === id ? { ...x, included: !x.included } : x,
-                  ),
-                });
-              }}
-              onIgnoreFinding={(id) => {
-                if (!draft) return;
-                setDraft({
-                  ...draft,
-                  findings: draft.findings.map((x) =>
-                    x.id === id ? { ...x, included: false } : x,
-                  ),
-                });
-              }}
-              onEventChange={(event) => {
-                if (!draft) return;
-                setDraft({ ...draft, suggestedEvent: event });
-              }}
-              onRun={() => void runAi()}
-              onRefine={(instruction) => void refineDraft(instruction)}
-              onSubmit={() => void onSubmit()}
-              onDiscard={() => {
-                setDraft(null);
-                setPhase("ready");
-                setConfirmed(false);
-                setRefineText("");
-                setAiError(null);
-              }}
-            />
-          ) : null}
+            ) : null}
           </TabsPanel>
         </>
       ) : null}
     </PageShell>
   );
 }
-

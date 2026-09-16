@@ -17,10 +17,7 @@ function asRecord(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
-function headerValue(
-  headers: unknown,
-  name: string,
-): string {
+function headerValue(headers: unknown, name: string): string {
   if (!Array.isArray(headers)) return "";
   for (const item of headers) {
     const rec = asRecord(item);
@@ -139,9 +136,7 @@ function mapSummary(raw: unknown): GmailMessageSummary | null {
     : [];
   const internalDate = Number(rec.internalDate ?? 0);
   const dateMs = internalDate > 0 ? internalDate : Date.now();
-  const date =
-    headerValue(headers, "Date") ||
-    new Date(dateMs).toISOString();
+  const date = headerValue(headers, "Date") || new Date(dateMs).toISOString();
   return {
     id,
     threadId: String(rec.threadId ?? ""),
@@ -173,7 +168,9 @@ export function mapGmailMessage(raw: unknown): GmailMessage | null {
   };
 }
 
-async function fetchMessageSummaries(ids: string[]): Promise<GmailMessageSummary[]> {
+async function fetchMessageSummaries(
+  ids: string[],
+): Promise<GmailMessageSummary[]> {
   if (ids.length === 0) return [];
   const rows = await Promise.all(
     ids.map((id) =>

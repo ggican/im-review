@@ -29,27 +29,27 @@ export function RepoRow({ repo, favorited, onOpenDetail }: Props) {
   }
 
   return (
-    <li className="flex items-start gap-3 border-b border-border px-3 py-3 last:border-b-0">
+    <li className="border-border flex items-start gap-3 border-b px-3 py-3 last:border-b-0">
       <button
         type="button"
         aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
         aria-pressed={favorited}
         onClick={() => toggleFavorite(repo.fullName)}
-        className="mt-0.5 shrink-0 rounded-md p-1 text-on-surface-variant hover:bg-surface-container-low hover:text-warning focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-container/70"
+        className="text-on-surface-variant hover:bg-surface-container-low hover:text-warning focus-visible:ring-primary-container/70 mt-0.5 shrink-0 rounded-md p-1 focus-visible:ring-2 focus-visible:outline-none"
       >
         <Star className={cn("h-4 w-4", favoriteStarClass(favorited))} />
       </button>
       <button
         type="button"
         onClick={() => onOpenDetail?.(repo)}
-        className="min-w-0 flex-1 rounded-md text-left hover:bg-surface-container-low/60"
+        className="hover:bg-surface-container-low/60 min-w-0 flex-1 rounded-md text-left"
       >
         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-          <span className="truncate text-body-md font-medium text-on-surface">
+          <span className="text-body-md text-on-surface truncate font-medium">
             {name ?? repo.fullName}
           </span>
           {owner ? (
-            <span className="font-mono text-xs text-on-surface-variant">
+            <span className="text-on-surface-variant font-mono text-xs">
               {owner}
             </span>
           ) : null}
@@ -61,16 +61,16 @@ export function RepoRow({ repo, favorited, onOpenDetail }: Props) {
           ) : null}
         </div>
         {repo.description ? (
-          <p className="mt-0.5 line-clamp-2 text-body-sm text-on-surface-variant">
+          <p className="text-body-sm text-on-surface-variant mt-0.5 line-clamp-2">
             {repo.description}
           </p>
         ) : null}
-        <div className="mt-1 flex flex-wrap items-center gap-x-2 text-body-sm text-on-surface-variant">
+        <div className="text-body-sm text-on-surface-variant mt-1 flex flex-wrap items-center gap-x-2">
           {repo.language ? <span>{repo.language}</span> : null}
           {repo.language ? <span aria-hidden>·</span> : null}
           <span className="font-keycap">{relativeTime(repo.updatedAt)}</span>
           {onOpenDetail ? (
-            <span className="inline-flex items-center gap-0.5 text-primary">
+            <span className="text-primary inline-flex items-center gap-0.5">
               Open PRs
               <ChevronRight className="h-3 w-3" />
             </span>

@@ -35,34 +35,36 @@ export function MetricBreakdownPanel({
   return (
     <Card padding="default">
       <CardHeader className="mb-3">
-        <CardTitle className="text-title-md">{subscore.label} breakdown</CardTitle>
+        <CardTitle className="text-title-md">
+          {subscore.label} breakdown
+        </CardTitle>
         <CardDescription>
           Raw values shown next to each normalized score (0–100).
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ul className="overflow-hidden rounded-lg border border-border">
+        <ul className="border-border overflow-hidden rounded-lg border">
           {subscore.metrics.map((row) => (
             <li
               key={row.key}
-              className="flex items-start justify-between gap-4 border-b border-border px-4 py-3 last:border-b-0"
+              className="border-border flex items-start justify-between gap-4 border-b px-4 py-3 last:border-b-0"
             >
               <div className="min-w-0">
-                <div className="text-body-md font-medium text-on-surface">
+                <div className="text-body-md text-on-surface font-medium">
                   {row.label}
                 </div>
-                <div className="mt-0.5 font-mono text-xs text-on-surface-variant">
+                <div className="text-on-surface-variant mt-0.5 font-mono text-xs">
                   {row.rawValue}
                 </div>
                 {row.hint ? (
-                  <div className="mt-1 text-body-sm text-on-surface-variant">
+                  <div className="text-body-sm text-on-surface-variant mt-1">
                     {row.hint}
                   </div>
                 ) : null}
               </div>
               <div
                 className={cn(
-                  "shrink-0 text-body-md font-semibold tabular-nums",
+                  "text-body-md shrink-0 font-semibold tabular-nums",
                   scoreClass(row.score),
                 )}
               >

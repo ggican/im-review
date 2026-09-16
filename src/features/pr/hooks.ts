@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useFavorites, useFavoriteUsers, useSettings } from "@/lib/use-settings";
+import {
+  useFavorites,
+  useFavoriteUsers,
+  useSettings,
+} from "@/lib/use-settings";
 
 import {
   fetchAllOpenPrs,

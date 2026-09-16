@@ -104,7 +104,9 @@ describe("CalendarPage", () => {
 
     await user.click(screen.getByRole("link", { name: /Standup/ }));
     expect(await screen.findByText("Daily sync")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Join Meet/ })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Join Meet/ }),
+    ).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /Join Meet/ }));
     const { openUrl } = await import("@tauri-apps/plugin-opener");
@@ -124,7 +126,9 @@ describe("CalendarPage", () => {
     saveGooglePublic({ email: "alice@example.com", name: "Alice" });
     vi.mocked(fetchCalendarEvents).mockResolvedValue([]);
     renderCalendar();
-    expect(await screen.findByText("No events on the agenda.")).toBeInTheDocument();
+    expect(
+      await screen.findByText("No events on the agenda."),
+    ).toBeInTheDocument();
   });
 
   it("shows no upcoming events when Upcoming tab is empty", async () => {
@@ -135,6 +139,82 @@ describe("CalendarPage", () => {
     await screen.findByText("No events on the agenda.");
     await user.click(screen.getByRole("tab", { name: "Upcoming" }));
     expect(await screen.findByText("No upcoming events.")).toBeInTheDocument();
+  });
+
+  it("shows fetch error, refresh, calendar picker, and search filter", async () => {
+    const user = userEvent.setup();
+    saveGooglePublic({ email: "alice@example.com", name: "Alice" });
+    vi.mocked(fetchCalendarList).mockResolvedValue([
+      {
+        id: "work",
+        summary: "Work",
+        primary: false,
+        backgroundColor: "#3367d6",
+      },
+      { id: "primary", summary: "Primary", primary: true },
+    ]);
+    vi.mocked(fetchCalendarEvents).mockRejectedValueOnce(
+      new Error("Calendar API down"),
+    );
+
+    renderCalendar();
+    expect(await screen.findByText(/Calendar API down/)).toBeInTheDocument();
+
+    vi.mocked(fetchCalendarEvents).mockResolvedValue([
+      {
+        id: "1",
+        calendarId: "work",
+        title: "Planning",
+        htmlLink: "https://calendar.google.com/event?eid=1",
+        location: null,
+        description: null,
+        hangoutLink: null,
+        allDay: false,
+        startMs: Date.parse("2026-09-15T02:00:00Z"),
+        endMs: Date.parse("2026-09-15T03:00:00Z"),
+        attendees: [],
+      },
+      {
+        id: "2",
+        calendarId: "work",
+        title: "Other meeting",
+        htmlLink: "https://calendar.google.com/event?eid=2",
+        location: null,
+        description: null,
+        hangoutLink: null,
+        allDay: false,
+        startMs: Date.parse("2026-09-16T02:00:00Z"),
+        endMs: Date.parse("2026-09-16T03:00:00Z"),
+        attendees: [],
+      },
+    ]);
+    await user.click(screen.getByRole("button", { name: /Refresh/ }));
+    expect(await screen.findByText("Planning")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("combobox", { name: "Calendar" }));
+    await user.click(screen.getByRole("option", { name: /Work/ }));
+    await waitFor(() => {
+      expect(fetchCalendarEvents).toHaveBeenCalledWith(
+        expect.objectContaining({ calendarId: "work" }),
+      );
+    });
+
+    await user.type(
+      screen.getByRole("textbox", { name: "Search events" }),
+      "Planning",
+    );
+    expect(screen.getByText("Planning")).toBeInTheDocument();
+    expect(screen.queryByText("Other meeting")).not.toBeInTheDocument();
+  });
+
+  it("shows all-day tab empty copy", async () => {
+    const user = userEvent.setup();
+    saveGooglePublic({ email: "alice@example.com", name: "Alice" });
+    vi.mocked(fetchCalendarEvents).mockResolvedValue([]);
+    renderCalendar();
+    await screen.findByText("No events on the agenda.");
+    await user.click(screen.getByRole("tab", { name: "All-day" }));
+    expect(await screen.findByText("No all-day events.")).toBeInTheDocument();
   });
 
   it("shows event not found on detail when fetch fails", async () => {

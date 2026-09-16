@@ -35,17 +35,17 @@ export const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed z-50 flex flex-col bg-surface-container-lowest text-on-surface shadow-xl outline-none",
+        "bg-surface-container-lowest text-on-surface fixed z-50 flex flex-col shadow-xl outline-none",
         side === "right"
-          ? "inset-y-0 right-0 h-full w-full max-w-md border-l border-border"
-          : "top-1/2 left-1/2 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border",
+          ? "border-border inset-y-0 right-0 h-full w-full max-w-md border-l"
+          : "border-border top-1/2 left-1/2 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-lg border",
         className,
       )}
       {...props}
     >
       {children}
       <DialogPrimitive.Close
-        className="absolute top-3 right-3 rounded-md p-1 text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface"
+        className="text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface absolute top-3 right-3 rounded-md p-1"
         aria-label="Close"
       >
         <X className="h-4 w-4" />
@@ -62,7 +62,7 @@ export function DialogHeader({
   return (
     <div
       className={cn(
-        "flex flex-col gap-1 border-b border-border px-5 py-4 pr-12",
+        "border-border flex flex-col gap-1 border-b px-5 py-4 pr-12",
         className,
       )}
       {...props}
@@ -77,7 +77,7 @@ export function DialogTitle({
   return (
     <DialogPrimitive.Title
       className={cn(
-        "font-headline text-title-md leading-snug font-semibold text-on-surface",
+        "font-headline text-title-md text-on-surface leading-snug font-semibold",
         className,
       )}
       {...props}
@@ -91,7 +91,7 @@ export function DialogDescription({
 }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>) {
   return (
     <DialogPrimitive.Description
-      className={cn("text-xs text-on-surface-variant", className)}
+      className={cn("text-on-surface-variant text-xs", className)}
       {...props}
     />
   );

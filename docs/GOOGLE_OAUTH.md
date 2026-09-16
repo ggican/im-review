@@ -9,10 +9,10 @@ Related: [PRD-google-calendar.md](./PRD-google-calendar.md) · [PRD-gmail.md](./
 
 ## 1. Konsep singkat
 
-| Peran | Yang dilakukan |
-| --- | --- |
+| Peran                 | Yang dilakukan                                                                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Developer / build** | Buat OAuth Desktop client sekali di Google Cloud; set `VITE_GOOGLE_OAUTH_CLIENT_ID` + `VITE_GOOGLE_OAUTH_CLIENT_SECRET` di `.env`; rebuild |
-| **End user** | Settings → **Google** → **Connect Google** → login akun Google (kantor/pribadi) → Allow |
+| **End user**          | Settings → **Google** → **Connect Google** → login akun Google (kantor/pribadi) → Allow                                                    |
 
 - Satu Connect = Calendar + Gmail (scopes digabung).
 - Refresh token disimpan lokal di mesin user (bukan di server IM Review).
@@ -106,15 +106,15 @@ Saat Waiting:
 
 ## 4. Troubleshooting
 
-| Gejala | Penyebab umum | Perbaikan |
-| --- | --- | --- |
-| Tombol Connect disabled + pesan missing env | Build tanpa Client ID/secret | Isi kedua `VITE_GOOGLE_*`, restart |
-| `403 access_denied` / not verified | Testing + email belum Test user | Audience → Add test users |
-| `400 invalid_request` / `client_secret is missing` | Secret kosong / tidak di-pass | Isi `VITE_GOOGLE_OAUTH_CLIENT_SECRET`, rebuild |
-| `Could not bind … 17320 (Address already in use)` | Listener OAuth sebelumnya masih hidup | Cancel, atau Connect ulang (auto-cancel), tunggu sebentar |
-| `Google sign-in timed out` | Browser ditutup / tidak selesai dalam ~3 menit | Connect lagi; pakai Copy URL jika perlu |
-| Calendar/Gmail 403 API | API belum enable di project | Enable Calendar API + Gmail API |
-| Akun kantor diblok IT | Workspace block unapproved OAuth apps | Minta admin allow Client ID / app |
+| Gejala                                             | Penyebab umum                                  | Perbaikan                                                 |
+| -------------------------------------------------- | ---------------------------------------------- | --------------------------------------------------------- |
+| Tombol Connect disabled + pesan missing env        | Build tanpa Client ID/secret                   | Isi kedua `VITE_GOOGLE_*`, restart                        |
+| `403 access_denied` / not verified                 | Testing + email belum Test user                | Audience → Add test users                                 |
+| `400 invalid_request` / `client_secret is missing` | Secret kosong / tidak di-pass                  | Isi `VITE_GOOGLE_OAUTH_CLIENT_SECRET`, rebuild            |
+| `Could not bind … 17320 (Address already in use)`  | Listener OAuth sebelumnya masih hidup          | Cancel, atau Connect ulang (auto-cancel), tunggu sebentar |
+| `Google sign-in timed out`                         | Browser ditutup / tidak selesai dalam ~3 menit | Connect lagi; pakai Copy URL jika perlu                   |
+| Calendar/Gmail 403 API                             | API belum enable di project                    | Enable Calendar API + Gmail API                           |
+| Akun kantor diblok IT                              | Workspace block unapproved OAuth apps          | Minta admin allow Client ID / app                         |
 
 ---
 

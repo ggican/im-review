@@ -60,7 +60,7 @@ export function NeedsReviewBadge({ className }: { className?: string }) {
   return (
     <Badge
       data-testid="needs-review-badge"
-      variant="github"
+      variant="warning"
       className={cn("uppercase", className)}
     >
       Needs review

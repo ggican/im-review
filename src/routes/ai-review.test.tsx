@@ -55,7 +55,10 @@ vi.mock("@/features/pr/api", async (importOriginal) => {
     fetchPrCiChecks: vi.fn(),
     fetchIssueComments: vi.fn().mockResolvedValue([]),
     postIssueComment: vi.fn(),
+    updateIssueComment: vi.fn(),
+    deleteIssueComment: vi.fn(),
     submitReview: vi.fn(),
+    dismissReview: vi.fn(),
     closePullRequest: vi.fn(),
     convertPullRequestToDraft: vi.fn(),
     markPullRequestReady: vi.fn(),
@@ -84,6 +87,8 @@ import { fetchChangedFiles } from "@/features/ai-review/generate";
 import {
   closePullRequest,
   convertPullRequestToDraft,
+  deleteIssueComment,
+  dismissReview,
   fetchIssueComments,
   fetchPrCiChecks,
   fetchPrDetail,
@@ -91,6 +96,7 @@ import {
   markPullRequestReady,
   reopenPullRequest,
   submitReview,
+  updateIssueComment,
 } from "@/features/pr/api";
 import { api } from "@/lib/api";
 
@@ -105,7 +111,10 @@ const mockFetchChangedFiles = vi.mocked(fetchChangedFiles);
 const mockFetchPrReviews = vi.mocked(fetchPrReviews);
 const mockFetchPrCiChecks = vi.mocked(fetchPrCiChecks);
 const mockFetchIssueComments = vi.mocked(fetchIssueComments);
+const mockUpdateIssueComment = vi.mocked(updateIssueComment);
+const mockDeleteIssueComment = vi.mocked(deleteIssueComment);
 const mockSubmitReview = vi.mocked(submitReview);
+const mockDismissReview = vi.mocked(dismissReview);
 const mockClosePullRequest = vi.mocked(closePullRequest);
 const mockConvertToDraft = vi.mocked(convertPullRequestToDraft);
 const mockMarkReady = vi.mocked(markPullRequestReady);
@@ -236,6 +245,7 @@ describe("AiReviewPage", () => {
     mockAiReviewPr.mockResolvedValue(AI_DRAFT_JSON);
     mockAiRefineReview.mockResolvedValue(REFINED_DRAFT_JSON);
     mockSubmitReview.mockResolvedValue(undefined);
+    mockDismissReview.mockResolvedValue(undefined);
     mockClosePullRequest.mockResolvedValue(undefined);
     mockConvertToDraft.mockResolvedValue(undefined);
     mockMarkReady.mockResolvedValue(undefined);
@@ -437,6 +447,112 @@ describe("AiReviewPage", () => {
     });
   });
 
+  it("edits and deletes own conversation comments on Files tab", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal(
+      "confirm",
+      vi.fn(() => true),
+    );
+    mockFetchIssueComments.mockResolvedValue([
+      {
+        id: 5,
+        body: "Mine",
+        user: "alice",
+        avatarUrl: "",
+        createdAt: "2026-09-04T11:00:00.000Z",
+        updatedAt: "2026-09-04T11:00:00.000Z",
+        htmlUrl: "https://github.com/c/5",
+        isOwn: true,
+      },
+    ]);
+    mockUpdateIssueComment.mockResolvedValue({
+      id: 5,
+      body: "Edited",
+      user: "alice",
+      avatarUrl: "",
+      createdAt: "2026-09-04T11:00:00.000Z",
+      updatedAt: "2026-09-04T12:00:00.000Z",
+      htmlUrl: "https://github.com/c/5",
+      isOwn: true,
+    });
+    mockDeleteIssueComment.mockResolvedValue(undefined);
+
+    renderAiReview();
+    await waitForLoaded();
+    await user.click(screen.getByRole("tab", { name: /Files/ }));
+    expect(await screen.findByText("Mine")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+    await user.clear(screen.getByLabelText("Edit comment"));
+    await user.type(screen.getByLabelText("Edit comment"), "Edited");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() => {
+      expect(mockUpdateIssueComment).toHaveBeenCalledWith(
+        expect.objectContaining({ number: 42 }),
+        5,
+        "Edited",
+      );
+    });
+    expect(screen.getByText("Edited")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Delete" }));
+    await waitFor(() => {
+      expect(mockDeleteIssueComment).toHaveBeenCalledWith(
+        expect.objectContaining({ number: 42 }),
+        5,
+      );
+    });
+    expect(screen.queryByText("Edited")).not.toBeInTheDocument();
+    vi.unstubAllGlobals();
+  });
+
+  it("updates pending review event and body on Reviews tab", async () => {
+    const user = userEvent.setup();
+    renderAiReview();
+    await waitForLoaded();
+    await user.click(screen.getByRole("tab", { name: /Files/ }));
+    await user.click(screen.getByRole("button", { name: /src\/main\.ts/ }));
+    await user.click(
+      screen.getByRole("button", { name: /Add comment on line 1/ }),
+    );
+    await user.type(screen.getByPlaceholderText("Leave a comment…"), "note");
+    await user.click(screen.getByRole("button", { name: "Add to pending" }));
+
+    await user.click(screen.getByRole("tab", { name: /Reviews/ }));
+    await user.selectOptions(
+      screen.getByLabelText("Review event"),
+      "REQUEST_CHANGES",
+    );
+    await user.type(
+      screen.getByPlaceholderText("Optional summary for the review…"),
+      "Please fix",
+    );
+    expect(screen.getByLabelText("Review event")).toHaveValue(
+      "REQUEST_CHANGES",
+    );
+    expect(
+      screen.getByPlaceholderText("Optional summary for the review…"),
+    ).toHaveValue("Please fix");
+  });
+
+  it("removes pending comments from Reviews tab bar", async () => {
+    const user = userEvent.setup();
+    renderAiReview();
+    await waitForLoaded();
+    await user.click(screen.getByRole("tab", { name: /Files/ }));
+    await user.click(screen.getByRole("button", { name: /src\/main\.ts/ }));
+    await user.click(
+      screen.getByRole("button", { name: /Add comment on line 1/ }),
+    );
+    await user.type(screen.getByPlaceholderText("Leave a comment…"), "drop me");
+    await user.click(screen.getByRole("button", { name: "Add to pending" }));
+    expect(screen.getByText(/Pending review \(1\)/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: /Reviews/ }));
+    await user.click(screen.getByRole("button", { name: "Remove" }));
+    expect(screen.queryByText(/Pending review \(1\)/)).not.toBeInTheDocument();
+  });
+
   it("posts conversation comment from Files tab", async () => {
     const user = userEvent.setup();
     const { postIssueComment } = await import("@/features/pr/api");
@@ -615,6 +731,23 @@ describe("AiReviewPage", () => {
     );
     await user.click(screen.getByRole("button", { name: "Apply" }));
     expect(mockAiRefineReview).toHaveBeenCalledTimes(2);
+  });
+
+  it("toggles, ignores findings, and edits AI summary", async () => {
+    const user = userEvent.setup();
+    renderAiReview();
+    await waitForLoaded();
+    await runAiToDraft(user);
+
+    await user.click(screen.getByRole("button", { name: "Ignore" }));
+    expect(screen.getByText("Ignored")).toBeInTheDocument();
+
+    const summary = screen.getByLabelText("Summary");
+    await user.clear(summary);
+    await user.type(summary, "Updated summary text");
+    expect(
+      screen.getByDisplayValue("Updated summary text"),
+    ).toBeInTheDocument();
   });
 
   it("toggles findings, confirms, and submits review", async () => {
@@ -935,6 +1068,89 @@ describe("AiReviewPage", () => {
     await waitFor(() => {
       expect(vi.mocked(toast.error)).toHaveBeenCalledWith("Error: submit boom");
     });
+  });
+
+  it("opens CI tab from detail and removes pending on files tab", async () => {
+    const user = userEvent.setup();
+    renderAiReview();
+    await waitForLoaded();
+    await user.click(
+      screen.getByRole("button", {
+        name: /success · 0 failed · 0 pending · 0 passed/i,
+      }),
+    );
+    expect(screen.getByRole("tab", { name: /CI/ })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+
+    await user.click(screen.getByRole("tab", { name: /Files/ }));
+    await user.click(screen.getByRole("button", { name: /src\/main\.ts/ }));
+    await user.click(
+      screen.getByRole("button", { name: /Add comment on line 1/ }),
+    );
+    await user.type(
+      screen.getByPlaceholderText("Leave a comment…"),
+      "files pending",
+    );
+    await user.click(screen.getByRole("button", { name: "Add to pending" }));
+    expect(screen.getByText(/Pending review \(1\)/)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Remove" }));
+    expect(screen.queryByText(/Pending review \(1\)/)).not.toBeInTheDocument();
+  });
+
+  it("refreshes reviews after mutation on Reviews tab", async () => {
+    const user = userEvent.setup();
+    mockFetchPrReviews.mockResolvedValue({
+      reviews: [
+        {
+          id: 50,
+          user: "bob",
+          avatarUrl: "",
+          state: "APPROVED",
+          body: "LGTM",
+          submittedAt: "2026-09-04T11:00:00.000Z",
+          htmlUrl: "https://github.com/review/50",
+          comments: [
+            {
+              id: 1,
+              path: "src/a.ts",
+              line: 1,
+              body: "nit",
+              user: "alice",
+              avatarUrl: "",
+              createdAt: "2026-09-04T11:00:00.000Z",
+              htmlUrl: "https://github.com/c/1",
+              reviewId: 50,
+              inReplyToId: null,
+              isOwn: true,
+            },
+          ],
+        },
+      ],
+      latestByUser: [{ user: "bob", avatarUrl: "", state: "APPROVED" }],
+      inlineCount: 1,
+    });
+    renderAiReview();
+    await waitForLoaded();
+    await user.click(screen.getByRole("tab", { name: /Reviews/ }));
+    expect(await screen.findByText("nit")).toBeInTheDocument();
+
+    mockFetchPrReviews.mockClear();
+    await user.click(screen.getByRole("button", { name: "Dismiss" }));
+    await user.type(screen.getByLabelText("Dismiss message"), "Outdated");
+    await user.click(screen.getByRole("button", { name: "Confirm dismiss" }));
+    await waitFor(() => {
+      expect(mockFetchPrReviews).toHaveBeenCalled();
+    });
+  });
+
+  it("handles token and AI key lookup failures", async () => {
+    mockValidateToken.mockRejectedValueOnce(new Error("token invalid"));
+    mockHasAiKey.mockRejectedValueOnce(new Error("key check failed"));
+    renderAiReview();
+    await waitForLoaded();
+    expect(screen.getByText("Feature PR")).toBeInTheDocument();
   });
 
   it("surfaces quick-approve and review-refresh failures", async () => {

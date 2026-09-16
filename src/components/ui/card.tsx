@@ -51,10 +51,7 @@ export function CardHeader({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div
-      className={cn("mb-3 flex flex-col gap-1", className)}
-      {...props}
-    />
+    <div className={cn("mb-3 flex flex-col gap-1", className)} {...props} />
   );
 }
 
@@ -66,7 +63,7 @@ export function CardTitle({
   return (
     <h3
       className={cn(
-        "font-headline text-headline-sm font-semibold tracking-tight text-on-surface",
+        "font-headline text-headline-sm text-on-surface font-semibold tracking-tight",
         className,
       )}
       {...props}

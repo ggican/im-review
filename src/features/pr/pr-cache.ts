@@ -52,9 +52,7 @@ function readPersisted(): PersistedPrCache {
           ? (parsed.lists as { reviewed: PullRequest[] }).reviewed
           : [],
         mine: parsed.lists.mine ?? [],
-        people: Array.isArray(
-          (parsed.lists as { people?: unknown }).people,
-        )
+        people: Array.isArray((parsed.lists as { people?: unknown }).people)
           ? (parsed.lists as { people: PullRequest[] }).people
           : [],
       },

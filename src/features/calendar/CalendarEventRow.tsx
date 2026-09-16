@@ -32,9 +32,7 @@ function attendeePreview(event: CalendarEvent): string | null {
     .slice(0, 3)
     .map((a) => a.displayName || a.email.split("@")[0] || a.email);
   const extra = event.attendees.length - names.length;
-  return extra > 0
-    ? `${names.join(", ")} +${extra}`
-    : names.join(", ");
+  return extra > 0 ? `${names.join(", ")} +${extra}` : names.join(", ");
 }
 
 type Props = {
@@ -52,18 +50,14 @@ export function CalendarEventRow({
   const duration = formatDuration(event);
   const attendees = attendeePreview(event);
   const statusLabel =
-    phase === "current"
-      ? "Happening"
-      : phase === "past"
-        ? "Ended"
-        : "Upcoming";
+    phase === "current" ? "Happening" : phase === "past" ? "Ended" : "Upcoming";
 
   return (
-    <li className="border-b border-border last:border-b-0">
+    <li className="border-border border-b last:border-b-0">
       <Link
         to={`/calendar/${encodeURIComponent(event.calendarId)}/${encodeURIComponent(event.id)}`}
         className={cn(
-          "flex w-full items-start gap-3 px-3 py-2.5 text-left transition-colors hover:bg-surface-container-low/60",
+          "hover:bg-surface-container-low/60 flex w-full items-start gap-3 px-3 py-2.5 text-left transition-colors",
           phase === "current" && "bg-stream-calendar/50",
           phase === "past" && "opacity-70",
         )}
@@ -71,15 +65,14 @@ export function CalendarEventRow({
         <span
           className="mt-1 h-8 w-1 shrink-0 rounded-full"
           style={{
-            backgroundColor:
-              calendarColor || "var(--stream-calendar-border)",
+            backgroundColor: calendarColor || "var(--stream-calendar-border)",
           }}
           aria-hidden
         />
-        <span className="w-28 shrink-0 font-keycap text-on-surface-variant tabular-nums">
+        <span className="font-keycap text-on-surface-variant w-28 shrink-0 tabular-nums">
           {formatEventWhen(event)}
           {duration ? (
-            <span className="mt-0.5 block font-sans text-[10px] font-normal normal-case tracking-normal text-on-surface-variant">
+            <span className="text-on-surface-variant mt-0.5 block font-sans text-[10px] font-normal tracking-normal normal-case">
               {duration}
             </span>
           ) : null}
@@ -88,7 +81,7 @@ export function CalendarEventRow({
           <span className="flex flex-wrap items-center gap-1.5">
             <span
               className={cn(
-                "truncate text-body-md text-on-surface",
+                "text-body-md text-on-surface truncate",
                 phase === "current" ? "font-semibold" : "font-medium",
               )}
             >
@@ -116,7 +109,7 @@ export function CalendarEventRow({
               {statusLabel}
             </Badge>
           </span>
-          <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-body-sm text-on-surface-variant">
+          <span className="text-body-sm text-on-surface-variant flex flex-wrap items-center gap-x-2 gap-y-0.5">
             {calendarName ? (
               <span className="inline-flex items-center gap-1">
                 <span

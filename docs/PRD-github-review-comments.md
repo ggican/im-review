@@ -281,9 +281,9 @@ Scope PAT: dokumentasikan di onboarding/settings bahwa write comments butuh toke
 | Milestone | Scope                                                 | Target  |
 | --------- | ----------------------------------------------------- | ------- |
 | **M9a**   | F21–F23 + F31–F32 (issue comments UI + rate-limit UX) | ✅ Done |
-| **M9b**   | F24–F25 (reply inline + tampilan thread)              | 📝      |
-| **M9c**   | F26–F29 (edit/delete own comments)                    | 📝      |
-| **M9d**   | F30 (dismiss review)                                  | 📝      |
+| **M9b**   | F24–F25 (reply inline + tampilan thread)              | ✅ Done |
+| **M9c**   | F26–F29 (edit/delete own comments)                    | ✅ Done |
+| **M9d**   | F30 (dismiss review)                                  | ✅ Done |
 | **M10**   | F33–F34 + resolve threads **TBC**                     | Later   |
 
 Urutan disarankan: **M9a → M9b → M9c → M9d** (value cepat dulu: conversation box; reply adalah inti “ikut thread”).

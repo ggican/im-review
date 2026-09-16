@@ -177,7 +177,7 @@ export function PRList({
           {onAuthorChange ? (
             <button
               type="button"
-              className="underline underline-offset-2 hover:text-on-surface"
+              className="hover:text-on-surface underline underline-offset-2"
               onClick={() => onAuthorChange(authorLogin, "search")}
             >
               Show all PRs by @{authorLogin}
@@ -190,7 +190,7 @@ export function PRList({
         No open PRs in favorite repos.{" "}
         <Link
           to="/repos"
-          className="underline underline-offset-2 hover:text-on-surface"
+          className="hover:text-on-surface underline underline-offset-2"
         >
           Manage favorites
         </Link>
@@ -205,7 +205,7 @@ export function PRList({
           No favorite people yet.{" "}
           <Link
             to="/settings"
-            className="underline underline-offset-2 hover:text-on-surface"
+            className="hover:text-on-surface underline underline-offset-2"
           >
             Add favorite people
           </Link>
@@ -219,7 +219,7 @@ export function PRList({
         it will show up here.{" "}
         <Link
           to="/settings"
-          className="underline underline-offset-2 hover:text-on-surface"
+          className="hover:text-on-surface underline underline-offset-2"
         >
           Open History
         </Link>
@@ -236,7 +236,7 @@ export function PRList({
       >
         <div className="relative min-w-0 flex-1">
           <Search
-            className="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-on-surface-variant"
+            className="text-on-surface-variant pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2"
             aria-hidden
           />
           <Input
@@ -305,9 +305,9 @@ export function PRList({
             })}
           </TabsList>
         </div>
-          <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           {updatedAt ? (
-            <span className="text-body-sm whitespace-nowrap text-on-surface-variant">
+            <span className="text-body-sm text-on-surface-variant whitespace-nowrap">
               Updated {updatedAt.toLocaleTimeString()}
             </span>
           ) : null}
@@ -355,7 +355,7 @@ export function PRList({
       ) : null}
 
       {newInActive > 0 ? (
-        <div className="rounded-lg border border-stream-github-border bg-stream-github px-3 py-2 text-body-sm text-stream-github-fg">
+        <div className="border-border bg-surface-container-low text-body-sm text-on-surface rounded-lg border px-3 py-2">
           {newInActive} PR{newInActive === 1 ? "" : "s"} updated since you last
           marked seen.
         </div>
@@ -365,130 +365,139 @@ export function PRList({
         id="pr-list-tab-panel"
         aria-labelledby={`pr-list-tab-${active}`}
       >
-      <Card padding="none" className="overflow-hidden">
-        {listLoading && items.length === 0 ? (
-          <LoadingBlock embedded>Loading pull requests…</LoadingBlock>
-        ) : items.length === 0 ? (
-          <div className="px-4 py-12 text-center text-body-md text-on-surface-variant">
-            {emptyMessage}
-          </div>
-        ) : (
-          <div>
-            {pagePending.length > 0 ? (
-              <div>
-                {pending.length > 0 && reviewed.length > 0 && safePage === 1 ? (
-                  <div className="flex flex-wrap items-center gap-2 border-b border-border bg-stream-github/50 px-3 py-2">
-                    <span
-                      className="h-1.5 w-1.5 rounded-full bg-primary-container"
-                      aria-hidden
-                    />
-                    <h2 className="text-label-sm font-semibold tracking-wide text-on-surface uppercase">
-                      Needs review ({pending.length})
-                    </h2>
-                    <Badge variant="accent">{pending.length} pending</Badge>
-                    <span className="ml-auto text-body-sm text-on-surface-variant">
-                      Awaiting your approval or input
-                    </span>
-                  </div>
-                ) : null}
-                <ul>
-                  {pagePending.map((pr) => (
-                    <PRRow
-                      key={`${pr.repo}#${pr.number}`}
-                      pr={pr}
-                      isNew={isPrNew(pr, lastSeen)}
-                      ciFailure={ciFailures[prKey(pr.repo, pr.number)] ?? null}
-                      onSelect={onSelect}
-                      onFilterAuthor={
-                        onAuthorChange
-                          ? (login) => onAuthorChange(login, "filter")
-                          : undefined
-                      }
-                    />
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-            {pageReviewed.length > 0 ? (
-              <div>
-                {!isReviewedTab ? (
-                  <div
-                    className={cn(
-                      "flex flex-wrap items-center gap-2 bg-stream-ai/50 px-3 py-2",
-                      pagePending.length > 0 && "border-t border-border",
-                    )}
-                  >
-                    <span
-                      className="h-1.5 w-1.5 rounded-full bg-success"
-                      aria-hidden
-                    />
-                    <h2 className="text-label-sm font-semibold tracking-wide text-on-surface-variant uppercase">
-                      Already reviewed ({reviewed.length})
-                    </h2>
-                    <Badge variant="success">{reviewed.length} tracked</Badge>
-                    <span className="ml-auto text-body-sm text-on-surface-variant">
-                      You submitted feedback or approved
-                    </span>
-                  </div>
-                ) : null}
-                <ul>
-                  {pageReviewed.map((pr) => (
-                    <PRRow
-                      key={`${pr.repo}#${pr.number}-reviewed`}
-                      pr={pr}
-                      isNew={isPrNew(pr, lastSeen)}
-                      ciFailure={ciFailures[prKey(pr.repo, pr.number)] ?? null}
-                      onSelect={onSelect}
-                      onFilterAuthor={
-                        onAuthorChange
-                          ? (login) => onAuthorChange(login, "filter")
-                          : undefined
-                      }
-                    />
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-          </div>
-        )}
-      </Card>
+        <Card
+          padding="none"
+          className="bg-surface-container-lowest overflow-hidden"
+        >
+          {listLoading && items.length === 0 ? (
+            <LoadingBlock embedded>Loading pull requests…</LoadingBlock>
+          ) : items.length === 0 ? (
+            <div className="text-body-md text-on-surface-variant px-4 py-12 text-center">
+              {emptyMessage}
+            </div>
+          ) : (
+            <div>
+              {pagePending.length > 0 ? (
+                <div>
+                  {pending.length > 0 &&
+                  reviewed.length > 0 &&
+                  safePage === 1 ? (
+                    <div className="border-border bg-surface-container-low flex flex-wrap items-center gap-2 border-b px-3 py-2">
+                      <span
+                        className="bg-warning h-1.5 w-1.5 rounded-full"
+                        aria-hidden
+                      />
+                      <h2 className="text-label-sm text-on-surface font-semibold tracking-wide uppercase">
+                        Needs review ({pending.length})
+                      </h2>
+                      <Badge variant="warning">{pending.length} pending</Badge>
+                      <span className="text-body-sm text-on-surface-variant ml-auto">
+                        Awaiting your approval or input
+                      </span>
+                    </div>
+                  ) : null}
+                  <ul className="bg-surface-container-lowest">
+                    {pagePending.map((pr) => (
+                      <PRRow
+                        key={`${pr.repo}#${pr.number}`}
+                        pr={pr}
+                        isNew={isPrNew(pr, lastSeen)}
+                        ciFailure={
+                          ciFailures[prKey(pr.repo, pr.number)] ?? null
+                        }
+                        onSelect={onSelect}
+                        onFilterAuthor={
+                          onAuthorChange
+                            ? (login) => onAuthorChange(login, "filter")
+                            : undefined
+                        }
+                      />
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {pageReviewed.length > 0 ? (
+                <div>
+                  {!isReviewedTab ? (
+                    <div
+                      className={cn(
+                        "border-border bg-surface-container-low flex flex-wrap items-center gap-2 border-b px-3 py-2",
+                        pagePending.length > 0 && "border-border border-t",
+                      )}
+                    >
+                      <span
+                        className="bg-success h-1.5 w-1.5 rounded-full"
+                        aria-hidden
+                      />
+                      <h2 className="text-label-sm text-on-surface font-semibold tracking-wide uppercase">
+                        Already reviewed ({reviewed.length})
+                      </h2>
+                      <Badge variant="success">{reviewed.length} tracked</Badge>
+                      <span className="text-body-sm text-on-surface-variant ml-auto">
+                        You submitted feedback or approved
+                      </span>
+                    </div>
+                  ) : null}
+                  <ul className="bg-surface-container-lowest">
+                    {pageReviewed.map((pr) => (
+                      <PRRow
+                        key={`${pr.repo}#${pr.number}-reviewed`}
+                        pr={pr}
+                        isNew={isPrNew(pr, lastSeen)}
+                        ciFailure={
+                          ciFailures[prKey(pr.repo, pr.number)] ?? null
+                        }
+                        onSelect={onSelect}
+                        onFilterAuthor={
+                          onAuthorChange
+                            ? (login) => onAuthorChange(login, "filter")
+                            : undefined
+                        }
+                      />
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+          )}
+        </Card>
 
-      {ordered.length > PR_LIST_PAGE_SIZE ? (
-        <div className="flex items-center justify-between gap-2 text-body-sm text-on-surface-variant">
-          <span>
-            {(safePage - 1) * PR_LIST_PAGE_SIZE + 1}–
-            {Math.min(safePage * PR_LIST_PAGE_SIZE, ordered.length)} of{" "}
-            {ordered.length}
-          </span>
-          <div className="flex items-center gap-1">
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              disabled={safePage <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              aria-label="Previous page"
-            >
-              <ChevronLeft className="h-3.5 w-3.5" />
-              Prev
-            </Button>
-            <span className="px-2 tabular-nums">
-              {safePage}/{pageCount}
+        {ordered.length > PR_LIST_PAGE_SIZE ? (
+          <div className="text-body-sm text-on-surface-variant flex items-center justify-between gap-2">
+            <span>
+              {(safePage - 1) * PR_LIST_PAGE_SIZE + 1}–
+              {Math.min(safePage * PR_LIST_PAGE_SIZE, ordered.length)} of{" "}
+              {ordered.length}
             </span>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              disabled={safePage >= pageCount}
-              onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
-              aria-label="Next page"
-            >
-              Next
-              <ChevronRight className="h-3.5 w-3.5" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={safePage <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                aria-label="Previous page"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+                Prev
+              </Button>
+              <span className="px-2 tabular-nums">
+                {safePage}/{pageCount}
+              </span>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={safePage >= pageCount}
+                onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+                aria-label="Next page"
+              >
+                Next
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </div>
-        </div>
-      ) : null}
+        ) : null}
       </TabsPanel>
     </section>
   );

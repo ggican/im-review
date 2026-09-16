@@ -40,13 +40,8 @@ export function GmailMessageRow({
   }
 
   return (
-    <li
-      className={cn(
-        "border-b border-border last:border-b-0",
-        message.unread && "bg-stream-gmail/40 dark:bg-stream-gmail/30",
-      )}
-    >
-      <div className="flex items-start gap-2 px-3 py-2.5 hover:bg-surface-container-low/60">
+    <li className="border-border border-b last:border-b-0">
+      <div className="hover:bg-surface-container-low/60 flex items-start gap-2 px-3 py-2.5">
         <Link
           to={`/gmail/${message.id}`}
           className="flex min-w-0 flex-1 items-start gap-3 text-left"
@@ -54,50 +49,37 @@ export function GmailMessageRow({
         >
           <span
             className={cn(
-              "mt-1.5 h-2 w-2 shrink-0 rounded-full",
-              message.unread
-                ? "bg-stream-gmail-fg"
-                : "bg-transparent",
+              "mt-2 h-1.5 w-1.5 shrink-0 rounded-full",
+              message.unread ? "bg-stream-gmail-fg" : "bg-transparent",
             )}
             aria-hidden
           />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-              <Badge variant="gmail" className="px-1.5 py-0 text-[10px]">
-                Gmail
-              </Badge>
-              <p
-                className={cn(
-                  "min-w-0 truncate text-body-md",
-                  message.unread
-                    ? "font-semibold text-on-surface"
-                    : "text-on-surface-variant",
-                )}
-              >
+              <p className="text-body-sm text-on-surface-variant min-w-0 truncate font-medium">
                 {message.from}
               </p>
+              {message.unread ? <Badge variant="accent">Unread</Badge> : null}
               {isImportant(message) ? (
-                <Badge variant="warning" className="px-1.5 py-0 text-[10px]">
-                  Important
-                </Badge>
+                <Badge variant="warning">Important</Badge>
               ) : null}
-              <span className="ml-auto shrink-0 font-keycap text-on-surface-variant tabular-nums">
+              <span className="text-body-sm text-on-surface-variant ml-auto shrink-0 tabular-nums">
                 {when}
               </span>
             </div>
             <p
               className={cn(
-                "truncate text-body-md",
-                message.unread
-                  ? "font-medium text-on-surface"
-                  : "text-on-surface-variant",
+                "text-body-md text-on-surface mt-0.5 truncate",
+                message.unread ? "font-semibold" : "font-medium",
               )}
             >
               {message.subject || "(no subject)"}
             </p>
-            <p className="truncate text-body-sm text-on-surface-variant">
-              {message.snippet}
-            </p>
+            {message.snippet ? (
+              <p className="text-body-sm text-on-surface-variant mt-0.5 truncate">
+                {message.snippet}
+              </p>
+            ) : null}
           </div>
         </Link>
         {onToggleStar ? (

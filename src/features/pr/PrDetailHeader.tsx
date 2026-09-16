@@ -19,7 +19,10 @@ import type {
   SavedReview,
 } from "@/features/pr/types";
 import { cn } from "@/lib/cn";
-import { favoriteStarClass, favoriteToggleButtonClass } from "@/lib/favorite-styles";
+import {
+  favoriteStarClass,
+  favoriteToggleButtonClass,
+} from "@/lib/favorite-styles";
 import { relativeTime } from "@/lib/time";
 
 type GithubMyReview = {
@@ -63,7 +66,7 @@ export function PrDetailHeader({
 
   return (
     <header className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2 text-body-sm text-on-surface-variant">
+      <div className="text-body-sm text-on-surface-variant flex flex-wrap items-center gap-2">
         <Button asChild variant="ghost" size="sm" className="h-8 gap-1 px-2">
           <Link to="/?hub=prs" aria-label="Back">
             <ArrowLeft className="h-3.5 w-3.5" />
@@ -83,9 +86,7 @@ export function PrDetailHeader({
             aria-pressed={branchStarred}
             onClick={onToggleBranchFavorite}
           >
-            <Star
-              className={cn("h-4 w-4", favoriteStarClass(branchStarred))}
-            />
+            <Star className={cn("h-4 w-4", favoriteStarClass(branchStarred))} />
           </IconButton>
         ) : null}
       </div>
@@ -93,7 +94,7 @@ export function PrDetailHeader({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="font-headline text-headline-md font-bold tracking-tight text-on-surface">
+            <h1 className="font-headline text-headline-md text-on-surface font-bold tracking-tight">
               {title}
             </h1>
             {draft ? <Badge variant="outline">Draft</Badge> : null}
@@ -110,18 +111,18 @@ export function PrDetailHeader({
           </div>
 
           {localSavedReview ? (
-            <p className="mt-1.5 text-body-sm text-on-surface-variant">
+            <p className="text-body-sm text-on-surface-variant mt-1.5">
               Submitted from IM Review ·{" "}
               {relativeTime(localSavedReview.submittedAt)}
             </p>
           ) : githubMyReview && !yourReviewEvent ? (
-            <p className="mt-1.5 text-body-sm text-on-surface-variant">
+            <p className="text-body-sm text-on-surface-variant mt-1.5">
               Your review on GitHub
             </p>
           ) : null}
 
           {detail ? (
-            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-body-sm text-on-surface-variant">
+            <div className="text-body-sm text-on-surface-variant mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
               <span className="inline-flex items-center gap-1.5">
                 {detail.author.avatarUrl ? (
                   <img
@@ -130,7 +131,7 @@ export function PrDetailHeader({
                     className="h-5 w-5 rounded-full"
                   />
                 ) : null}
-                <span className="font-medium text-on-surface">
+                <span className="text-on-surface font-medium">
                   {detail.author.login}
                 </span>
               </span>
@@ -142,9 +143,7 @@ export function PrDetailHeader({
                   <span className="font-keycap">
                     {detail.headBranch ?? "?"}
                     {detail.baseBranch ? ` → ${detail.baseBranch}` : ""}
-                    {detail.headSha
-                      ? ` (@${detail.headSha.slice(0, 7)})`
-                      : ""}
+                    {detail.headSha ? ` (@${detail.headSha.slice(0, 7)})` : ""}
                   </span>
                 </>
               ) : null}
@@ -183,10 +182,7 @@ export function PrDetailHeader({
               className={favoriteToggleButtonClass(branchStarred)}
             >
               <Star
-                className={cn(
-                  "h-3.5 w-3.5",
-                  branchStarred && "fill-current",
-                )}
+                className={cn("h-3.5 w-3.5", branchStarred && "fill-current")}
               />
               {branchStarred ? "Branch favorited" : "Favorite branch"}
             </Button>

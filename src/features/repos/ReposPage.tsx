@@ -165,68 +165,68 @@ export function ReposPage() {
       {error ? <ErrorBlock>{error}</ErrorBlock> : null}
 
       <TabsPanel id="repos-tab-panel" aria-labelledby={`repos-tab-${tab}`}>
-      {tab === "favorites" ? (
-        <Card padding="none" className="overflow-hidden border-warning/30">
-          <div className="flex items-center gap-1.5 border-b border-border bg-warning-container/40 px-3 py-2">
-            <Star className={cn("h-3.5 w-3.5", favoriteStarClass(true))} />
-            <h2 className="text-label-sm tracking-wide text-on-warning-container uppercase">
-              Favorite repos
-            </h2>
-          </div>
-          <div className="max-h-[min(36rem,65vh)] overflow-y-auto">
-            {visibleFavorites.length === 0 ? (
-              <div className="px-4 py-8 text-center text-body-md text-on-surface-variant">
-                {query.trim()
-                  ? "No favorite repos match your search."
-                  : "No favorite repos. Restore defaults in Settings."}
-              </div>
-            ) : (
-              <ul>
-                {visibleFavorites.map((repo) => (
-                  <RepoRow
-                    key={`fav-${repo.fullName}`}
-                    repo={repo}
-                    favorited
-                    onOpenDetail={setSelected}
-                  />
-                ))}
-              </ul>
-            )}
-          </div>
-        </Card>
-      ) : null}
+        {tab === "favorites" ? (
+          <Card padding="none" className="border-warning/30 overflow-hidden">
+            <div className="border-border bg-warning-container/40 flex items-center gap-1.5 border-b px-3 py-2">
+              <Star className={cn("h-3.5 w-3.5", favoriteStarClass(true))} />
+              <h2 className="text-label-sm text-on-warning-container tracking-wide uppercase">
+                Favorite repos
+              </h2>
+            </div>
+            <div className="max-h-[min(36rem,65vh)] overflow-y-auto">
+              {visibleFavorites.length === 0 ? (
+                <div className="text-body-md text-on-surface-variant px-4 py-8 text-center">
+                  {query.trim()
+                    ? "No favorite repos match your search."
+                    : "No favorite repos. Restore defaults in Settings."}
+                </div>
+              ) : (
+                <ul>
+                  {visibleFavorites.map((repo) => (
+                    <RepoRow
+                      key={`fav-${repo.fullName}`}
+                      repo={repo}
+                      favorited
+                      onOpenDetail={setSelected}
+                    />
+                  ))}
+                </ul>
+              )}
+            </div>
+          </Card>
+        ) : null}
 
-      {tab === "all" ? (
-        <Card padding="none" className="overflow-hidden">
-          <div className="border-b border-border bg-surface-container-low/40 px-3 py-2">
-            <h2 className="text-label-sm tracking-wide text-on-surface-variant uppercase">
-              All repos
-            </h2>
-          </div>
-          <div className="max-h-[min(36rem,65vh)] overflow-y-auto">
-            {loading && repos.length === 0 ? (
-              <LoadingBlock embedded>Loading repositories…</LoadingBlock>
-            ) : sorted.length === 0 ? (
-              <div className="px-4 py-12 text-center text-body-md text-on-surface-variant">
-                {query.trim()
-                  ? "No repos match your search."
-                  : "No repositories found."}
-              </div>
-            ) : (
-              <ul>
-                {sorted.map((repo) => (
-                  <RepoRow
-                    key={repo.id}
-                    repo={repo}
-                    favorited={favSet.has(repo.fullName)}
-                    onOpenDetail={setSelected}
-                  />
-                ))}
-              </ul>
-            )}
-          </div>
-        </Card>
-      ) : null}
+        {tab === "all" ? (
+          <Card padding="none" className="overflow-hidden">
+            <div className="border-border bg-surface-container-low/40 border-b px-3 py-2">
+              <h2 className="text-label-sm text-on-surface-variant tracking-wide uppercase">
+                All repos
+              </h2>
+            </div>
+            <div className="max-h-[min(36rem,65vh)] overflow-y-auto">
+              {loading && repos.length === 0 ? (
+                <LoadingBlock embedded>Loading repositories…</LoadingBlock>
+              ) : sorted.length === 0 ? (
+                <div className="text-body-md text-on-surface-variant px-4 py-12 text-center">
+                  {query.trim()
+                    ? "No repos match your search."
+                    : "No repositories found."}
+                </div>
+              ) : (
+                <ul>
+                  {sorted.map((repo) => (
+                    <RepoRow
+                      key={repo.id}
+                      repo={repo}
+                      favorited={favSet.has(repo.fullName)}
+                      onOpenDetail={setSelected}
+                    />
+                  ))}
+                </ul>
+              )}
+            </div>
+          </Card>
+        ) : null}
       </TabsPanel>
     </PageShell>
   );

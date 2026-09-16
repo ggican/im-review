@@ -1,10 +1,5 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
-import {
-  Copy,
-  ExternalLink,
-  GitPullRequest,
-  Star,
-} from "lucide-react";
+import { Copy, ExternalLink, GitPullRequest, Star } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -23,10 +18,7 @@ import {
 import { relativeTime } from "@/lib/time";
 import { useFavoriteBranches, useFavoriteUsers } from "@/lib/use-settings";
 
-import {
-  NeedsReviewBadge,
-  ReviewStatusBadge,
-} from "./ReviewStatusBadge";
+import { NeedsReviewBadge, ReviewStatusBadge } from "./ReviewStatusBadge";
 import type { PullRequest } from "./types";
 
 type Props = {
@@ -126,10 +118,9 @@ export function PRRow({
   return (
     <li
       className={cn(
-        "group flex flex-col gap-2 border-b border-border px-3 py-3 last:border-b-0 sm:flex-row sm:items-start sm:gap-3",
-        "hover:bg-surface-container-low/80",
-        reviewed && "bg-stream-ai/40",
-        pr.isDraft && !reviewed && "opacity-90",
+        "group border-border bg-surface-container-lowest flex flex-col gap-2 border-b px-3 py-3 last:border-b-0 sm:flex-row sm:items-start sm:gap-3",
+        "hover:bg-surface-container-low/70",
+        pr.isDraft && !reviewed && "opacity-95",
       )}
     >
       <div className="flex min-w-0 flex-1 items-start gap-2.5">
@@ -140,18 +131,16 @@ export function PRRow({
           aria-label={starred ? "Remove favorite branch" : "Favorite branch"}
           aria-pressed={starred}
           disabled={busyStar}
-          className="mt-0.5 shrink-0 text-on-surface-variant focus-visible:ring-2 focus-visible:ring-primary-container/70"
+          className="text-on-surface-variant focus-visible:ring-primary-container/70 mt-0.5 shrink-0 focus-visible:ring-2"
           onClick={() => void onToggleBranchFavorite()}
         >
-          <Star
-            className={cn("h-4 w-4", favoriteStarClass(starred))}
-          />
+          <Star className={cn("h-4 w-4", favoriteStarClass(starred))} />
         </IconButton>
 
         <button
           type="button"
           onClick={() => onSelect(pr)}
-          className="mt-0.5 shrink-0 rounded-md text-stream-github-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-container"
+          className="text-on-surface-variant focus-visible:ring-primary-container mt-0.5 shrink-0 rounded-md focus-visible:ring-2 focus-visible:outline-none"
           aria-label="Open pull request"
         >
           <GitPullRequest className="h-4 w-4" aria-hidden />
@@ -159,29 +148,25 @@ export function PRRow({
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="font-keycap rounded-md border border-stream-github-border bg-stream-github px-1.5 py-0.5 text-body-sm text-stream-github-fg">
+            <span className="font-keycap border-border bg-surface-container-low text-on-surface rounded-md border px-1.5 py-0.5">
               {pr.repo} #{pr.number}
             </span>
             {isNew ? <Badge variant="accent">New</Badge> : null}
             {pr.isDraft ? <Badge variant="outline">Draft</Badge> : null}
-            {ciFailure ? (
-              <Badge variant="error">CI failed</Badge>
-            ) : null}
+            {ciFailure ? <Badge variant="error">CI failed</Badge> : null}
             {pr.localReviewEvent ? (
               <ReviewStatusBadge event={pr.localReviewEvent} />
             ) : (
               <NeedsReviewBadge />
             )}
-            {starred ? (
-              <Badge variant="warning">Branch favorite</Badge>
-            ) : null}
+            {starred ? <Badge variant="warning">Branch favorite</Badge> : null}
           </div>
 
           <button
             type="button"
             onClick={() => onSelect(pr)}
             className={cn(
-              "mt-1 w-full text-left text-title-md font-semibold tracking-tight",
+              "text-title-md mt-1 w-full text-left font-semibold tracking-tight",
               reviewed || pr.isDraft
                 ? "text-on-surface-variant"
                 : "text-on-surface",
@@ -190,20 +175,20 @@ export function PRRow({
             {pr.title}
           </button>
 
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-body-sm text-on-surface-variant">
+          <div className="text-body-sm text-on-surface-variant mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
             {ciFailure ? (
               <Badge variant="error" className="font-normal normal-case">
                 {ciFailure}
               </Badge>
             ) : null}
             {branchLabel ? (
-              <span className="font-keycap">{branchLabel}</span>
+              <span className="font-keycap text-on-surface">{branchLabel}</span>
             ) : null}
             <span className="inline-flex items-center gap-1">
               {onFilterAuthor ? (
                 <button
                   type="button"
-                  className="inline-flex items-center gap-1 hover:text-on-surface"
+                  className="hover:text-on-surface inline-flex items-center gap-1"
                   onClick={() => onFilterAuthor(pr.author.login)}
                 >
                   {pr.author.avatarUrl ? (
@@ -229,7 +214,7 @@ export function PRRow({
               )}
               <button
                 type="button"
-                className="rounded p-0.5 hover:bg-surface-container-high"
+                className="hover:bg-surface-container-high rounded p-0.5"
                 aria-label={
                   personStarred ? "Remove favorite person" : "Favorite person"
                 }
@@ -237,10 +222,7 @@ export function PRRow({
                 onClick={onTogglePersonFavorite}
               >
                 <Star
-                  className={cn(
-                    "h-3 w-3",
-                    favoriteStarClass(personStarred),
-                  )}
+                  className={cn("h-3 w-3", favoriteStarClass(personStarred))}
                 />
               </button>
             </span>
@@ -254,14 +236,14 @@ export function PRRow({
         <Button
           type="button"
           size="sm"
-          variant={reviewed ? "outline" : "accent"}
+          variant={reviewed ? "outline" : pr.isDraft ? "secondary" : "default"}
           onClick={() => onSelect(pr)}
         >
           {pr.isDraft ? "View Draft Diff" : "Review Diff"}
         </Button>
         <IconButton
           type="button"
-          variant="ghost"
+          variant="outline"
           size="icon-sm"
           aria-label="Copy link"
           onClick={copyLink}

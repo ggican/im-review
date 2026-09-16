@@ -1,0 +1,1748 @@
+{
+  ".github/workflows/ci.yml": {
+    "size": 2468,
+    "mtime_ns": 1788504892499099676,
+    "indexed_at_ns": 1789534105983328000,
+    "word_count": 241
+  },
+  ".github/workflows/release.yml": {
+    "size": 1946,
+    "mtime_ns": 1788754850390997624,
+    "indexed_at_ns": 1789534105989288000,
+    "word_count": 172
+  },
+  ".impeccable/config.json": {
+    "size": 110,
+    "mtime_ns": 1788430531482881620,
+    "indexed_at_ns": 1789534106001249000,
+    "word_count": 14
+  },
+  ".impeccable/design.json": {
+    "size": 7264,
+    "mtime_ns": 1788502782246749656,
+    "indexed_at_ns": 1789534106008473000,
+    "word_count": 626
+  },
+  ".impeccable/hook.cache.json": {
+    "size": 1611,
+    "mtime_ns": 1789439015772676868,
+    "indexed_at_ns": 1789534106017506000,
+    "word_count": 1
+  },
+  ".impeccable/live/config.json": {
+    "size": 108,
+    "mtime_ns": 1788430629059190388,
+    "indexed_at_ns": 1789534106027655000,
+    "word_count": 10
+  },
+  ".prettierrc.json": {
+    "size": 152,
+    "mtime_ns": 1788497060942988904,
+    "indexed_at_ns": 1789534106042253000,
+    "word_count": 14
+  },
+  ".tmp-design/pr-detail.png": {
+    "size": 630697,
+    "mtime_ns": 1789465224794363622,
+    "indexed_at_ns": 1789534106050082000,
+    "word_count": 26999
+  },
+  ".vscode/extensions.json": {
+    "size": 185,
+    "mtime_ns": 1788497232872927440,
+    "indexed_at_ns": 1789534106068451000,
+    "word_count": 10
+  },
+  "CONTRIBUTING.md": {
+    "size": 2384,
+    "mtime_ns": 1788502769448335850,
+    "indexed_at_ns": 1789534106080226000,
+    "word_count": 319
+  },
+  "DESIGN.md": {
+    "size": 9242,
+    "mtime_ns": 1789495558154086203,
+    "indexed_at_ns": 1789534106082522000,
+    "word_count": 981
+  },
+  "PRODUCT.md": {
+    "size": 4352,
+    "mtime_ns": 1788754857005048551,
+    "indexed_at_ns": 1789534106085640000,
+    "word_count": 642
+  },
+  "README.md": {
+    "size": 10245,
+    "mtime_ns": 1789418705171546804,
+    "indexed_at_ns": 1789534106087817000,
+    "word_count": 1222
+  },
+  "commitlint.config.js": {
+    "size": 390,
+    "mtime_ns": 1788497793343822595,
+    "indexed_at_ns": 1789534106088776000,
+    "word_count": 43
+  },
+  "design-system/pr-helper/MASTER.md": {
+    "size": 6294,
+    "mtime_ns": 1788502797742383375,
+    "indexed_at_ns": 1789534106091562000,
+    "word_count": 888
+  },
+  "docs/AI_PROVIDERS.md": {
+    "size": 4089,
+    "mtime_ns": 1788755409561327891,
+    "indexed_at_ns": 1789534106093788000,
+    "word_count": 514
+  },
+  "docs/ARCHITECTURE.md": {
+    "size": 2735,
+    "mtime_ns": 1788502797207148563,
+    "indexed_at_ns": 1789534106095915000,
+    "word_count": 348
+  },
+  "docs/GOOGLE_OAUTH.md": {
+    "size": 5735,
+    "mtime_ns": 1789418264878282663,
+    "indexed_at_ns": 1789534106098765000,
+    "word_count": 844
+  },
+  "docs/METRICS.md": {
+    "size": 6810,
+    "mtime_ns": 1788509209482746121,
+    "indexed_at_ns": 1789534106100723000,
+    "word_count": 990
+  },
+  "docs/PRD-design-stitch.md": {
+    "size": 14379,
+    "mtime_ns": 1789414243682038020,
+    "indexed_at_ns": 1789534106102831000,
+    "word_count": 2327
+  },
+  "docs/PRD-favorite-users.md": {
+    "size": 26549,
+    "mtime_ns": 1789414522910230128,
+    "indexed_at_ns": 1789534106105127000,
+    "word_count": 3110
+  },
+  "docs/PRD-github-review-comments.md": {
+    "size": 21442,
+    "mtime_ns": 1789414479175275386,
+    "indexed_at_ns": 1789534106107254000,
+    "word_count": 2505
+  },
+  "docs/PRD-gmail.md": {
+    "size": 10212,
+    "mtime_ns": 1789418352005021449,
+    "indexed_at_ns": 1789534106109081000,
+    "word_count": 1387
+  },
+  "docs/PRD-google-calendar.md": {
+    "size": 9924,
+    "mtime_ns": 1789418351903775092,
+    "indexed_at_ns": 1789534106112109000,
+    "word_count": 1304
+  },
+  "docs/PRD-jira.md": {
+    "size": 26535,
+    "mtime_ns": 1789409149715123921,
+    "indexed_at_ns": 1789534106114834000,
+    "word_count": 3228
+  },
+  "docs/PRD.md": {
+    "size": 20674,
+    "mtime_ns": 1789414249834585689,
+    "indexed_at_ns": 1789534106117076000,
+    "word_count": 2630
+  },
+  "docs/RELEASE.md": {
+    "size": 4353,
+    "mtime_ns": 1788754850049330290,
+    "indexed_at_ns": 1789534106119048000,
+    "word_count": 511
+  },
+  "docs/prd/github-inline-file-comments.md": {
+    "size": 16590,
+    "mtime_ns": 1788979090770261608,
+    "indexed_at_ns": 1789534106120903000,
+    "word_count": 2113
+  },
+  "docs/testing/README.md": {
+    "size": 1919,
+    "mtime_ns": 1789418350400222319,
+    "indexed_at_ns": 1789534106122639000,
+    "word_count": 227
+  },
+  "docs/testing/features/README.md": {
+    "size": 846,
+    "mtime_ns": 1789418350312944411,
+    "indexed_at_ns": 1789534106123838000,
+    "word_count": 90
+  },
+  "docs/testing/features/ai-review/unit.md": {
+    "size": 3160,
+    "mtime_ns": 1788509209684139107,
+    "indexed_at_ns": 1789534106125463000,
+    "word_count": 386
+  },
+  "docs/testing/features/api/unit.md": {
+    "size": 3090,
+    "mtime_ns": 1789418381639741351,
+    "indexed_at_ns": 1789534106127314000,
+    "word_count": 386
+  },
+  "docs/testing/features/desktop/unit.md": {
+    "size": 1388,
+    "mtime_ns": 1788530022885202447,
+    "indexed_at_ns": 1789534106128869000,
+    "word_count": 182
+  },
+  "docs/testing/features/google/unit.md": {
+    "size": 2975,
+    "mtime_ns": 1789418381076021912,
+    "indexed_at_ns": 1789534106130828000,
+    "word_count": 340
+  },
+  "docs/testing/features/hooks/unit.md": {
+    "size": 1212,
+    "mtime_ns": 1788509209713250932,
+    "indexed_at_ns": 1789534106132136000,
+    "word_count": 148
+  },
+  "docs/testing/features/lib/unit.md": {
+    "size": 2148,
+    "mtime_ns": 1788509209723607729,
+    "indexed_at_ns": 1789534106133372000,
+    "word_count": 295
+  },
+  "docs/testing/features/metrics/unit.md": {
+    "size": 3840,
+    "mtime_ns": 1788509209743433869,
+    "indexed_at_ns": 1789534106134959000,
+    "word_count": 495
+  },
+  "docs/testing/features/pr/unit.md": {
+    "size": 1440,
+    "mtime_ns": 1788509209759745483,
+    "indexed_at_ns": 1789534106136393000,
+    "word_count": 190
+  },
+  "docs/testing/features/settings/unit.md": {
+    "size": 2031,
+    "mtime_ns": 1788509209931299931,
+    "indexed_at_ns": 1789534106138369000,
+    "word_count": 258
+  },
+  "docs/testing/features/ui/unit.md": {
+    "size": 2021,
+    "mtime_ns": 1788509209956182392,
+    "indexed_at_ns": 1789534106139948000,
+    "word_count": 274
+  },
+  "eslint.config.js": {
+    "size": 1911,
+    "mtime_ns": 1789439380226474389,
+    "indexed_at_ns": 1789534106140364000,
+    "word_count": 143
+  },
+  "index.html": {
+    "size": 365,
+    "mtime_ns": 1788502769471742669,
+    "indexed_at_ns": 1789534106141974000,
+    "word_count": 29
+  },
+  "package.json": {
+    "size": 2885,
+    "mtime_ns": 1789418702003556327,
+    "indexed_at_ns": 1789534106142385000,
+    "word_count": 215
+  },
+  "public/im-review-logo.png": {
+    "size": 106566,
+    "mtime_ns": 1788502750039280515,
+    "indexed_at_ns": 1789534106143349000,
+    "word_count": 3998
+  },
+  "public/tauri.svg": {
+    "size": 2599,
+    "mtime_ns": 1788344299209864076,
+    "indexed_at_ns": 1789534106146623000,
+    "word_count": 269
+  },
+  "public/vite.svg": {
+    "size": 1497,
+    "mtime_ns": 1788344299194946823,
+    "indexed_at_ns": 1789534106147994000,
+    "word_count": 90
+  },
+  "scripts/cursor-local-prompt.mjs": {
+    "size": 2616,
+    "mtime_ns": 1788447225676963991,
+    "indexed_at_ns": 1789534106149160000,
+    "word_count": 328
+  },
+  "scripts/prepare-cursor-runtime.mjs": {
+    "size": 4166,
+    "mtime_ns": 1788755051566497486,
+    "indexed_at_ns": 1789534106150131000,
+    "word_count": 408
+  },
+  "scripts/prepare-cursor-runtime.test.mjs": {
+    "size": 2772,
+    "mtime_ns": 1788754860488302042,
+    "indexed_at_ns": 1789534106151048000,
+    "word_count": 229
+  },
+  "scripts/release.mjs": {
+    "size": 4963,
+    "mtime_ns": 1788588380337585323,
+    "indexed_at_ns": 1789534106152105000,
+    "word_count": 542
+  },
+  "src-tauri/Cargo.toml": {
+    "size": 901,
+    "mtime_ns": 1789418702005659725,
+    "indexed_at_ns": 1789534106153686000,
+    "word_count": 129
+  },
+  "src-tauri/app-icon.png": {
+    "size": 214672,
+    "mtime_ns": 1788451379997459323,
+    "indexed_at_ns": 1789534106155118000,
+    "word_count": 6996
+  },
+  "src-tauri/build.rs": {
+    "size": 262,
+    "mtime_ns": 1788451286807220940,
+    "indexed_at_ns": 1789534106160306000,
+    "word_count": 9
+  },
+  "src-tauri/capabilities/default.json": {
+    "size": 528,
+    "mtime_ns": 1788528146137740795,
+    "indexed_at_ns": 1789534106161635000,
+    "word_count": 28
+  },
+  "src-tauri/icon-work/app-icon-dock.png": {
+    "size": 214672,
+    "mtime_ns": 1788451379985383761,
+    "indexed_at_ns": 1789534106162573000,
+    "word_count": 6996
+  },
+  "src-tauri/icon-work/logo-raw.png": {
+    "size": 106566,
+    "mtime_ns": 1788451171543950765,
+    "indexed_at_ns": 1789534106167337000,
+    "word_count": 3998
+  },
+  "src-tauri/icons/128x128.png": {
+    "size": 5892,
+    "mtime_ns": 1788451381284716762,
+    "indexed_at_ns": 1789534106170728000,
+    "word_count": 245
+  },
+  "src-tauri/icons/128x128@2x.png": {
+    "size": 12332,
+    "mtime_ns": 1788451381322564165,
+    "indexed_at_ns": 1789534106171851000,
+    "word_count": 496
+  },
+  "src-tauri/icons/32x32.png": {
+    "size": 1281,
+    "mtime_ns": 1788451381245576978,
+    "indexed_at_ns": 1789534106172960000,
+    "word_count": 58
+  },
+  "src-tauri/icons/64x64.png": {
+    "size": 2799,
+    "mtime_ns": 1788451381263970614,
+    "indexed_at_ns": 1789534106173867000,
+    "word_count": 105
+  },
+  "src-tauri/icons/Square107x107Logo.png": {
+    "size": 4850,
+    "mtime_ns": 1788451380473502891,
+    "indexed_at_ns": 1789534106174728000,
+    "word_count": 179
+  },
+  "src-tauri/icons/Square142x142Logo.png": {
+    "size": 6614,
+    "mtime_ns": 1788451380495099002,
+    "indexed_at_ns": 1789534106175804000,
+    "word_count": 264
+  },
+  "src-tauri/icons/Square150x150Logo.png": {
+    "size": 7024,
+    "mtime_ns": 1788451380521652805,
+    "indexed_at_ns": 1789534106177421000,
+    "word_count": 231
+  },
+  "src-tauri/icons/Square284x284Logo.png": {
+    "size": 13654,
+    "mtime_ns": 1788451380551650334,
+    "indexed_at_ns": 1789534106178427000,
+    "word_count": 523
+  },
+  "src-tauri/icons/Square30x30Logo.png": {
+    "size": 1156,
+    "mtime_ns": 1788451380397725002,
+    "indexed_at_ns": 1789534106179609000,
+    "word_count": 49
+  },
+  "src-tauri/icons/Square310x310Logo.png": {
+    "size": 14764,
+    "mtime_ns": 1788451380706962006,
+    "indexed_at_ns": 1789534106180461000,
+    "word_count": 471
+  },
+  "src-tauri/icons/Square44x44Logo.png": {
+    "size": 1865,
+    "mtime_ns": 1788451380416234222,
+    "indexed_at_ns": 1789534106181544000,
+    "word_count": 68
+  },
+  "src-tauri/icons/Square71x71Logo.png": {
+    "size": 3116,
+    "mtime_ns": 1788451380434141147,
+    "indexed_at_ns": 1789534106182335000,
+    "word_count": 107
+  },
+  "src-tauri/icons/Square89x89Logo.png": {
+    "size": 4009,
+    "mtime_ns": 1788451380453308204,
+    "indexed_at_ns": 1789534106182982000,
+    "word_count": 161
+  },
+  "src-tauri/icons/StoreLogo.png": {
+    "size": 2101,
+    "mtime_ns": 1788451380381290918,
+    "indexed_at_ns": 1789534106183681000,
+    "word_count": 72
+  },
+  "src-tauri/icons/android/mipmap-hdpi/ic_launcher.png": {
+    "size": 1847,
+    "mtime_ns": 1788451382099435942,
+    "indexed_at_ns": 1789534106185054000,
+    "word_count": 90
+  },
+  "src-tauri/icons/android/mipmap-hdpi/ic_launcher_foreground.png": {
+    "size": 7485,
+    "mtime_ns": 1788451381934091427,
+    "indexed_at_ns": 1789534106186565000,
+    "word_count": 322
+  },
+  "src-tauri/icons/android/mipmap-hdpi/ic_launcher_round.png": {
+    "size": 1933,
+    "mtime_ns": 1788451382074154604,
+    "indexed_at_ns": 1789534106187983000,
+    "word_count": 84
+  },
+  "src-tauri/icons/android/mipmap-mdpi/ic_launcher.png": {
+    "size": 1859,
+    "mtime_ns": 1788451382137964556,
+    "indexed_at_ns": 1789534106188867000,
+    "word_count": 79
+  },
+  "src-tauri/icons/android/mipmap-mdpi/ic_launcher_foreground.png": {
+    "size": 4945,
+    "mtime_ns": 1788451381954520781,
+    "indexed_at_ns": 1789534106189832000,
+    "word_count": 179
+  },
+  "src-tauri/icons/android/mipmap-mdpi/ic_launcher_round.png": {
+    "size": 1879,
+    "mtime_ns": 1788451382119168626,
+    "indexed_at_ns": 1789534106190706000,
+    "word_count": 81
+  },
+  "src-tauri/icons/android/mipmap-xhdpi/ic_launcher.png": {
+    "size": 3964,
+    "mtime_ns": 1788451382179323143,
+    "indexed_at_ns": 1789534106191398000,
+    "word_count": 136
+  },
+  "src-tauri/icons/android/mipmap-xhdpi/ic_launcher_foreground.png": {
+    "size": 10097,
+    "mtime_ns": 1788451381980826125,
+    "indexed_at_ns": 1789534106192149000,
+    "word_count": 391
+  },
+  "src-tauri/icons/android/mipmap-xhdpi/ic_launcher_round.png": {
+    "size": 4223,
+    "mtime_ns": 1788451382157069863,
+    "indexed_at_ns": 1789534106193574000,
+    "word_count": 163
+  },
+  "src-tauri/icons/android/mipmap-xxhdpi/ic_launcher.png": {
+    "size": 6469,
+    "mtime_ns": 1788451382228708772,
+    "indexed_at_ns": 1789534106194592000,
+    "word_count": 256
+  },
+  "src-tauri/icons/android/mipmap-xxhdpi/ic_launcher_foreground.png": {
+    "size": 15660,
+    "mtime_ns": 1788451382016132556,
+    "indexed_at_ns": 1789534106195546000,
+    "word_count": 602
+  },
+  "src-tauri/icons/android/mipmap-xxhdpi/ic_launcher_round.png": {
+    "size": 6420,
+    "mtime_ns": 1788451382201962510,
+    "indexed_at_ns": 1789534106196737000,
+    "word_count": 253
+  },
+  "src-tauri/icons/android/mipmap-xxxhdpi/ic_launcher.png": {
+    "size": 8865,
+    "mtime_ns": 1788451382282013295,
+    "indexed_at_ns": 1789534106197513000,
+    "word_count": 317
+  },
+  "src-tauri/icons/android/mipmap-xxxhdpi/ic_launcher_foreground.png": {
+    "size": 21993,
+    "mtime_ns": 1788451382057687644,
+    "indexed_at_ns": 1789534106198635000,
+    "word_count": 714
+  },
+  "src-tauri/icons/android/mipmap-xxxhdpi/ic_launcher_round.png": {
+    "size": 8759,
+    "mtime_ns": 1788451382257058501,
+    "indexed_at_ns": 1789534106199769000,
+    "word_count": 318
+  },
+  "src-tauri/icons/icon.png": {
+    "size": 26789,
+    "mtime_ns": 1788451381373148591,
+    "indexed_at_ns": 1789534106203667000,
+    "word_count": 1005
+  },
+  "src-tauri/icons/ios/AppIcon-20x20@1x.png": {
+    "size": 780,
+    "mtime_ns": 1788451381414943055,
+    "indexed_at_ns": 1789534106205000000,
+    "word_count": 31
+  },
+  "src-tauri/icons/ios/AppIcon-20x20@2x-1.png": {
+    "size": 1631,
+    "mtime_ns": 1788451381398225803,
+    "indexed_at_ns": 1789534106206462000,
+    "word_count": 63
+  },
+  "src-tauri/icons/ios/AppIcon-20x20@2x.png": {
+    "size": 1631,
+    "mtime_ns": 1788451381431866725,
+    "indexed_at_ns": 1789534106207180000,
+    "word_count": 63
+  },
+  "src-tauri/icons/ios/AppIcon-20x20@3x.png": {
+    "size": 2659,
+    "mtime_ns": 1788451381449850318,
+    "indexed_at_ns": 1789534106208047000,
+    "word_count": 95
+  },
+  "src-tauri/icons/ios/AppIcon-29x29@1x.png": {
+    "size": 1174,
+    "mtime_ns": 1788451381484564787,
+    "indexed_at_ns": 1789534106209101000,
+    "word_count": 40
+  },
+  "src-tauri/icons/ios/AppIcon-29x29@2x-1.png": {
+    "size": 2560,
+    "mtime_ns": 1788451381467456783,
+    "indexed_at_ns": 1789534106209727000,
+    "word_count": 109
+  },
+  "src-tauri/icons/ios/AppIcon-29x29@2x.png": {
+    "size": 2560,
+    "mtime_ns": 1788451381505436395,
+    "indexed_at_ns": 1789534106210372000,
+    "word_count": 109
+  },
+  "src-tauri/icons/ios/AppIcon-29x29@3x.png": {
+    "size": 3979,
+    "mtime_ns": 1788451381536151094,
+    "indexed_at_ns": 1789534106211721000,
+    "word_count": 119
+  },
+  "src-tauri/icons/ios/AppIcon-40x40@1x.png": {
+    "size": 1631,
+    "mtime_ns": 1788451381625627844,
+    "indexed_at_ns": 1789534106212942000,
+    "word_count": 63
+  },
+  "src-tauri/icons/ios/AppIcon-40x40@2x-1.png": {
+    "size": 3629,
+    "mtime_ns": 1788451381559809381,
+    "indexed_at_ns": 1789534106214236000,
+    "word_count": 122
+  },
+  "src-tauri/icons/ios/AppIcon-40x40@2x.png": {
+    "size": 3629,
+    "mtime_ns": 1788451381667465767,
+    "indexed_at_ns": 1789534106214928000,
+    "word_count": 122
+  },
+  "src-tauri/icons/ios/AppIcon-40x40@3x.png": {
+    "size": 5696,
+    "mtime_ns": 1788451381688506083,
+    "indexed_at_ns": 1789534106216022000,
+    "word_count": 183
+  },
+  "src-tauri/icons/ios/AppIcon-512@2x.png": {
+    "size": 49543,
+    "mtime_ns": 1788451381896683026,
+    "indexed_at_ns": 1789534106217731000,
+    "word_count": 1711
+  },
+  "src-tauri/icons/ios/AppIcon-60x60@2x.png": {
+    "size": 5696,
+    "mtime_ns": 1788451381709420482,
+    "indexed_at_ns": 1789534106219280000,
+    "word_count": 183
+  },
+  "src-tauri/icons/ios/AppIcon-60x60@3x.png": {
+    "size": 8572,
+    "mtime_ns": 1788451381732343517,
+    "indexed_at_ns": 1789534106220073000,
+    "word_count": 323
+  },
+  "src-tauri/icons/ios/AppIcon-76x76@1x.png": {
+    "size": 3465,
+    "mtime_ns": 1788451381750382109,
+    "indexed_at_ns": 1789534106220889000,
+    "word_count": 131
+  },
+  "src-tauri/icons/ios/AppIcon-76x76@2x.png": {
+    "size": 7234,
+    "mtime_ns": 1788451381772585890,
+    "indexed_at_ns": 1789534106221594000,
+    "word_count": 273
+  },
+  "src-tauri/icons/ios/AppIcon-83.5x83.5@2x.png": {
+    "size": 8011,
+    "mtime_ns": 1788451381795031921,
+    "indexed_at_ns": 1789534106222237000,
+    "word_count": 247
+  },
+  "src-tauri/src/commands.rs": {
+    "size": 38882,
+    "mtime_ns": 1789411923595003903,
+    "indexed_at_ns": 1789534106223658000,
+    "word_count": 3323
+  },
+  "src-tauri/src/google.rs": {
+    "size": 20821,
+    "mtime_ns": 1789416615863704210,
+    "indexed_at_ns": 1789534106224636000,
+    "word_count": 1865
+  },
+  "src-tauri/src/lib.rs": {
+    "size": 2961,
+    "mtime_ns": 1789416167158911479,
+    "indexed_at_ns": 1789534106225751000,
+    "word_count": 176
+  },
+  "src-tauri/src/main.rs": {
+    "size": 184,
+    "mtime_ns": 1788502797738186640,
+    "indexed_at_ns": 1789534106226586000,
+    "word_count": 21
+  },
+  "src-tauri/src/notifications.rs": {
+    "size": 3190,
+    "mtime_ns": 1789404154473734061,
+    "indexed_at_ns": 1789534106227347000,
+    "word_count": 239
+  },
+  "src-tauri/tauri.conf.json": {
+    "size": 1320,
+    "mtime_ns": 1789418705126524373,
+    "indexed_at_ns": 1789534106228203000,
+    "word_count": 118
+  },
+  "src/assets/im-review-logo.png": {
+    "size": 106566,
+    "mtime_ns": 1788502750034950484,
+    "indexed_at_ns": 1789534106229079000,
+    "word_count": 3998
+  },
+  "src/assets/react.svg": {
+    "size": 4126,
+    "mtime_ns": 1788344299180916373,
+    "indexed_at_ns": 1789534106231285000,
+    "word_count": 366
+  },
+  "src/components/layout/AppChrome.test.tsx": {
+    "size": 5393,
+    "mtime_ns": 1789496806970918119,
+    "indexed_at_ns": 1789534106232875000,
+    "word_count": 460
+  },
+  "src/components/layout/AppChrome.tsx": {
+    "size": 8372,
+    "mtime_ns": 1789484157202944490,
+    "indexed_at_ns": 1789534106234136000,
+    "word_count": 703
+  },
+  "src/components/layout/AuthenticatedLayout.test.tsx": {
+    "size": 1013,
+    "mtime_ns": 1789496376542556799,
+    "indexed_at_ns": 1789534106235460000,
+    "word_count": 85
+  },
+  "src/components/layout/AuthenticatedLayout.tsx": {
+    "size": 441,
+    "mtime_ns": 1789462485006865259,
+    "indexed_at_ns": 1789534106236374000,
+    "word_count": 48
+  },
+  "src/components/layout/PageShell.test.tsx": {
+    "size": 2027,
+    "mtime_ns": 1789403296182454932,
+    "indexed_at_ns": 1789534106237407000,
+    "word_count": 167
+  },
+  "src/components/layout/PageShell.tsx": {
+    "size": 2381,
+    "mtime_ns": 1789462518112042545,
+    "indexed_at_ns": 1789534106238658000,
+    "word_count": 242
+  },
+  "src/components/ui/badge.tsx": {
+    "size": 1811,
+    "mtime_ns": 1789494026394487394,
+    "indexed_at_ns": 1789534106239902000,
+    "word_count": 138
+  },
+  "src/components/ui/button.tsx": {
+    "size": 2376,
+    "mtime_ns": 1789439145769654276,
+    "indexed_at_ns": 1789534106241347000,
+    "word_count": 220
+  },
+  "src/components/ui/card.tsx": {
+    "size": 2459,
+    "mtime_ns": 1789439349602037924,
+    "indexed_at_ns": 1789534106242682000,
+    "word_count": 212
+  },
+  "src/components/ui/dialog.tsx": {
+    "size": 2849,
+    "mtime_ns": 1789439216600684017,
+    "indexed_at_ns": 1789534106243579000,
+    "word_count": 235
+  },
+  "src/components/ui/feedback.tsx": {
+    "size": 1506,
+    "mtime_ns": 1789486647889877255,
+    "indexed_at_ns": 1789534106244469000,
+    "word_count": 172
+  },
+  "src/components/ui/input.tsx": {
+    "size": 775,
+    "mtime_ns": 1789439167104764466,
+    "indexed_at_ns": 1789534106245141000,
+    "word_count": 68
+  },
+  "src/components/ui/select.tsx": {
+    "size": 3259,
+    "mtime_ns": 1789439184911602066,
+    "indexed_at_ns": 1789534106245860000,
+    "word_count": 236
+  },
+  "src/components/ui/tabs.tsx": {
+    "size": 3928,
+    "mtime_ns": 1789487133913861493,
+    "indexed_at_ns": 1789534106246571000,
+    "word_count": 412
+  },
+  "src/components/ui/textarea.tsx": {
+    "size": 776,
+    "mtime_ns": 1789439186376881218,
+    "indexed_at_ns": 1789534106247601000,
+    "word_count": 64
+  },
+  "src/components/ui/ui.test.tsx": {
+    "size": 8024,
+    "mtime_ns": 1789497597495734852,
+    "indexed_at_ns": 1789534106248467000,
+    "word_count": 643
+  },
+  "src/features/ai-review/AiReviewPanel.test.tsx": {
+    "size": 4403,
+    "mtime_ns": 1789403296182553683,
+    "indexed_at_ns": 1789534106250408000,
+    "word_count": 327
+  },
+  "src/features/ai-review/AiReviewPanel.tsx": {
+    "size": 6318,
+    "mtime_ns": 1789486998271659601,
+    "indexed_at_ns": 1789534106251263000,
+    "word_count": 550
+  },
+  "src/features/ai-review/AiReviewTab.test.tsx": {
+    "size": 5602,
+    "mtime_ns": 1789479638109487981,
+    "indexed_at_ns": 1789534106252143000,
+    "word_count": 427
+  },
+  "src/features/ai-review/AiReviewTab.tsx": {
+    "size": 21598,
+    "mtime_ns": 1789479590454650651,
+    "indexed_at_ns": 1789534106252845000,
+    "word_count": 1709
+  },
+  "src/features/ai-review/diff-lines.test.ts": {
+    "size": 1527,
+    "mtime_ns": 1788498066364103697,
+    "indexed_at_ns": 1789534106253779000,
+    "word_count": 158
+  },
+  "src/features/ai-review/diff-lines.ts": {
+    "size": 1301,
+    "mtime_ns": 1788447225694259213,
+    "indexed_at_ns": 1789534106254539000,
+    "word_count": 163
+  },
+  "src/features/ai-review/generate.test.ts": {
+    "size": 7177,
+    "mtime_ns": 1788754876166903561,
+    "indexed_at_ns": 1789534106255518000,
+    "word_count": 625
+  },
+  "src/features/ai-review/generate.ts": {
+    "size": 8048,
+    "mtime_ns": 1788502797824575223,
+    "indexed_at_ns": 1789534106256414000,
+    "word_count": 918
+  },
+  "src/features/ai-review/providers.ts": {
+    "size": 1445,
+    "mtime_ns": 1788754832982036069,
+    "indexed_at_ns": 1789534106257184000,
+    "word_count": 149
+  },
+  "src/features/ai-review/types.ts": {
+    "size": 437,
+    "mtime_ns": 1788447225580198277,
+    "indexed_at_ns": 1789534106258105000,
+    "word_count": 54
+  },
+  "src/features/calendar/CalendarEventPage.test.tsx": {
+    "size": 7845,
+    "mtime_ns": 1789498447502639104,
+    "indexed_at_ns": 1789534106258871000,
+    "word_count": 589
+  },
+  "src/features/calendar/CalendarEventPage.tsx": {
+    "size": 10244,
+    "mtime_ns": 1789494109540917001,
+    "indexed_at_ns": 1789534106259705000,
+    "word_count": 738
+  },
+  "src/features/calendar/CalendarEventRow.test.tsx": {
+    "size": 3651,
+    "mtime_ns": 1789496473837845743,
+    "indexed_at_ns": 1789534106260491000,
+    "word_count": 289
+  },
+  "src/features/calendar/CalendarEventRow.tsx": {
+    "size": 4583,
+    "mtime_ns": 1789481590744511407,
+    "indexed_at_ns": 1789534106261981000,
+    "word_count": 414
+  },
+  "src/features/calendar/CalendarPage.test.tsx": {
+    "size": 7876,
+    "mtime_ns": 1789496730633463741,
+    "indexed_at_ns": 1789534106262822000,
+    "word_count": 596
+  },
+  "src/features/calendar/CalendarPage.tsx": {
+    "size": 9935,
+    "mtime_ns": 1789494107073308692,
+    "indexed_at_ns": 1789534106263679000,
+    "word_count": 791
+  },
+  "src/features/calendar/api.test.ts": {
+    "size": 6150,
+    "mtime_ns": 1789496391317533262,
+    "indexed_at_ns": 1789534106264488000,
+    "word_count": 542
+  },
+  "src/features/calendar/api.ts": {
+    "size": 8706,
+    "mtime_ns": 1789413616447526522,
+    "indexed_at_ns": 1789534106265611000,
+    "word_count": 1006
+  },
+  "src/features/calendar/types.ts": {
+    "size": 854,
+    "mtime_ns": 1789413586622544978,
+    "indexed_at_ns": 1789534106266504000,
+    "word_count": 107
+  },
+  "src/features/command-palette/CommandPalette.test.tsx": {
+    "size": 6550,
+    "mtime_ns": 1789496863623975113,
+    "indexed_at_ns": 1789534106267265000,
+    "word_count": 522
+  },
+  "src/features/command-palette/CommandPalette.tsx": {
+    "size": 10416,
+    "mtime_ns": 1789486723554038526,
+    "indexed_at_ns": 1789534106268048000,
+    "word_count": 873
+  },
+  "src/features/gmail/GmailMessagePage.test.tsx": {
+    "size": 10749,
+    "mtime_ns": 1789498448342015345,
+    "indexed_at_ns": 1789534106268787000,
+    "word_count": 828
+  },
+  "src/features/gmail/GmailMessagePage.tsx": {
+    "size": 10305,
+    "mtime_ns": 1789494108179969442,
+    "indexed_at_ns": 1789534106269682000,
+    "word_count": 757
+  },
+  "src/features/gmail/GmailMessageRow.test.tsx": {
+    "size": 2158,
+    "mtime_ns": 1789496409058531615,
+    "indexed_at_ns": 1789534106270586000,
+    "word_count": 204
+  },
+  "src/features/gmail/GmailMessageRow.tsx": {
+    "size": 3478,
+    "mtime_ns": 1789495003503265525,
+    "indexed_at_ns": 1789534106271400000,
+    "word_count": 274
+  },
+  "src/features/gmail/GmailPage.test.tsx": {
+    "size": 7299,
+    "mtime_ns": 1789496376706976172,
+    "indexed_at_ns": 1789534106272298000,
+    "word_count": 603
+  },
+  "src/features/gmail/GmailPage.tsx": {
+    "size": 9763,
+    "mtime_ns": 1789495007726083508,
+    "indexed_at_ns": 1789534106273115000,
+    "word_count": 798
+  },
+  "src/features/gmail/api.test.ts": {
+    "size": 9290,
+    "mtime_ns": 1789496361181239485,
+    "indexed_at_ns": 1789534106273837000,
+    "word_count": 838
+  },
+  "src/features/gmail/api.ts": {
+    "size": 7918,
+    "mtime_ns": 1789413495209173549,
+    "indexed_at_ns": 1789534106274644000,
+    "word_count": 923
+  },
+  "src/features/gmail/types.ts": {
+    "size": 634,
+    "mtime_ns": 1789413465426816356,
+    "indexed_at_ns": 1789534106275714000,
+    "word_count": 85
+  },
+  "src/features/jira/JiraIssuePage.test.tsx": {
+    "size": 9896,
+    "mtime_ns": 1789496703891087389,
+    "indexed_at_ns": 1789534106276520000,
+    "word_count": 841
+  },
+  "src/features/jira/JiraIssuePage.tsx": {
+    "size": 13975,
+    "mtime_ns": 1789494109502120715,
+    "indexed_at_ns": 1789534106277360000,
+    "word_count": 942
+  },
+  "src/features/jira/JiraIssueRow.test.tsx": {
+    "size": 3356,
+    "mtime_ns": 1789496402434397994,
+    "indexed_at_ns": 1789534106278361000,
+    "word_count": 305
+  },
+  "src/features/jira/JiraIssueRow.tsx": {
+    "size": 4813,
+    "mtime_ns": 1789479879074555010,
+    "indexed_at_ns": 1789534106279202000,
+    "word_count": 366
+  },
+  "src/features/jira/JiraPage.test.tsx": {
+    "size": 25339,
+    "mtime_ns": 1789496702008851871,
+    "indexed_at_ns": 1789534106279896000,
+    "word_count": 2093
+  },
+  "src/features/jira/JiraPage.tsx": {
+    "size": 24629,
+    "mtime_ns": 1789494878839175896,
+    "indexed_at_ns": 1789534106280670000,
+    "word_count": 1806
+  },
+  "src/features/jira/adf.test.ts": {
+    "size": 1744,
+    "mtime_ns": 1789496733473532599,
+    "indexed_at_ns": 1789534106281583000,
+    "word_count": 170
+  },
+  "src/features/jira/adf.ts": {
+    "size": 802,
+    "mtime_ns": 1789406104069750100,
+    "indexed_at_ns": 1789534106283656000,
+    "word_count": 107
+  },
+  "src/features/jira/api.test.ts": {
+    "size": 13444,
+    "mtime_ns": 1789496440613096636,
+    "indexed_at_ns": 1789534106284608000,
+    "word_count": 1322
+  },
+  "src/features/jira/api.ts": {
+    "size": 12557,
+    "mtime_ns": 1789411472229276673,
+    "indexed_at_ns": 1789534106285448000,
+    "word_count": 1374
+  },
+  "src/features/jira/fields.test.ts": {
+    "size": 4772,
+    "mtime_ns": 1789496440612811096,
+    "indexed_at_ns": 1789534106286215000,
+    "word_count": 425
+  },
+  "src/features/jira/fields.ts": {
+    "size": 5767,
+    "mtime_ns": 1789411577141074284,
+    "indexed_at_ns": 1789534106287049000,
+    "word_count": 659
+  },
+  "src/features/jira/jql.test.ts": {
+    "size": 3206,
+    "mtime_ns": 1789411328355523537,
+    "indexed_at_ns": 1789534106287808000,
+    "word_count": 326
+  },
+  "src/features/jira/jql.ts": {
+    "size": 3420,
+    "mtime_ns": 1789411305013495747,
+    "indexed_at_ns": 1789534106288827000,
+    "word_count": 386
+  },
+  "src/features/jira/status-tab-order.test.ts": {
+    "size": 1027,
+    "mtime_ns": 1789494832374904185,
+    "indexed_at_ns": 1789534106289601000,
+    "word_count": 122
+  },
+  "src/features/jira/status-tab-order.ts": {
+    "size": 1451,
+    "mtime_ns": 1789494780724290285,
+    "indexed_at_ns": 1789534106290302000,
+    "word_count": 193
+  },
+  "src/features/jira/types.ts": {
+    "size": 1848,
+    "mtime_ns": 1789411433966687516,
+    "indexed_at_ns": 1789534106291195000,
+    "word_count": 228
+  },
+  "src/features/metrics/CiHealthPanel.tsx": {
+    "size": 6837,
+    "mtime_ns": 1789482182160000969,
+    "indexed_at_ns": 1789534106292044000,
+    "word_count": 486
+  },
+  "src/features/metrics/DeltaBadge.test.tsx": {
+    "size": 1576,
+    "mtime_ns": 1789403296182685976,
+    "indexed_at_ns": 1789534106292824000,
+    "word_count": 170
+  },
+  "src/features/metrics/DeltaBadge.tsx": {
+    "size": 1108,
+    "mtime_ns": 1789482227258546230,
+    "indexed_at_ns": 1789534106293472000,
+    "word_count": 140
+  },
+  "src/features/metrics/MetricBreakdownPanel.tsx": {
+    "size": 2167,
+    "mtime_ns": 1789482164284225994,
+    "indexed_at_ns": 1789534106294165000,
+    "word_count": 166
+  },
+  "src/features/metrics/MetricCard.tsx": {
+    "size": 1885,
+    "mtime_ns": 1789482141765066793,
+    "indexed_at_ns": 1789534106294867000,
+    "word_count": 153
+  },
+  "src/features/metrics/MetricSuggestionsPanel.tsx": {
+    "size": 5643,
+    "mtime_ns": 1789482182176325530,
+    "indexed_at_ns": 1789534106295797000,
+    "word_count": 429
+  },
+  "src/features/metrics/MetricSummaryBanner.tsx": {
+    "size": 2390,
+    "mtime_ns": 1789482266432759844,
+    "indexed_at_ns": 1789534106296692000,
+    "word_count": 200
+  },
+  "src/features/metrics/MetricSummaryCards.test.tsx": {
+    "size": 3737,
+    "mtime_ns": 1789482305190269731,
+    "indexed_at_ns": 1789534106297479000,
+    "word_count": 352
+  },
+  "src/features/metrics/MetricSummaryCards.tsx": {
+    "size": 5296,
+    "mtime_ns": 1789482251230190132,
+    "indexed_at_ns": 1789534106298184000,
+    "word_count": 521
+  },
+  "src/features/metrics/MetricsCharts.tsx": {
+    "size": 6453,
+    "mtime_ns": 1789482209584092901,
+    "indexed_at_ns": 1789534106299219000,
+    "word_count": 604
+  },
+  "src/features/metrics/MetricsPage.test.tsx": {
+    "size": 6429,
+    "mtime_ns": 1789482285642571261,
+    "indexed_at_ns": 1789534106300007000,
+    "word_count": 540
+  },
+  "src/features/metrics/MetricsPage.tsx": {
+    "size": 9102,
+    "mtime_ns": 1789494104193754792,
+    "indexed_at_ns": 1789534106300860000,
+    "word_count": 649
+  },
+  "src/features/metrics/fetch.test.ts": {
+    "size": 15201,
+    "mtime_ns": 1789414357595286052,
+    "indexed_at_ns": 1789534106308515000,
+    "word_count": 1253
+  },
+  "src/features/metrics/fetch.ts": {
+    "size": 7526,
+    "mtime_ns": 1788497259294249506,
+    "indexed_at_ns": 1789534106309505000,
+    "word_count": 767
+  },
+  "src/features/metrics/hooks.test.tsx": {
+    "size": 4592,
+    "mtime_ns": 1788509211014391417,
+    "indexed_at_ns": 1789534106310406000,
+    "word_count": 393
+  },
+  "src/features/metrics/hooks.ts": {
+    "size": 3559,
+    "mtime_ns": 1788497325716039167,
+    "indexed_at_ns": 1789534106311433000,
+    "word_count": 325
+  },
+  "src/features/metrics/panels.test.tsx": {
+    "size": 11713,
+    "mtime_ns": 1789482316418502983,
+    "indexed_at_ns": 1789534106312190000,
+    "word_count": 896
+  },
+  "src/features/metrics/score.test.ts": {
+    "size": 8344,
+    "mtime_ns": 1788509211369885504,
+    "indexed_at_ns": 1789534106312912000,
+    "word_count": 709
+  },
+  "src/features/metrics/score.ts": {
+    "size": 13242,
+    "mtime_ns": 1788497325716113250,
+    "indexed_at_ns": 1789534106313703000,
+    "word_count": 1546
+  },
+  "src/features/metrics/stats.test.ts": {
+    "size": 2464,
+    "mtime_ns": 1788497995025832814,
+    "indexed_at_ns": 1789534106314505000,
+    "word_count": 211
+  },
+  "src/features/metrics/stats.ts": {
+    "size": 1669,
+    "mtime_ns": 1788453368141679643,
+    "indexed_at_ns": 1789534106315246000,
+    "word_count": 237
+  },
+  "src/features/metrics/suggestions.test.ts": {
+    "size": 6661,
+    "mtime_ns": 1788498140505823302,
+    "indexed_at_ns": 1789534106316133000,
+    "word_count": 656
+  },
+  "src/features/metrics/suggestions.ts": {
+    "size": 8849,
+    "mtime_ns": 1788497325716093958,
+    "indexed_at_ns": 1789534106317082000,
+    "word_count": 986
+  },
+  "src/features/metrics/types.ts": {
+    "size": 3943,
+    "mtime_ns": 1788497259405277939,
+    "indexed_at_ns": 1789534106317958000,
+    "word_count": 471
+  },
+  "src/features/people/AuthorFilterBar.test.tsx": {
+    "size": 6237,
+    "mtime_ns": 1789496420635394403,
+    "indexed_at_ns": 1789534106319012000,
+    "word_count": 534
+  },
+  "src/features/people/AuthorFilterBar.tsx": {
+    "size": 6201,
+    "mtime_ns": 1789484277089642961,
+    "indexed_at_ns": 1789534106319796000,
+    "word_count": 500
+  },
+  "src/features/people/PeoplePage.test.tsx": {
+    "size": 13765,
+    "mtime_ns": 1789498446475826006,
+    "indexed_at_ns": 1789534106320669000,
+    "word_count": 1152
+  },
+  "src/features/people/PeoplePage.tsx": {
+    "size": 12130,
+    "mtime_ns": 1789487070748326508,
+    "indexed_at_ns": 1789534106323437000,
+    "word_count": 991
+  },
+  "src/features/people/api.test.ts": {
+    "size": 1412,
+    "mtime_ns": 1789496392761443404,
+    "indexed_at_ns": 1789534106324320000,
+    "word_count": 126
+  },
+  "src/features/people/api.ts": {
+    "size": 1231,
+    "mtime_ns": 1789405305051854404,
+    "indexed_at_ns": 1789534106325135000,
+    "word_count": 130
+  },
+  "src/features/people/login.test.ts": {
+    "size": 600,
+    "mtime_ns": 1789405761101584849,
+    "indexed_at_ns": 1789534106325999000,
+    "word_count": 44
+  },
+  "src/features/people/login.ts": {
+    "size": 450,
+    "mtime_ns": 1789405108702062093,
+    "indexed_at_ns": 1789534106326788000,
+    "word_count": 54
+  },
+  "src/features/people/types.ts": {
+    "size": 188,
+    "mtime_ns": 1789405104647368708,
+    "indexed_at_ns": 1789534106327635000,
+    "word_count": 25
+  },
+  "src/features/pr/ChangedFilesPanel.tsx": {
+    "size": 17605,
+    "mtime_ns": 1789466415601993276,
+    "indexed_at_ns": 1789534106328402000,
+    "word_count": 1248
+  },
+  "src/features/pr/CiChecksPanel.tsx": {
+    "size": 14581,
+    "mtime_ns": 1789475922264139749,
+    "indexed_at_ns": 1789534106329259000,
+    "word_count": 1103
+  },
+  "src/features/pr/ConversationPanel.test.tsx": {
+    "size": 8168,
+    "mtime_ns": 1789414469699917057,
+    "indexed_at_ns": 1789534106330124000,
+    "word_count": 626
+  },
+  "src/features/pr/ConversationPanel.tsx": {
+    "size": 8663,
+    "mtime_ns": 1789466456441986802,
+    "indexed_at_ns": 1789534106330910000,
+    "word_count": 662
+  },
+  "src/features/pr/CurrentReviewsPanel.tsx": {
+    "size": 22275,
+    "mtime_ns": 1789467523255449783,
+    "indexed_at_ns": 1789534106331822000,
+    "word_count": 1689
+  },
+  "src/features/pr/PRDetailDrawer.tsx": {
+    "size": 10956,
+    "mtime_ns": 1789487096242193457,
+    "indexed_at_ns": 1789534106332743000,
+    "word_count": 805
+  },
+  "src/features/pr/PRList.tsx": {
+    "size": 16782,
+    "mtime_ns": 1789494431463903869,
+    "indexed_at_ns": 1789534106333506000,
+    "word_count": 1478
+  },
+  "src/features/pr/PRRow.tsx": {
+    "size": 9017,
+    "mtime_ns": 1789494410275315512,
+    "indexed_at_ns": 1789534106334578000,
+    "word_count": 716
+  },
+  "src/features/pr/PendingReviewBar.tsx": {
+    "size": 4070,
+    "mtime_ns": 1789466528078093399,
+    "indexed_at_ns": 1789534106335436000,
+    "word_count": 321
+  },
+  "src/features/pr/PrDetailHeader.test.tsx": {
+    "size": 2515,
+    "mtime_ns": 1789497646211563233,
+    "indexed_at_ns": 1789534106336480000,
+    "word_count": 197
+  },
+  "src/features/pr/PrDetailHeader.tsx": {
+    "size": 6926,
+    "mtime_ns": 1789486762657429025,
+    "indexed_at_ns": 1789534106337387000,
+    "word_count": 511
+  },
+  "src/features/pr/PrDetailTab.test.tsx": {
+    "size": 6378,
+    "mtime_ns": 1789497664598358985,
+    "indexed_at_ns": 1789534106338176000,
+    "word_count": 573
+  },
+  "src/features/pr/PrDetailTab.tsx": {
+    "size": 16461,
+    "mtime_ns": 1789465478431063453,
+    "indexed_at_ns": 1789534106339060000,
+    "word_count": 1141
+  },
+  "src/features/pr/ReviewStatusBadge.test.tsx": {
+    "size": 1065,
+    "mtime_ns": 1789497585278326536,
+    "indexed_at_ns": 1789534106340125000,
+    "word_count": 77
+  },
+  "src/features/pr/ReviewStatusBadge.tsx": {
+    "size": 1595,
+    "mtime_ns": 1789494429322324611,
+    "indexed_at_ns": 1789534106340927000,
+    "word_count": 159
+  },
+  "src/features/pr/api.test.ts": {
+    "size": 23718,
+    "mtime_ns": 1789414408873232763,
+    "indexed_at_ns": 1789534106341759000,
+    "word_count": 1887
+  },
+  "src/features/pr/api.ts": {
+    "size": 26883,
+    "mtime_ns": 1789475922266052990,
+    "indexed_at_ns": 1789534106342548000,
+    "word_count": 2945
+  },
+  "src/features/pr/ci-watch.test.ts": {
+    "size": 2709,
+    "mtime_ns": 1789497186469360763,
+    "indexed_at_ns": 1789534106343385000,
+    "word_count": 316
+  },
+  "src/features/pr/ci-watch.ts": {
+    "size": 2091,
+    "mtime_ns": 1788497259450379072,
+    "indexed_at_ns": 1789534106344193000,
+    "word_count": 246
+  },
+  "src/features/pr/hooks.test.tsx": {
+    "size": 7954,
+    "mtime_ns": 1789484227955218283,
+    "indexed_at_ns": 1789534106344902000,
+    "word_count": 660
+  },
+  "src/features/pr/hooks.ts": {
+    "size": 4868,
+    "mtime_ns": 1789484209762395080,
+    "indexed_at_ns": 1789534106345723000,
+    "word_count": 483
+  },
+  "src/features/pr/panels.test.tsx": {
+    "size": 71681,
+    "mtime_ns": 1789498516227723490,
+    "indexed_at_ns": 1789534106346569000,
+    "word_count": 5299
+  },
+  "src/features/pr/pr-cache.test.ts": {
+    "size": 5354,
+    "mtime_ns": 1789414040682251140,
+    "indexed_at_ns": 1789534106347735000,
+    "word_count": 443
+  },
+  "src/features/pr/pr-cache.ts": {
+    "size": 4289,
+    "mtime_ns": 1789414003829100928,
+    "indexed_at_ns": 1789534106348510000,
+    "word_count": 494
+  },
+  "src/features/pr/rate-limit.test.ts": {
+    "size": 808,
+    "mtime_ns": 1788979526883130099,
+    "indexed_at_ns": 1789534106349218000,
+    "word_count": 74
+  },
+  "src/features/pr/rate-limit.ts": {
+    "size": 573,
+    "mtime_ns": 1789484240779750704,
+    "indexed_at_ns": 1789534106350105000,
+    "word_count": 65
+  },
+  "src/features/pr/review-status.test.ts": {
+    "size": 1334,
+    "mtime_ns": 1789403991671448663,
+    "indexed_at_ns": 1789534106350867000,
+    "word_count": 83
+  },
+  "src/features/pr/review-status.ts": {
+    "size": 1845,
+    "mtime_ns": 1789463993603958352,
+    "indexed_at_ns": 1789534106351601000,
+    "word_count": 200
+  },
+  "src/features/pr/types.ts": {
+    "size": 4882,
+    "mtime_ns": 1789475882674099490,
+    "indexed_at_ns": 1789534106352411000,
+    "word_count": 643
+  },
+  "src/features/repos/RepoOpenBranchesPanel.test.tsx": {
+    "size": 2984,
+    "mtime_ns": 1788978178918349392,
+    "indexed_at_ns": 1789534106353271000,
+    "word_count": 238
+  },
+  "src/features/repos/RepoOpenBranchesPanel.tsx": {
+    "size": 4162,
+    "mtime_ns": 1789487081070402645,
+    "indexed_at_ns": 1789534106360184000,
+    "word_count": 345
+  },
+  "src/features/repos/RepoRow.tsx": {
+    "size": 3174,
+    "mtime_ns": 1789486774971372676,
+    "indexed_at_ns": 1789534106361493000,
+    "word_count": 277
+  },
+  "src/features/repos/ReposPage.test.tsx": {
+    "size": 6277,
+    "mtime_ns": 1789483837706803460,
+    "indexed_at_ns": 1789534106362304000,
+    "word_count": 564
+  },
+  "src/features/repos/ReposPage.tsx": {
+    "size": 7669,
+    "mtime_ns": 1789487047023537148,
+    "indexed_at_ns": 1789534106363232000,
+    "word_count": 673
+  },
+  "src/features/repos/api.test.ts": {
+    "size": 1122,
+    "mtime_ns": 1788500433057338693,
+    "indexed_at_ns": 1789534106364164000,
+    "word_count": 111
+  },
+  "src/features/repos/api.ts": {
+    "size": 1066,
+    "mtime_ns": 1788447225489764249,
+    "indexed_at_ns": 1789534106365068000,
+    "word_count": 125
+  },
+  "src/features/repos/hooks.test.tsx": {
+    "size": 2830,
+    "mtime_ns": 1789403296182657393,
+    "indexed_at_ns": 1789534106366507000,
+    "word_count": 228
+  },
+  "src/features/repos/hooks.ts": {
+    "size": 1138,
+    "mtime_ns": 1788447225503629257,
+    "indexed_at_ns": 1789534106367288000,
+    "word_count": 126
+  },
+  "src/features/repos/types.ts": {
+    "size": 175,
+    "mtime_ns": 1788447225476405287,
+    "indexed_at_ns": 1789534106368356000,
+    "word_count": 24
+  },
+  "src/features/today/TodayView.test.tsx": {
+    "size": 15383,
+    "mtime_ns": 1789498178965909610,
+    "indexed_at_ns": 1789534106369199000,
+    "word_count": 1193
+  },
+  "src/features/today/TodayView.tsx": {
+    "size": 28459,
+    "mtime_ns": 1789487089449691279,
+    "indexed_at_ns": 1789534106370095000,
+    "word_count": 2055
+  },
+  "src/features/today/useTodaySideData.test.ts": {
+    "size": 9669,
+    "mtime_ns": 1789496364601650920,
+    "indexed_at_ns": 1789534106371646000,
+    "word_count": 700
+  },
+  "src/features/today/useTodaySideData.ts": {
+    "size": 3623,
+    "mtime_ns": 1789463034400616662,
+    "indexed_at_ns": 1789534106372959000,
+    "word_count": 321
+  },
+  "src/lib/api.test.ts": {
+    "size": 7311,
+    "mtime_ns": 1789496387199436058,
+    "indexed_at_ns": 1789534106374263000,
+    "word_count": 514
+  },
+  "src/lib/api.ts": {
+    "size": 7463,
+    "mtime_ns": 1789417465547544562,
+    "indexed_at_ns": 1789534106375038000,
+    "word_count": 693
+  },
+  "src/lib/cn.ts": {
+    "size": 169,
+    "mtime_ns": 1788497426354980073,
+    "indexed_at_ns": 1789534106375879000,
+    "word_count": 22
+  },
+  "src/lib/core.test.ts": {
+    "size": 6002,
+    "mtime_ns": 1789418320794553873,
+    "indexed_at_ns": 1789534106376829000,
+    "word_count": 427
+  },
+  "src/lib/desktop-alerts.test.ts": {
+    "size": 13050,
+    "mtime_ns": 1789404214169957770,
+    "indexed_at_ns": 1789534106377771000,
+    "word_count": 1027
+  },
+  "src/lib/desktop-alerts.ts": {
+    "size": 5445,
+    "mtime_ns": 1789404344853907332,
+    "indexed_at_ns": 1789534106378571000,
+    "word_count": 672
+  },
+  "src/lib/favorite-styles.ts": {
+    "size": 563,
+    "mtime_ns": 1789486469174474637,
+    "indexed_at_ns": 1789534106379558000,
+    "word_count": 63
+  },
+  "src/lib/google-oauth.test.ts": {
+    "size": 1596,
+    "mtime_ns": 1789496732243978318,
+    "indexed_at_ns": 1789534106380582000,
+    "word_count": 96
+  },
+  "src/lib/google-oauth.ts": {
+    "size": 1516,
+    "mtime_ns": 1789418275244437935,
+    "indexed_at_ns": 1789534106381534000,
+    "word_count": 175
+  },
+  "src/lib/secrets.ts": {
+    "size": 5873,
+    "mtime_ns": 1789417462081584531,
+    "indexed_at_ns": 1789534106382637000,
+    "word_count": 566
+  },
+  "src/lib/seen.test.ts": {
+    "size": 1554,
+    "mtime_ns": 1789498174961174216,
+    "indexed_at_ns": 1789534106383716000,
+    "word_count": 119
+  },
+  "src/lib/seen.ts": {
+    "size": 2094,
+    "mtime_ns": 1788502856864638811,
+    "indexed_at_ns": 1789534106384882000,
+    "word_count": 252
+  },
+  "src/lib/settings.test.ts": {
+    "size": 12923,
+    "mtime_ns": 1789497008975440737,
+    "indexed_at_ns": 1789534106385770000,
+    "word_count": 930
+  },
+  "src/lib/settings.ts": {
+    "size": 17665,
+    "mtime_ns": 1789494785480308993,
+    "indexed_at_ns": 1789534106386721000,
+    "word_count": 1776
+  },
+  "src/lib/time.ts": {
+    "size": 508,
+    "mtime_ns": 1788447225223683380,
+    "indexed_at_ns": 1789534106387645000,
+    "word_count": 82
+  },
+  "src/lib/use-settings.test.tsx": {
+    "size": 4048,
+    "mtime_ns": 1789414019619214774,
+    "indexed_at_ns": 1789534106388459000,
+    "word_count": 375
+  },
+  "src/lib/use-settings.ts": {
+    "size": 2155,
+    "mtime_ns": 1789494788319179627,
+    "indexed_at_ns": 1789534106389694000,
+    "word_count": 172
+  },
+  "src/main.tsx": {
+    "size": 1379,
+    "mtime_ns": 1789483855551852677,
+    "indexed_at_ns": 1789534106390468000,
+    "word_count": 112
+  },
+  "src/router.test.tsx": {
+    "size": 1290,
+    "mtime_ns": 1789403296182614475,
+    "indexed_at_ns": 1789534106391220000,
+    "word_count": 129
+  },
+  "src/router.tsx": {
+    "size": 3116,
+    "mtime_ns": 1789462488851016264,
+    "indexed_at_ns": 1789534106392042000,
+    "word_count": 285
+  },
+  "src/routes/ai-review.test.tsx": {
+    "size": 38961,
+    "mtime_ns": 1789498521198837968,
+    "indexed_at_ns": 1789534106393173000,
+    "word_count": 3169
+  },
+  "src/routes/ai-review.tsx": {
+    "size": 32985,
+    "mtime_ns": 1789487138145447380,
+    "indexed_at_ns": 1789534106394177000,
+    "word_count": 2805
+  },
+  "src/routes/calendar.tsx": {
+    "size": 140,
+    "mtime_ns": 1789413654793664109,
+    "indexed_at_ns": 1789534106395204000,
+    "word_count": 12
+  },
+  "src/routes/dashboard.test.tsx": {
+    "size": 13240,
+    "mtime_ns": 1789497263060608679,
+    "indexed_at_ns": 1789534106395945000,
+    "word_count": 1167
+  },
+  "src/routes/dashboard.tsx": {
+    "size": 14429,
+    "mtime_ns": 1789486558713129011,
+    "indexed_at_ns": 1789534106396766000,
+    "word_count": 1167
+  },
+  "src/routes/gmail.tsx": {
+    "size": 126,
+    "mtime_ns": 1789413485880220375,
+    "indexed_at_ns": 1789534106398046000,
+    "word_count": 12
+  },
+  "src/routes/jira.tsx": {
+    "size": 116,
+    "mtime_ns": 1789410981403264933,
+    "indexed_at_ns": 1789534106398780000,
+    "word_count": 12
+  },
+  "src/routes/metrics.tsx": {
+    "size": 62,
+    "mtime_ns": 1788452204267610681,
+    "indexed_at_ns": 1789534106399415000,
+    "word_count": 6
+  },
+  "src/routes/onboarding.test.tsx": {
+    "size": 3574,
+    "mtime_ns": 1789483882500497918,
+    "indexed_at_ns": 1789534106400128000,
+    "word_count": 301
+  },
+  "src/routes/onboarding.tsx": {
+    "size": 4863,
+    "mtime_ns": 1789483714814217348,
+    "indexed_at_ns": 1789534106400952000,
+    "word_count": 379
+  },
+  "src/routes/people.tsx": {
+    "size": 59,
+    "mtime_ns": 1789405571948422926,
+    "indexed_at_ns": 1789534106401889000,
+    "word_count": 6
+  },
+  "src/routes/repos.tsx": {
+    "size": 56,
+    "mtime_ns": 1788447225561569327,
+    "indexed_at_ns": 1789534106402844000,
+    "word_count": 6
+  },
+  "src/routes/settings.test.tsx": {
+    "size": 37765,
+    "mtime_ns": 1789498518945432238,
+    "indexed_at_ns": 1789534106403710000,
+    "word_count": 3054
+  },
+  "src/routes/settings.tsx": {
+    "size": 54282,
+    "mtime_ns": 1789495091712472703,
+    "indexed_at_ns": 1789534106404734000,
+    "word_count": 3603
+  },
+  "src/test/fixtures.ts": {
+    "size": 2262,
+    "mtime_ns": 1788975159576178062,
+    "indexed_at_ns": 1789534106406512000,
+    "word_count": 231
+  },
+  "src/test/setup.ts": {
+    "size": 216,
+    "mtime_ns": 1788500383097780690,
+    "indexed_at_ns": 1789534106407452000,
+    "word_count": 22
+  },
+  "src/vite-env.d.ts": {
+    "size": 38,
+    "mtime_ns": 1788344299130538176,
+    "indexed_at_ns": 1789534106408123000,
+    "word_count": 4
+  },
+  "tsconfig.json": {
+    "size": 730,
+    "mtime_ns": 1788344395005613177,
+    "indexed_at_ns": 1789534106408805000,
+    "word_count": 64
+  },
+  "tsconfig.node.json": {
+    "size": 213,
+    "mtime_ns": 1788344299137662590,
+    "indexed_at_ns": 1789534106409630000,
+    "word_count": 17
+  },
+  "vite.config.ts": {
+    "size": 1564,
+    "mtime_ns": 1788977963822445637,
+    "indexed_at_ns": 1789534106410259000,
+    "word_count": 171
+  }
+}

@@ -48,31 +48,28 @@ function stateIcon(state: VisualState) {
   switch (state) {
     case "success":
       return (
-        <CheckCircle2
-          className="h-4 w-4 shrink-0 text-success"
-          aria-hidden
-        />
+        <CheckCircle2 className="text-success h-4 w-4 shrink-0" aria-hidden />
       );
     case "failure":
-      return <XCircle className="h-4 w-4 shrink-0 text-error" aria-hidden />;
+      return <XCircle className="text-error h-4 w-4 shrink-0" aria-hidden />;
     case "pending":
       return (
         <Loader2
-          className="h-4 w-4 shrink-0 animate-spin text-warning dark:text-primary-container"
+          className="text-warning dark:text-primary-container h-4 w-4 shrink-0 animate-spin"
           aria-hidden
         />
       );
     case "cancelled":
       return (
         <MinusCircle
-          className="h-4 w-4 shrink-0 text-on-surface-variant"
+          className="text-on-surface-variant h-4 w-4 shrink-0"
           aria-hidden
         />
       );
     default:
       return (
         <Circle
-          className="h-4 w-4 shrink-0 text-on-surface-variant"
+          className="text-on-surface-variant h-4 w-4 shrink-0"
           aria-hidden
         />
       );
@@ -255,14 +252,14 @@ export function CiChecksPanel({
           {error ? (
             <div
               role="alert"
-              className="rounded-lg border border-warning/30 bg-warning-container px-3 py-2 text-body-sm text-on-warning-container"
+              className="border-warning/30 bg-warning-container text-body-sm text-on-warning-container rounded-lg border px-3 py-2"
             >
               {error}
             </div>
           ) : null}
 
           {loading && !snapshot ? (
-            <div className="flex items-center gap-2 py-8 text-body-md text-on-surface-variant">
+            <div className="text-body-md text-on-surface-variant flex items-center gap-2 py-8">
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
               Loading CI checks…
             </div>
@@ -290,7 +287,7 @@ export function CiChecksPanel({
                       {overallDetail(snapshot)}
                     </Badge>
                   </div>
-                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-keycap text-body-sm opacity-90">
+                  <div className="font-keycap text-body-sm mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 opacity-90">
                     {headBranch ? (
                       <span className="font-mono text-xs">{headBranch}</span>
                     ) : null}
@@ -309,27 +306,27 @@ export function CiChecksPanel({
               </div>
 
               <div className="grid gap-2 sm:grid-cols-3">
-                <div className="rounded-lg border border-border bg-surface-container-low/50 px-3 py-2">
+                <div className="border-border bg-surface-container-low/50 rounded-lg border px-3 py-2">
                   <p className="text-label-sm text-on-surface-variant uppercase">
                     Passed
                   </p>
-                  <p className="mt-0.5 font-headline text-headline-sm text-success tabular-nums">
+                  <p className="font-headline text-headline-sm text-success mt-0.5 tabular-nums">
                     {snapshot.successCount}
                   </p>
                 </div>
-                <div className="rounded-lg border border-border bg-surface-container-low/50 px-3 py-2">
+                <div className="border-border bg-surface-container-low/50 rounded-lg border px-3 py-2">
                   <p className="text-label-sm text-on-surface-variant uppercase">
                     Failed
                   </p>
-                  <p className="mt-0.5 font-headline text-headline-sm text-error tabular-nums">
+                  <p className="font-headline text-headline-sm text-error mt-0.5 tabular-nums">
                     {snapshot.failedCount}
                   </p>
                 </div>
-                <div className="rounded-lg border border-border bg-surface-container-low/50 px-3 py-2">
+                <div className="border-border bg-surface-container-low/50 rounded-lg border px-3 py-2">
                   <p className="text-label-sm text-on-surface-variant uppercase">
                     Running
                   </p>
-                  <p className="mt-0.5 font-headline text-headline-sm text-warning tabular-nums dark:text-primary-container">
+                  <p className="font-headline text-headline-sm text-warning dark:text-primary-container mt-0.5 tabular-nums">
                     {snapshot.pendingCount}
                   </p>
                 </div>
@@ -341,17 +338,17 @@ export function CiChecksPanel({
 
       {snapshot ? (
         <Card padding="none" className="overflow-hidden">
-          <div className="border-b border-border px-4 py-3">
-            <h3 className="font-headline text-title-md font-semibold text-on-surface">
+          <div className="border-border border-b px-4 py-3">
+            <h3 className="font-headline text-title-md text-on-surface font-semibold">
               Check runs
             </h3>
-            <p className="mt-0.5 text-body-sm text-on-surface-variant">
+            <p className="text-body-sm text-on-surface-variant mt-0.5">
               Failures and running checks surface first.
             </p>
           </div>
 
           {snapshot.items.length === 0 ? (
-            <p className="px-4 py-10 text-center text-body-md text-on-surface-variant">
+            <p className="text-body-md text-on-surface-variant px-4 py-10 text-center">
               No CI statuses or check runs on this commit yet.
             </p>
           ) : (
@@ -366,17 +363,16 @@ export function CiChecksPanel({
                   <li
                     key={item.id}
                     className={cn(
-                      "flex items-start gap-3 border-b border-border px-4 py-3 last:border-b-0",
+                      "border-border flex items-start gap-3 border-b px-4 py-3 last:border-b-0",
                       visual === "failure" &&
                         "bg-error-container/30 dark:bg-red-950/25",
-                      visual === "cancelled" &&
-                        "bg-surface-container-low/40",
+                      visual === "cancelled" && "bg-surface-container-low/40",
                     )}
                   >
                     <div className="mt-0.5">{stateIcon(visual)}</div>
                     <div className="min-w-0 flex-1 space-y-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="truncate text-body-md font-medium text-on-surface">
+                        <span className="text-body-md text-on-surface truncate font-medium">
                           {item.name}
                         </span>
                         <Badge
@@ -392,11 +388,9 @@ export function CiChecksPanel({
                       <p className="text-body-sm text-on-surface-variant">
                         {item.description}
                       </p>
-                      <div className="flex flex-wrap gap-x-3 gap-y-0.5 font-keycap text-on-surface-variant">
+                      <div className="font-keycap text-on-surface-variant flex flex-wrap gap-x-3 gap-y-0.5">
                         {item.startedAt ? (
-                          <span>
-                            Started {relativeTime(item.startedAt)}
-                          </span>
+                          <span>Started {relativeTime(item.startedAt)}</span>
                         ) : null}
                         {item.completedAt ? (
                           <span>

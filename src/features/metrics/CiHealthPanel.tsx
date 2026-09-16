@@ -42,7 +42,7 @@ export function CiHealthPanel({
       </CardHeader>
       <CardContent className="space-y-3">
         {loading && !summary ? (
-          <p className="py-8 text-center text-body-md text-on-surface-variant">
+          <p className="text-body-md text-on-surface-variant py-8 text-center">
             Loading CI health…
           </p>
         ) : null}
@@ -64,26 +64,26 @@ export function CiHealthPanel({
             </div>
 
             {summary.totalChecks === 0 ? (
-              <p className="rounded-lg border border-dashed border-border px-3 py-8 text-center text-body-md text-on-surface-variant">
+              <p className="border-border text-body-md text-on-surface-variant rounded-lg border border-dashed px-3 py-8 text-center">
                 No CI checks found on authored PRs in this window.
               </p>
             ) : (
               <>
                 {summary.topFailingContexts.length > 0 ? (
                   <div>
-                    <h3 className="mb-2 text-label-sm tracking-wide text-on-surface-variant uppercase">
+                    <h3 className="text-label-sm text-on-surface-variant mb-2 tracking-wide uppercase">
                       Top failing contexts
                     </h3>
-                    <ul className="overflow-hidden rounded-lg border border-border">
+                    <ul className="border-border overflow-hidden rounded-lg border">
                       {summary.topFailingContexts.map((item) => (
                         <li
                           key={item.name}
-                          className="flex items-center justify-between gap-3 border-b border-border px-3 py-2 last:border-b-0"
+                          className="border-border flex items-center justify-between gap-3 border-b px-3 py-2 last:border-b-0"
                         >
-                          <span className="truncate text-body-md">
+                          <span className="text-body-md truncate">
                             {item.name}
                           </span>
-                          <span className="shrink-0 font-keycap text-body-sm text-on-surface-variant">
+                          <span className="font-keycap text-body-sm text-on-surface-variant shrink-0">
                             {item.count} fail{item.count === 1 ? "" : "s"}
                           </span>
                         </li>
@@ -94,27 +94,27 @@ export function CiHealthPanel({
 
                 {summary.latestFailingPrs.length > 0 ? (
                   <div>
-                    <h3 className="mb-2 text-label-sm tracking-wide text-on-surface-variant uppercase">
+                    <h3 className="text-label-sm text-on-surface-variant mb-2 tracking-wide uppercase">
                       Latest failing PRs
                     </h3>
-                    <ul className="overflow-hidden rounded-lg border border-border">
+                    <ul className="border-border overflow-hidden rounded-lg border">
                       {summary.latestFailingPrs.map((pr) => (
                         <li
                           key={`${pr.repo}#${pr.number}`}
-                          className="flex items-start gap-3 border-b border-border bg-error-container/30 px-3 py-3 last:border-b-0"
+                          className="border-border bg-error-container/30 flex items-start gap-3 border-b px-3 py-3 last:border-b-0"
                         >
                           <XCircle
-                            className="mt-0.5 h-4 w-4 shrink-0 text-error"
+                            className="text-error mt-0.5 h-4 w-4 shrink-0"
                             aria-hidden
                           />
                           <div className="min-w-0 flex-1">
-                            <div className="truncate text-body-md font-medium">
+                            <div className="text-body-md truncate font-medium">
                               {pr.repo} #{pr.number}
                             </div>
-                            <div className="truncate text-body-sm text-on-surface-variant">
+                            <div className="text-body-sm text-on-surface-variant truncate">
                               {pr.title}
                             </div>
-                            <div className="mt-1 text-body-sm text-on-surface-variant">
+                            <div className="text-body-sm text-on-surface-variant mt-1">
                               {pr.failedChecks.slice(0, 3).join(", ")}
                               {pr.failedChecks.length > 3
                                 ? ` +${pr.failedChecks.length - 3}`
@@ -146,7 +146,7 @@ export function CiHealthPanel({
             </p>
           </>
         ) : !loading ? (
-          <p className="rounded-lg border border-dashed border-border px-3 py-8 text-center text-body-md text-on-surface-variant">
+          <p className="border-border text-body-md text-on-surface-variant rounded-lg border border-dashed px-3 py-8 text-center">
             No CI data available for this window.
           </p>
         ) : null}
@@ -178,7 +178,7 @@ function Stat({
       )}
     >
       <div className="text-body-sm text-on-surface-variant">{label}</div>
-      <div className="mt-0.5 font-headline text-headline-sm tabular-nums">
+      <div className="font-headline text-headline-sm mt-0.5 tabular-nums">
         {value}
       </div>
     </div>

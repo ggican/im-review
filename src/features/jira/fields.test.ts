@@ -16,6 +16,11 @@ describe("jira field formatting", () => {
     expect(formatJiraValue({ displayName: "Ikhsan" })).toBe("Ikhsan");
     expect(formatJiraValue({ value: "High", id: "1" })).toBe("High");
     expect(formatJiraValue("2026-03-01")).toBe("2026-03-01");
+    expect(formatJiraValue("2026-03-01T12:30:00.000Z")).toBe(
+      "2026-03-01 12:30:00 UTC",
+    );
+    expect(formatJiraValue(42)).toBe("42");
+    expect(formatJiraValue(true)).toBe("true");
     expect(
       formatJiraValue({
         type: "doc",
@@ -29,6 +34,57 @@ describe("jira field formatting", () => {
     ).toContain("Hello");
   });
 
+  it("formats arrays and nested objects", () => {
+    expect(
+      formatJiraValue([{ displayName: "Alice" }, { displayName: "Bob" }]),
+    ).toBe("Alice, Bob");
+    expect(
+      formatJiraValue({
+        key: "TIX-1",
+        fields: { summary: "Parent issue" },
+      }),
+    ).toBe("TIX-1 — Parent issue");
+    expect(formatJiraValue({ filename: "spec.pdf" })).toBe("spec.pdf");
+    expect(
+      formatJiraValue({
+        name: "In Progress",
+        id: "3",
+        statusCategory: { key: "indeterminate" },
+      }),
+    ).toBe("In Progress");
+  });
+
+  it("formats comments and timetracking", () => {
+    expect(
+      formatJiraValue({
+        comments: [
+          {
+            author: { displayName: "Alice" },
+            created: "2026-01-01T00:00:00.000Z",
+            body: { type: "doc", content: [] },
+          },
+        ],
+      }),
+    ).toContain("Alice");
+    expect(
+      formatJiraValue({
+        originalEstimate: "1d",
+        remainingEstimate: "4h",
+        timeSpent: "2h",
+      }),
+    ).toBe("original 1d · remaining 4h · spent 2h");
+  });
+
+  it("respects depth limit and skips empty values", () => {
+    expect(formatJiraValue(null)).toBe("");
+    expect(formatJiraValue("")).toBe("");
+    expect(formatJiraValue(undefined)).toBe("");
+    expect(formatJiraValue(Symbol("x") as unknown)).toBe("");
+    expect(formatJiraValue({ self: "x", nested: { a: "b" } })).toContain(
+      "nested: a: b",
+    );
+  });
+
   it("lists non-empty properties with names", () => {
     const props = listJiraProperties(
       { summary: "Title", customfield_10301: "2026-01-02", empty: null },
@@ -36,6 +92,17 @@ describe("jira field formatting", () => {
     );
     expect(props.map((p) => p.name)).toEqual(["Dev Start Date", "Summary"]);
     expect(props[0]?.text).toBe("2026-01-02");
+  });
+
+  it("humanizes built-in field ids without names", () => {
+    const props = listJiraProperties({ fixVersions: [{ name: "v1" }] }, {});
+    expect(props[0]?.name).toBe("Fix Versions");
+    expect(props[0]?.text).toBe("name: v1");
+  });
+
+  it("keeps customfield ids as-is", () => {
+    const props = listJiraProperties({ customfield_99999: "value" }, {});
+    expect(props[0]?.name).toBe("customfield_99999");
   });
 
   it("matches Dev Start / Dev End field ids", () => {
@@ -67,8 +134,16 @@ describe("jira field formatting", () => {
         { id: "customfield_1", name: "Summary" },
       ]),
     ).toBe("customfield_10016");
+    expect(
+      matchStoryPointsFieldId([
+        { id: "customfield_200", name: "Story point estimate" },
+      ]),
+    ).toBe("customfield_200");
     expect(parseStoryPoints(5)).toBe(5);
     expect(parseStoryPoints("3.5")).toBe(3.5);
+    expect(parseStoryPoints({ value: "8" })).toBe(8);
+    expect(parseStoryPoints({ value: "nope" })).toBeNull();
+    expect(parseStoryPoints("")).toBeNull();
     expect(parseStoryPoints(null)).toBeNull();
   });
 });

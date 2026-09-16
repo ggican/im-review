@@ -5,15 +5,9 @@ import {
   fetchCalendarEvents,
 } from "@/features/calendar/api";
 import type { CalendarEvent } from "@/features/calendar/types";
-import {
-  fetchGmailMessages,
-  gmailErrorMessage,
-} from "@/features/gmail/api";
+import { fetchGmailMessages, gmailErrorMessage } from "@/features/gmail/api";
 import type { GmailMessageSummary } from "@/features/gmail/types";
-import {
-  jiraErrorMessage,
-  searchJiraIssues,
-} from "@/features/jira/api";
+import { jiraErrorMessage, searchJiraIssues } from "@/features/jira/api";
 import { compileJql } from "@/features/jira/jql";
 import type { JiraIssue } from "@/features/jira/types";
 import { useGooglePublic, useJiraPublic } from "@/lib/use-settings";

@@ -363,28 +363,28 @@ Tidak ada pertanyaan yang blocking M11a.
 
 ### M11a
 
-- [ ] Combobox Author memfilter list tab aktif tanpa request GitHub baru
-- [ ] Clear mengembalikan list penuh tab itu
-- [ ] Star author di row menambah/menghapus favorite person; persist reload
-- [ ] Chip favorite people di dashboard memasang filter
-- [ ] Settings → Favorites → People: list + remove + add by login (404 ditolak)
-- [ ] Star **branch** tidak berubah perilaku
-- [ ] Tab Favorites (repos) tidak di-rename dan tidak menampilkan people
+- [x] Combobox Author memfilter list tab aktif tanpa request GitHub baru
+- [x] Clear mengembalikan list penuh tab itu
+- [x] Star author di row menambah/menghapus favorite person; persist reload
+- [x] Chip favorite people di dashboard memasang filter
+- [x] Settings → Favorites → People: list + remove + add by login (404 ditolak)
+- [x] Star **branch** tidak berubah perilaku
+- [x] Tab Favorites (repos) tidak di-rename dan tidak menampilkan people
 
 ### M11b
 
-- [ ] “Show all PRs by @login” / mode search memanggil `searchPrs` dengan `author:{login}`
-- [ ] Hasil tidak menimpa cache tab Assigned / Favorites / dll.
-- [ ] `?author=` di URL restore filter/search
-- [ ] Rate limit: stale/error jelas, tidak spam retry
+- [x] “Show all PRs by @login” / mode search memanggil `searchPrs` dengan `author:{login}`
+- [x] Hasil tidak menimpa cache tab Assigned / Favorites / dll.
+- [x] `?author=` di URL restore filter/search
+- [x] Rate limit: stale/error jelas, tidak spam retry
 - [x] Beberapa favorite users di-fetch via query OR bertahap (bila F47 on)
 
 ### M11c
 
-- [ ] `/people` search user GitHub + star
-- [ ] Klik user menampilkan open PRs
-- [ ] ⌘K `@login` menuju filter atau halaman people
-- [ ] Nav People di header dashboard
+- [x] `/people` search user GitHub + star
+- [x] Klik user menampilkan open PRs
+- [x] ⌘K `@login` menuju filter atau halaman people
+- [x] Nav People di header dashboard
 
 ---
 

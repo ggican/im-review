@@ -2,7 +2,6 @@ import { Loader2, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { PageHeader, PageShell } from "@/components/layout/PageShell";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -112,16 +111,10 @@ export function MetricsPage() {
   ];
 
   return (
-    <PageShell width="lg" className="gap-5">
+    <PageShell width="full" className="gap-5">
       <PageHeader
         title="Metrics"
         subtitle="Engineering scorecard from your GitHub PR activity"
-        backTo="/"
-        leading={
-          <Badge variant="accent" className="mt-1">
-            Metrics
-          </Badge>
-        }
         actions={
           <Button
             type="button"
@@ -151,7 +144,7 @@ export function MetricsPage() {
         <CardContent>
           <div className="flex flex-wrap items-end gap-4">
             <div className="min-w-[11rem] flex-1 sm:flex-none">
-              <p className="mb-1 text-label-sm text-on-surface-variant">
+              <p className="text-label-sm text-on-surface-variant mb-1">
                 Aggregation
               </p>
               <Select
@@ -174,7 +167,7 @@ export function MetricsPage() {
             </div>
 
             <div className="min-w-0 flex-1">
-              <p className="mb-1 text-label-sm text-on-surface-variant">
+              <p className="text-label-sm text-on-surface-variant mb-1">
                 Time window
               </p>
               <div
@@ -225,76 +218,76 @@ export function MetricsPage() {
         aria-labelledby={`metrics-tab-${tab}`}
         className="space-y-5"
       >
-      {scorecard && tab === "scorecard" ? (
-        <div className="space-y-5">
-          <MetricSummaryBanner
-            overall={scorecard.overall}
-            login={login}
-            windowLabel={windowLabel}
-            previousLabel={previousLabel}
-            aggregationLabel={aggregationLabel}
-            generatedAt={updatedAt}
-            trend={trends?.overall ?? null}
-          />
+        {scorecard && tab === "scorecard" ? (
+          <div className="space-y-5">
+            <MetricSummaryBanner
+              overall={scorecard.overall}
+              login={login}
+              windowLabel={windowLabel}
+              previousLabel={previousLabel}
+              aggregationLabel={aggregationLabel}
+              generatedAt={updatedAt}
+              trend={trends?.overall ?? null}
+            />
 
-          <MetricSummaryCards scorecard={scorecard} ciHealth={ciHealth} />
+            <MetricSummaryCards scorecard={scorecard} ciHealth={ciHealth} />
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <MetricCard
-              subscore={scorecard.speed}
-              trend={trends?.speed}
-              active={activeCategory === "speed"}
-              onSelect={() => setActiveCategory("speed")}
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <MetricCard
+                subscore={scorecard.speed}
+                trend={trends?.speed}
+                active={activeCategory === "speed"}
+                onSelect={() => setActiveCategory("speed")}
+              />
+              <MetricCard
+                subscore={scorecard.throughput}
+                trend={trends?.throughput}
+                active={activeCategory === "throughput"}
+                onSelect={() => setActiveCategory("throughput")}
+              />
+              <MetricCard
+                subscore={scorecard.quality}
+                trend={trends?.quality}
+                active={activeCategory === "quality"}
+                onSelect={() => setActiveCategory("quality")}
+              />
+              <MetricCard
+                subscore={scorecard.collaboration}
+                trend={trends?.collaboration}
+                active={activeCategory === "collaboration"}
+                onSelect={() => setActiveCategory("collaboration")}
+              />
+            </div>
+
+            <MetricsCharts
+              current={scorecard}
+              previous={previousScorecard}
+              daily={daily}
             />
-            <MetricCard
-              subscore={scorecard.throughput}
-              trend={trends?.throughput}
-              active={activeCategory === "throughput"}
-              onSelect={() => setActiveCategory("throughput")}
-            />
-            <MetricCard
-              subscore={scorecard.quality}
-              trend={trends?.quality}
-              active={activeCategory === "quality"}
-              onSelect={() => setActiveCategory("quality")}
-            />
-            <MetricCard
-              subscore={scorecard.collaboration}
-              trend={trends?.collaboration}
-              active={activeCategory === "collaboration"}
-              onSelect={() => setActiveCategory("collaboration")}
-            />
+
+            <MetricBreakdownPanel subscore={activeSubscore} />
           </div>
+        ) : null}
 
-          <MetricsCharts
-            current={scorecard}
-            previous={previousScorecard}
-            daily={daily}
+        {scorecard && tab === "suggestions" ? (
+          <MetricSuggestionsPanel suggestions={suggestions} />
+        ) : null}
+
+        {scorecard && tab === "ci" ? (
+          <CiHealthPanel
+            summary={ciHealth}
+            loading={loading}
+            windowLabel={scorecard.window.label}
           />
+        ) : null}
 
-          <MetricBreakdownPanel subscore={activeSubscore} />
-        </div>
-      ) : null}
-
-      {scorecard && tab === "suggestions" ? (
-        <MetricSuggestionsPanel suggestions={suggestions} />
-      ) : null}
-
-      {scorecard && tab === "ci" ? (
-        <CiHealthPanel
-          summary={ciHealth}
-          loading={loading}
-          windowLabel={scorecard.window.label}
-        />
-      ) : null}
-
-      {!loading && !error && !scorecard ? (
-        <Card padding="default">
-          <p className="py-12 text-center text-body-md text-on-surface-variant">
-            No metrics available yet.
-          </p>
-        </Card>
-      ) : null}
+        {!loading && !error && !scorecard ? (
+          <Card padding="default">
+            <p className="text-body-md text-on-surface-variant py-12 text-center">
+              No metrics available yet.
+            </p>
+          </Card>
+        ) : null}
       </TabsPanel>
     </PageShell>
   );

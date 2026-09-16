@@ -76,13 +76,7 @@ export type PullRequest = {
 };
 
 export type PrTab =
-  | "all"
-  | "favorites"
-  | "assigned"
-  | "review"
-  | "reviewed"
-  | "mine"
-  | "people";
+  "all" | "favorites" | "assigned" | "review" | "reviewed" | "mine" | "people";
 
 export type PrLists = Record<PrTab, PullRequest[]>;
 

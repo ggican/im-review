@@ -20,9 +20,7 @@ import {
 } from "@/components/ui/card";
 import { ErrorBlock, LoadingBlock } from "@/components/ui/feedback";
 import { TabsList, TabsPanel, TabsTrigger } from "@/components/ui/tabs";
-import {
-  formatEventWhen,
-} from "@/features/calendar/api";
+import { formatEventWhen } from "@/features/calendar/api";
 import type { CalendarEvent } from "@/features/calendar/types";
 import type { GmailMessageSummary } from "@/features/gmail/types";
 import type { JiraIssue } from "@/features/jira/types";
@@ -75,11 +73,7 @@ export function TodaySummaryCards({
       aria-label="Today summary"
       className="grid grid-cols-2 gap-3 lg:grid-cols-4"
     >
-      <Card
-        variant="streamGithub"
-        padding="sm"
-        className="min-h-[5.5rem]"
-      >
+      <Card variant="streamGithub" padding="sm" className="min-h-[5.5rem]">
         <div className="flex items-start justify-between gap-2">
           <span className="text-label-sm font-semibold tracking-wider uppercase">
             Needs me
@@ -89,11 +83,11 @@ export function TodaySummaryCards({
         <div className="font-headline mt-2 text-3xl font-bold tabular-nums">
           {needsMe}
         </div>
-        <p className="mt-1 text-body-sm opacity-80">Action required</p>
+        <p className="text-body-sm mt-1 opacity-80">Action required</p>
       </Card>
 
       <Card
-        className="min-h-[5.5rem] border border-stream-ai-border bg-stream-ai text-stream-ai-fg shadow-card"
+        className="border-stream-ai-border bg-stream-ai text-stream-ai-fg shadow-card min-h-[5.5rem] border"
         padding="sm"
       >
         <div className="flex items-start justify-between gap-2">
@@ -105,7 +99,7 @@ export function TodaySummaryCards({
         <div className="font-headline mt-2 text-3xl font-bold tabular-nums">
           {prReview + prMine}
         </div>
-        <p className="mt-1 text-body-sm opacity-80">
+        <p className="text-body-sm mt-1 opacity-80">
           {prReview} awaiting review
           {ciFails > 0 ? ` · ${ciFails} CI fail` : ""}
         </p>
@@ -121,7 +115,7 @@ export function TodaySummaryCards({
         <div className="font-headline mt-2 text-3xl font-bold tabular-nums">
           {jiraConnected ? jiraCount : "—"}
         </div>
-        <p className="mt-1 text-body-sm opacity-80">
+        <p className="text-body-sm mt-1 opacity-80">
           {jiraConnected ? "Assigned to you" : "Connect in Settings"}
         </p>
       </Card>
@@ -136,7 +130,7 @@ export function TodaySummaryCards({
         <div className="font-headline mt-2 text-3xl font-bold tabular-nums">
           {googleConnected ? meetingCount : "—"}
         </div>
-        <p className="mt-1 text-body-sm opacity-80">
+        <p className="text-body-sm mt-1 opacity-80">
           {googleConnected
             ? (nextMeetingLabel ?? "No upcoming")
             : "Connect Google"}
@@ -212,7 +206,7 @@ export function NeedsMeSection({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2
           id="needs-me-heading"
-          className="font-headline text-headline-sm font-semibold tracking-tight text-on-surface"
+          className="font-headline text-headline-sm text-on-surface font-semibold tracking-tight"
         >
           Needs me
         </h2>
@@ -248,231 +242,233 @@ export function NeedsMeSection({
         aria-labelledby={`today-filter-${filter}`}
         className="space-y-3"
       >
-      {busy ? (
-        <LoadingBlock>Loading today’s work…</LoadingBlock>
-      ) : null}
+        {busy ? <LoadingBlock>Loading today’s work…</LoadingBlock> : null}
 
-      {empty ? (
-        <Card padding="default" className="text-center">
-          <CardTitle className="text-title-md">You’re clear</CardTitle>
-          <CardDescription className="mt-1">
-            {filter === "jira" && !jiraConnected
-              ? "Connect Jira in Settings to see assigned issues."
-              : filter === "mail" && !googleConnected
-                ? "Connect Google in Settings to see unread mail."
-                : "Nothing needs you right now. Check Pull Requests for the full queue."}
-          </CardDescription>
-          <div className="mt-4 flex justify-center gap-2">
-            {filter === "jira" && !jiraConnected ? (
+        {empty ? (
+          <Card padding="default" className="text-center">
+            <CardTitle className="text-title-md">You’re clear</CardTitle>
+            <CardDescription className="mt-1">
+              {filter === "jira" && !jiraConnected
+                ? "Connect Jira in Settings to see assigned issues."
+                : filter === "mail" && !googleConnected
+                  ? "Connect Google in Settings to see unread mail."
+                  : "Nothing needs you right now. Check Pull Requests for the full queue."}
+            </CardDescription>
+            <div className="mt-4 flex justify-center gap-2">
+              {filter === "jira" && !jiraConnected ? (
+                <Button asChild size="sm" variant="outline">
+                  <Link to="/settings">Open Settings</Link>
+                </Button>
+              ) : null}
+              {filter === "mail" && !googleConnected ? (
+                <Button asChild size="sm" variant="outline">
+                  <Link to="/settings">Open Settings</Link>
+                </Button>
+              ) : null}
               <Button asChild size="sm" variant="outline">
-                <Link to="/settings">Open Settings</Link>
+                <Link to="/?hub=prs">Pull Requests</Link>
               </Button>
-            ) : null}
-            {filter === "mail" && !googleConnected ? (
-              <Button asChild size="sm" variant="outline">
-                <Link to="/settings">Open Settings</Link>
-              </Button>
-            ) : null}
-            <Button asChild size="sm" variant="outline">
-              <Link to="/?hub=prs">Pull Requests</Link>
-            </Button>
-          </div>
-        </Card>
-      ) : null}
+            </div>
+          </Card>
+        ) : null}
 
-      {!busy && items.length > 0 ? (
-        <ul className="flex flex-col gap-2.5">
-          {items.map((item) => {
-            if (item.kind === "pr-review") {
-              const pr = item.pr;
-              return (
-                <li key={`pr-${pr.repo}-${pr.number}`}>
-                  <Card
-                    variant="streamGithub"
-                    padding="sm"
-                    className="bg-surface-container-lowest text-on-surface"
-                  >
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <Badge variant="github">GitHub</Badge>
-                          <span className="font-keycap text-body-sm text-on-surface-variant">
-                            PR #{pr.number}
-                          </span>
-                          <span className="font-keycap text-body-sm text-on-surface-variant">
-                            {pr.repo}
-                          </span>
-                          <Badge variant="accent">Needs review</Badge>
-                          {pr.isDraft ? (
-                            <Badge variant="outline">Draft</Badge>
-                          ) : null}
+        {!busy && items.length > 0 ? (
+          <ul className="flex flex-col gap-2.5">
+            {items.map((item) => {
+              if (item.kind === "pr-review") {
+                const pr = item.pr;
+                return (
+                  <li key={`pr-${pr.repo}-${pr.number}`}>
+                    <Card
+                      variant="streamGithub"
+                      padding="sm"
+                      className="bg-surface-container-lowest text-on-surface"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <Badge variant="github">GitHub</Badge>
+                            <span className="font-keycap text-body-sm text-on-surface-variant">
+                              PR #{pr.number}
+                            </span>
+                            <span className="font-keycap text-body-sm text-on-surface-variant">
+                              {pr.repo}
+                            </span>
+                            <Badge variant="accent">Needs review</Badge>
+                            {pr.isDraft ? (
+                              <Badge variant="outline">Draft</Badge>
+                            ) : null}
+                          </div>
+                          <p className="text-title-md text-on-surface mt-1.5 font-semibold">
+                            {pr.title}
+                          </p>
+                          <p className="text-body-sm text-on-surface-variant mt-1">
+                            Requested by {pr.author.login} ·{" "}
+                            {relativeTime(pr.updatedAt)}
+                          </p>
                         </div>
-                        <p className="mt-1.5 text-title-md font-semibold text-on-surface">
-                          {pr.title}
-                        </p>
-                        <p className="mt-1 text-body-sm text-on-surface-variant">
-                          Requested by {pr.author.login} ·{" "}
-                          {relativeTime(pr.updatedAt)}
-                        </p>
+                        <div className="flex shrink-0 gap-1.5">
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => onSelectPr(pr)}
+                          >
+                            Review Diff
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex shrink-0 gap-1.5">
+                    </Card>
+                  </li>
+                );
+              }
+              if (item.kind === "pr-ci") {
+                const { pr, description } = item.hit;
+                return (
+                  <li key={`ci-${pr.repo}-${pr.number}`}>
+                    <Card padding="sm" className="border-error/25">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <Badge variant="github">GitHub</Badge>
+                            <span className="font-keycap text-body-sm text-on-surface-variant">
+                              PR #{pr.number}
+                            </span>
+                            <Badge variant="error">CI failed</Badge>
+                          </div>
+                          <p className="text-title-md mt-1.5 font-semibold">
+                            {pr.title}
+                          </p>
+                          <p className="text-body-sm text-on-surface-variant mt-1">
+                            {description} · {relativeTime(pr.updatedAt)}
+                          </p>
+                        </div>
                         <Button
                           type="button"
                           size="sm"
+                          variant="outline"
                           onClick={() => onSelectPr(pr)}
                         >
-                          Review Diff
+                          Inspect
                         </Button>
                       </div>
-                    </div>
-                  </Card>
-                </li>
-              );
-            }
-            if (item.kind === "pr-ci") {
-              const { pr, description } = item.hit;
-              return (
-                <li key={`ci-${pr.repo}-${pr.number}`}>
-                  <Card padding="sm" className="border-error/25">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <Badge variant="github">GitHub</Badge>
-                          <span className="font-keycap text-body-sm text-on-surface-variant">
-                            PR #{pr.number}
-                          </span>
-                          <Badge variant="error">CI failed</Badge>
+                    </Card>
+                  </li>
+                );
+              }
+              if (item.kind === "jira") {
+                const issue = item.issue;
+                return (
+                  <li key={`jira-${issue.key}`}>
+                    <Card
+                      variant="streamJira"
+                      padding="sm"
+                      className="bg-surface-container-lowest text-on-surface"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <Badge variant="jira">Jira</Badge>
+                            <span className="font-keycap text-body-sm text-stream-jira-fg">
+                              {issue.key}
+                            </span>
+                            <Badge variant="outline">{issue.status.name}</Badge>
+                          </div>
+                          <p className="text-title-md mt-1.5 font-semibold">
+                            {issue.summary}
+                          </p>
+                          <p className="text-body-sm text-on-surface-variant mt-1">
+                            {issue.type.name}
+                            {issue.priority
+                              ? ` · ${issue.priority}`
+                              : ""} · {relativeTime(issue.updatedAt)}
+                          </p>
                         </div>
-                        <p className="mt-1.5 text-title-md font-semibold">
-                          {pr.title}
-                        </p>
-                        <p className="mt-1 text-body-sm text-on-surface-variant">
-                          {description} · {relativeTime(pr.updatedAt)}
-                        </p>
+                        <Button asChild size="sm" variant="outline">
+                          <Link to={`/jira/${issue.key}`}>Open Jira</Link>
+                        </Button>
                       </div>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => onSelectPr(pr)}
-                      >
-                        Inspect
-                      </Button>
-                    </div>
-                  </Card>
-                </li>
-              );
-            }
-            if (item.kind === "jira") {
-              const issue = item.issue;
+                    </Card>
+                  </li>
+                );
+              }
+              const message = item.message;
               return (
-                <li key={`jira-${issue.key}`}>
+                <li key={`mail-${message.id}`}>
                   <Card
-                    variant="streamJira"
+                    variant="streamGmail"
                     padding="sm"
                     className="bg-surface-container-lowest text-on-surface"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-1.5">
-                          <Badge variant="jira">Jira</Badge>
-                          <span className="font-keycap text-body-sm text-stream-jira-fg">
-                            {issue.key}
-                          </span>
-                          <Badge variant="outline">{issue.status.name}</Badge>
+                          <Badge variant="gmail">Gmail</Badge>
+                          {message.unread ? (
+                            <Badge variant="warning">Unread</Badge>
+                          ) : null}
                         </div>
-                        <p className="mt-1.5 text-title-md font-semibold">
-                          {issue.summary}
+                        <p className="text-title-md mt-1.5 font-semibold">
+                          {message.subject || "(no subject)"}
                         </p>
-                        <p className="mt-1 text-body-sm text-on-surface-variant">
-                          {issue.type.name}
-                          {issue.priority ? ` · ${issue.priority}` : ""} ·{" "}
-                          {relativeTime(issue.updatedAt)}
+                        <p className="text-body-sm text-on-surface-variant mt-1 line-clamp-2">
+                          {message.from} · {message.snippet}
                         </p>
                       </div>
                       <Button asChild size="sm" variant="outline">
-                        <Link to={`/jira/${issue.key}`}>Open Jira</Link>
+                        <Link to={`/gmail/${message.id}`}>Open</Link>
                       </Button>
                     </div>
                   </Card>
                 </li>
               );
-            }
-            const message = item.message;
-            return (
-              <li key={`mail-${message.id}`}>
-                <Card
-                  variant="streamGmail"
-                  padding="sm"
-                  className="bg-surface-container-lowest text-on-surface"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <Badge variant="gmail">Gmail</Badge>
-                        {message.unread ? (
-                          <Badge variant="warning">Unread</Badge>
-                        ) : null}
-                      </div>
-                      <p className="mt-1.5 text-title-md font-semibold">
-                        {message.subject || "(no subject)"}
-                      </p>
-                      <p className="mt-1 line-clamp-2 text-body-sm text-on-surface-variant">
-                        {message.from} · {message.snippet}
-                      </p>
-                    </div>
-                    <Button asChild size="sm" variant="outline">
-                      <Link to={`/gmail/${message.id}`}>Open</Link>
-                    </Button>
-                  </div>
-                </Card>
-              </li>
-            );
-          })}
-        </ul>
-      ) : null}
-
-      {reviewedPrs.length > 0 && (filter === "all" || filter === "prs") ? (
-        <div className="mt-2 flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <h3 className="font-headline text-label-md font-semibold tracking-wide text-on-surface-variant uppercase">
-              Already reviewed
-            </h3>
-            <Badge variant="success">{reviewedPrs.length}</Badge>
-          </div>
-          <ul className="flex flex-col gap-2 opacity-90">
-            {reviewedPrs.slice(0, 8).map((pr) => (
-              <li key={`reviewed-${pr.repo}-${pr.number}`}>
-                <button
-                  type="button"
-                  onClick={() => onSelectPr(pr)}
-                  className={cn(
-                    "w-full rounded-xl border border-stream-ai-border bg-stream-ai/60 px-3 py-2.5 text-left transition-colors",
-                    "hover:bg-stream-ai focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-container",
-                  )}
-                >
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="font-keycap text-body-sm text-stream-ai-fg">
-                      #{pr.number}
-                    </span>
-                    <span className="truncate text-body-md font-medium text-on-surface">
-                      {pr.title}
-                    </span>
-                    {pr.localReviewEvent ? (
-                      <ReviewStatusBadge event={pr.localReviewEvent} compact />
-                    ) : (
-                      <Badge variant="success">Already reviewed</Badge>
-                    )}
-                  </div>
-                  <p className="mt-1 text-body-sm text-on-surface-variant">
-                    {pr.repo} · {relativeTime(pr.updatedAt)}
-                  </p>
-                </button>
-              </li>
-            ))}
+            })}
           </ul>
-        </div>
-      ) : null}
+        ) : null}
+
+        {reviewedPrs.length > 0 && (filter === "all" || filter === "prs") ? (
+          <div className="mt-2 flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <h3 className="font-headline text-label-md text-on-surface-variant font-semibold tracking-wide uppercase">
+                Already reviewed
+              </h3>
+              <Badge variant="success">{reviewedPrs.length}</Badge>
+            </div>
+            <ul className="flex flex-col gap-2 opacity-90">
+              {reviewedPrs.slice(0, 8).map((pr) => (
+                <li key={`reviewed-${pr.repo}-${pr.number}`}>
+                  <button
+                    type="button"
+                    onClick={() => onSelectPr(pr)}
+                    className={cn(
+                      "border-stream-ai-border bg-stream-ai/60 w-full rounded-xl border px-3 py-2.5 text-left transition-colors",
+                      "hover:bg-stream-ai focus-visible:ring-primary-container focus-visible:ring-2 focus-visible:outline-none",
+                    )}
+                  >
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="font-keycap text-body-sm text-stream-ai-fg">
+                        #{pr.number}
+                      </span>
+                      <span className="text-body-md text-on-surface truncate font-medium">
+                        {pr.title}
+                      </span>
+                      {pr.localReviewEvent ? (
+                        <ReviewStatusBadge
+                          event={pr.localReviewEvent}
+                          compact
+                        />
+                      ) : (
+                        <Badge variant="success">Already reviewed</Badge>
+                      )}
+                    </div>
+                    <p className="text-body-sm text-on-surface-variant mt-1">
+                      {pr.repo} · {relativeTime(pr.updatedAt)}
+                    </p>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </TabsPanel>
     </section>
   );
@@ -506,11 +502,14 @@ export function TodaySidePreviews({
 
   return (
     <aside className="flex flex-col gap-4">
-      <section aria-labelledby="schedule-heading" className="flex flex-col gap-2">
+      <section
+        aria-labelledby="schedule-heading"
+        className="flex flex-col gap-2"
+      >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2
             id="schedule-heading"
-            className="font-headline text-headline-sm font-semibold tracking-tight text-on-surface"
+            className="font-headline text-headline-sm text-on-surface font-semibold tracking-tight"
           >
             Today’s schedule
           </h2>
@@ -523,7 +522,7 @@ export function TodaySidePreviews({
         </p>
 
         {loading ? (
-          <div className="flex items-center gap-2 text-body-sm text-on-surface-variant">
+          <div className="text-body-sm text-on-surface-variant flex items-center gap-2">
             <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
             Loading agenda…
           </div>
@@ -535,7 +534,10 @@ export function TodaySidePreviews({
           </p>
         ) : null}
 
-        {!loading && googleConnected && upcoming.length === 0 && !calendarError ? (
+        {!loading &&
+        googleConnected &&
+        upcoming.length === 0 &&
+        !calendarError ? (
           <Card padding="sm">
             <CardDescription>No meetings left today.</CardDescription>
             <Button asChild size="sm" variant="outline" className="mt-2">
@@ -564,7 +566,7 @@ export function TodaySidePreviews({
                   padding="sm"
                   className={cn(
                     isNext
-                      ? "border-primary-container/50 ring-1 ring-primary-container/30"
+                      ? "border-primary-container/50 ring-primary-container/30 ring-1"
                       : "",
                   )}
                 >
@@ -579,7 +581,9 @@ export function TodaySidePreviews({
                     <p className="font-keycap text-body-sm text-on-surface-variant">
                       {formatEventWhen(event)}
                     </p>
-                    <CardTitle className="text-title-md">{event.title}</CardTitle>
+                    <CardTitle className="text-title-md">
+                      {event.title}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="flex flex-wrap gap-2">
                     {event.hangoutLink ? (
@@ -615,19 +619,21 @@ export function TodaySidePreviews({
               <Mail className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="truncate text-label-md font-semibold">
+                  <span className="text-label-md truncate font-semibold">
                     {topMail.from}
                   </span>
-                  <span className="shrink-0 text-body-sm opacity-80">
+                  <span className="text-body-sm shrink-0 opacity-80">
                     {relativeTime(
-                      new Date(topMail.dateMs || Date.parse(topMail.date)).toISOString(),
+                      new Date(
+                        topMail.dateMs || Date.parse(topMail.date),
+                      ).toISOString(),
                     )}
                   </span>
                 </div>
-                <p className="mt-1 text-title-md font-semibold text-inherit">
+                <p className="text-title-md mt-1 font-semibold text-inherit">
                   {topMail.subject || "(no subject)"}
                 </p>
-                <p className="mt-1 line-clamp-2 text-body-sm opacity-90">
+                <p className="text-body-sm mt-1 line-clamp-2 opacity-90">
                   {topMail.snippet}
                 </p>
                 <div className="mt-3 flex gap-2">
@@ -686,7 +692,7 @@ export function TodaySidePreviews({
                   className="block rounded-lg px-2 py-1.5 hover:bg-black/5 dark:hover:bg-white/5"
                 >
                   <span className="font-keycap text-body-sm">{issue.key}</span>
-                  <span className="mt-0.5 block truncate text-body-md font-medium text-on-surface">
+                  <span className="text-body-md text-on-surface mt-0.5 block truncate font-medium">
                     {issue.summary}
                   </span>
                 </Link>
@@ -732,16 +738,16 @@ export function TodayHeader({
   return (
     <header className="flex flex-wrap items-start justify-between gap-3">
       <div className="min-w-0">
-        <h1 className="font-headline text-headline-lg font-bold tracking-tight text-on-surface">
+        <h1 className="font-headline text-headline-lg text-on-surface font-bold tracking-tight">
           {greet}, {name}
         </h1>
-        <p className="mt-1 text-body-lg text-on-surface-variant">
+        <p className="text-body-lg text-on-surface-variant mt-1">
           Here’s what needs your attention today.
           {actionCount > 0 ? (
             <>
               {" "}
               You have{" "}
-              <span className="font-semibold text-on-surface">
+              <span className="text-on-surface font-semibold">
                 {actionCount} high-priority action
                 {actionCount === 1 ? "" : "s"}
               </span>

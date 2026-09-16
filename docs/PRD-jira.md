@@ -439,26 +439,26 @@ Tidak ada pertanyaan blocking M12a.
 
 ### M12a
 
-- [ ] Connect/disconnect Jira di Settings; `/myself` sukses menyimpan displayName
-- [ ] `/jira` menampilkan issue assignee current user, di-group by status
-- [ ] Setiap row: key, title, status, type; parent kelihatan (atau “No parent”)
-- [ ] Sub-task menampilkan parent key + title
-- [ ] Drawer: status, title, type, parent, open in Jira
-- [ ] Tanpa creds: empty + CTA; GitHub dashboard tidak rusak
+- [x] Connect/disconnect Jira di Settings; `/myself` sukses menyimpan displayName
+- [x] `/jira` menampilkan issue assignee current user, di-group by status
+- [x] Setiap row: key, title, status, type; parent kelihatan (atau “No parent”)
+- [x] Sub-task menampilkan parent key + title
+- [x] Drawer: status, title, type, parent, open in Jira
+- [x] Tanpa creds: empty + CTA; GitHub dashboard tidak rusak
 
 ### M12b
 
-- [ ] Dropdown type memfilter list (Story / Bug / Defect / … / All)
-- [ ] Label memfilter list; clear mengembalikan tanpa klausa labels
-- [ ] Extra JQL error tampil inline
-- [ ] Save filter (nama) → muncul di daftar → klik apply mengembalikan type+label+JQL+list
-- [ ] Rename/delete saved filter; My work tidak terhapus
+- [x] Dropdown type memfilter list (Story / Bug / Defect / … / All)
+- [x] Label memfilter list; clear mengembalikan tanpa klausa labels
+- [x] Extra JQL error tampil inline
+- [x] Save filter (nama) → muncul di daftar → klik apply mengembalikan type+label+JQL+list
+- [x] Rename/delete saved filter; My work tidak terhapus
 
 ### M12c
 
-- [ ] Bisa lihat filter my/favourite dari Jira dan apply
-- [ ] Save to Jira membuat filter; error nama duplikat jelas
-- [ ] `jiraFilterId` tersimpan di filter lokal setelah sukses
+- [x] Bisa lihat filter my/favourite dari Jira dan apply
+- [x] Save to Jira membuat filter; error nama duplikat jelas
+- [x] `jiraFilterId` tersimpan di filter lokal setelah sukses
 
 ---
 

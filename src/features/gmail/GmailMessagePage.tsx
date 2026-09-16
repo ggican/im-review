@@ -130,7 +130,7 @@ export function GmailMessagePage() {
 
   if (!connected) {
     return (
-      <PageShell>
+      <PageShell width="full">
         <PageHeader backTo="/gmail" title="Gmail" subtitle="Connect first" />
         <Card padding="default" className="border-stream-gmail-border/80">
           <CardHeader className="mb-2">
@@ -150,16 +150,11 @@ export function GmailMessagePage() {
   }
 
   return (
-    <PageShell width="lg" className="gap-5">
+    <PageShell width="full" className="gap-5">
       <PageHeader
         backTo="/gmail"
         title={message?.subject ?? messageId}
         subtitle={message?.from}
-        leading={
-          <Badge variant="gmail" className="mt-1">
-            Gmail
-          </Badge>
-        }
         actions={
           <Button
             type="button"
@@ -241,22 +236,22 @@ export function GmailMessagePage() {
                 </Button>
               </div>
 
-              <dl className="grid gap-2 rounded-lg border border-border bg-surface-container-low/40 px-3 py-2.5 text-body-sm sm:grid-cols-[6rem_minmax(0,1fr)]">
-                <dt className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+              <dl className="border-border bg-surface-container-low/40 text-body-sm grid gap-2 rounded-lg border px-3 py-2.5 sm:grid-cols-[6rem_minmax(0,1fr)]">
+                <dt className="text-label-sm text-on-surface-variant tracking-wide uppercase">
                   To
                 </dt>
-                <dd className="break-all text-on-surface">
+                <dd className="text-on-surface break-all">
                   {message.to || "—"}
                 </dd>
                 {message.cc ? (
                   <>
-                    <dt className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+                    <dt className="text-label-sm text-on-surface-variant tracking-wide uppercase">
                       Cc
                     </dt>
-                    <dd className="break-all text-on-surface">{message.cc}</dd>
+                    <dd className="text-on-surface break-all">{message.cc}</dd>
                   </>
                 ) : null}
-                <dt className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+                <dt className="text-label-sm text-on-surface-variant tracking-wide uppercase">
                   Date
                 </dt>
                 <dd className="text-on-surface">
@@ -282,22 +277,22 @@ export function GmailMessagePage() {
 
           <Card padding="default">
             <CardHeader className="mb-2">
-              <CardTitle className="text-label-sm tracking-wide text-on-surface-variant uppercase">
+              <CardTitle className="text-label-sm text-on-surface-variant tracking-wide uppercase">
                 Message
               </CardTitle>
             </CardHeader>
             <CardContent>
               {message.bodyText ? (
-                <pre className="max-h-[36rem] overflow-auto rounded-lg border border-border bg-surface-container-low p-3 font-sans text-body-md leading-relaxed whitespace-pre-wrap text-on-surface">
+                <pre className="border-border bg-surface-container-low text-body-md text-on-surface max-h-[36rem] overflow-auto rounded-lg border p-3 font-sans leading-relaxed whitespace-pre-wrap">
                   {message.bodyText}
                 </pre>
               ) : message.bodyHtml ? (
                 <div
-                  className="prose prose-sm dark:prose-invert max-w-none rounded-lg border border-border bg-surface-container-low p-3 text-on-surface"
+                  className="prose prose-sm dark:prose-invert border-border bg-surface-container-low text-on-surface max-w-none rounded-lg border p-3"
                   dangerouslySetInnerHTML={{ __html: message.bodyHtml }}
                 />
               ) : (
-                <p className="rounded-lg border border-dashed border-border px-3 py-8 text-center text-body-md text-on-surface-variant">
+                <p className="border-border text-body-md text-on-surface-variant rounded-lg border border-dashed px-3 py-8 text-center">
                   No plain-text body.{" "}
                   <button
                     type="button"
@@ -312,7 +307,7 @@ export function GmailMessagePage() {
           </Card>
         </div>
       ) : (
-        <p className="py-10 text-center text-body-md text-on-surface-variant">
+        <p className="text-body-md text-on-surface-variant py-10 text-center">
           Message not found.
         </p>
       )}

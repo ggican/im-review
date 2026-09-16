@@ -14,9 +14,7 @@ const EVENTS: { id: ReviewEvent; label: string }[] = [
   { id: "APPROVE", label: "Approve" },
 ];
 
-function severityVariant(
-  s: AiSeverity,
-): "error" | "warning" | "default" {
+function severityVariant(s: AiSeverity): "error" | "warning" | "default" {
   switch (s) {
     case "critical":
       return "error";
@@ -65,8 +63,8 @@ export function AiReviewPanel({
     const secs = elapsedSec % 60;
     const clock = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
     return (
-      <div className="space-y-3 rounded-lg border border-stream-ai-border bg-stream-ai/40 p-4">
-        <div className="flex items-center gap-2 text-body-sm font-medium text-stream-ai-fg">
+      <div className="border-stream-ai-border bg-stream-ai/40 space-y-3 rounded-lg border p-4">
+        <div className="text-body-sm text-stream-ai-fg flex items-center gap-2 font-medium">
           <Loader2 className="h-4 w-4 animate-spin" />
           Cursor AI is reviewing… {clock}
         </div>
@@ -87,16 +85,16 @@ export function AiReviewPanel({
   const included = draft.findings.filter((f) => f.included).length;
 
   return (
-    <div className="space-y-3 rounded-lg border border-stream-ai-border bg-stream-ai/30 p-4">
-      <div className="flex items-center gap-2 text-body-sm font-medium text-on-surface">
-        <Sparkles className="h-4 w-4 text-stream-ai-fg" />
+    <div className="border-stream-ai-border bg-stream-ai/30 space-y-3 rounded-lg border p-4">
+      <div className="text-body-sm text-on-surface flex items-center gap-2 font-medium">
+        <Sparkles className="text-stream-ai-fg h-4 w-4" />
         AI review draft
       </div>
 
       <div className="space-y-1">
         <label
           htmlFor="ai-draft-summary"
-          className="text-label-sm font-medium tracking-wide text-on-surface-variant uppercase"
+          className="text-label-sm text-on-surface-variant font-medium tracking-wide uppercase"
         >
           Summary
         </label>
@@ -110,7 +108,7 @@ export function AiReviewPanel({
       </div>
 
       <div className="space-y-2">
-        <div className="text-label-sm font-medium tracking-wide text-on-surface-variant uppercase">
+        <div className="text-label-sm text-on-surface-variant font-medium tracking-wide uppercase">
           Findings ({included}/{draft.findings.length} selected)
         </div>
         {draft.findings.length === 0 ? (
@@ -132,7 +130,7 @@ export function AiReviewPanel({
       </div>
 
       <div className="space-y-1">
-        <div className="text-label-sm font-medium tracking-wide text-on-surface-variant uppercase">
+        <div className="text-label-sm text-on-surface-variant font-medium tracking-wide uppercase">
           Post as
         </div>
         <div className="flex flex-wrap gap-1.5">
@@ -180,7 +178,7 @@ function FindingRow({
   disabled: boolean;
 }) {
   return (
-    <li className="flex gap-2 rounded-md border border-border bg-surface-container-lowest p-2">
+    <li className="border-border bg-surface-container-lowest flex gap-2 rounded-md border p-2">
       <input
         type="checkbox"
         className="mt-1"
@@ -197,17 +195,17 @@ function FindingRow({
           >
             {finding.severity}
           </Badge>
-          <span className="text-body-sm font-medium text-on-surface">
+          <span className="text-body-sm text-on-surface font-medium">
             {finding.title}
           </span>
         </div>
         {finding.path ? (
-          <div className="mt-0.5 font-mono text-xs text-on-surface-variant">
+          <div className="text-on-surface-variant mt-0.5 font-mono text-xs">
             {finding.path}
             {finding.line != null ? `:${finding.line}` : ""}
           </div>
         ) : null}
-        <p className="mt-1 text-body-sm whitespace-pre-wrap text-on-surface-variant">
+        <p className="text-body-sm text-on-surface-variant mt-1 whitespace-pre-wrap">
           {finding.body}
         </p>
       </div>

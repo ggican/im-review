@@ -118,6 +118,48 @@ describe("AppChrome", () => {
     expect(getSettings().theme).toBe("dark");
   });
 
+  it("handles validateToken failure", async () => {
+    mockValidateToken.mockRejectedValueOnce(new Error("expired"));
+    renderChrome("/");
+    await waitFor(() => {
+      expect(screen.queryByText("Alice")).not.toBeInTheDocument();
+    });
+  });
+
+  it("shows system theme label when system preference is dark", async () => {
+    saveSettings({ ...getSettings(), theme: "system" });
+    vi.spyOn(window, "matchMedia").mockReturnValue({
+      matches: true,
+      media: "(prefers-color-scheme: dark)",
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+      onchange: null,
+    } as MediaQueryList);
+    renderChrome("/");
+    await waitFor(() => {
+      expect(screen.getByText("Alice")).toBeInTheDocument();
+    });
+    expect(
+      screen.getAllByRole("button", { name: "System theme" })[0],
+    ).toBeInTheDocument();
+  });
+
+  it("cycles through dark and system themes", async () => {
+    const user = userEvent.setup();
+    saveSettings({ ...getSettings(), theme: "dark" });
+    renderChrome("/");
+    await waitFor(() => {
+      expect(screen.getByText("Alice")).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole("button", { name: "Dark theme" }));
+    expect(getSettings().theme).toBe("system");
+    await user.click(screen.getByRole("button", { name: "System theme" }));
+    expect(getSettings().theme).toBe("light");
+  });
+
   it("signs out", async () => {
     const user = userEvent.setup();
     renderChrome("/");
