@@ -1,0 +1,26 @@
+src-tauri/src/notifications.rs
+  s_68a50507005d3e::t_2fede4440c76ab 1,5,69
+src-tauri/src/commands.rs
+  s_68a50507005d3e::t_2fede4440c76ab 163
+src-tauri/src/google.rs
+  s_68a50507005d3e::t_2fede4440c76ab 241
+README.md
+  s_68a50507005d3e::t_f8d65c7aabd9a0 15,53-83
+  s_68a50507005d3e::t_02647b2fed14b4 23-25,39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "4b545039321c1908fcb762ec6d4a398a65460f2b",
+  "prompts": {},
+  "sessions": {
+    "s_68a50507005d3e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ad3c-4a51-73e3-8208-01d61cf79a52",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "ggican <ikhsan.mahendri@gmail.com>"
+    }
+  }
+}
