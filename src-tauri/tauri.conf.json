@@ -46,7 +46,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM5MjVGOTQ1RkRCODAwQTMKUldTakFMajlSZmtsT2JHeWNqWHNjOU1vaG5BTUFjK044U3ZudUh2eUJ5L0VWVFpOZFFzMW5IaUMK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDg1ODc4RjU5OTQwQTc5M0UKUldRK2VRcVVXWStIaFNYR2RPWWtGNklqL25JS0xqMkVzWkNpdjJ6aXk0NEFvbDFZalNkNGY4dWoK",
       "endpoints": [
         "https://github.com/ggican/im-review/releases/latest/download/latest.json"
       ]
