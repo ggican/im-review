@@ -160,6 +160,7 @@ fn emit_progress(app: &AppHandle, step: &str, message: &str, detail: Option<Stri
 }
 
 #[tauri::command]
+#[allow(clippy::too_many_arguments)] // Tauri command arguments map directly from the existing frontend payload.
 pub async fn hydrate_runtime_secrets(
     github_token: Option<String>,
     ai_keys: HashMap<String, String>,

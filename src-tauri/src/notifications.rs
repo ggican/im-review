@@ -1,6 +1,8 @@
+#[cfg(target_os = "macos")]
 use tauri::Manager;
 
 /// Prefer bundled Resources/icon.icns, then source-tree icons for `tauri:dev`.
+#[cfg(target_os = "macos")]
 pub(crate) fn resolve_notification_icon(
     resource_dir: Option<&std::path::Path>,
 ) -> Option<std::path::PathBuf> {
@@ -64,7 +66,7 @@ pub async fn send_app_notification(
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, target_os = "macos"))]
 mod tests {
     use super::resolve_notification_icon;
 

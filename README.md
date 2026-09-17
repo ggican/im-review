@@ -12,7 +12,7 @@
 [![Rust](https://img.shields.io/badge/Rust-000000?logo=rust&logoColor=white)](https://www.rust-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-Desktop app for **GitHub PR triage**, **AI-assisted review** (human confirms before submit), and an **engineering metrics scorecard**.
+Desktop work hub for engineers: **GitHub PR triage**, **AI-assisted review** (human confirms before submit), **Jira work**, **Gmail**, **Google Calendar**, and an **engineering metrics scorecard** in one focused desktop app.
 
 Built with **Tauri 2 + React + TypeScript**. After install, paste a GitHub PAT on first launch — no OAuth app registration, no macOS Keychain prompt. Tokens stay in local app storage (never committed to git).
 
@@ -20,7 +20,9 @@ Built with **Tauri 2 + React + TypeScript**. After install, paste a GitHub PAT o
 
 ## Why IM Review?
 
-Reviewing PRs across many repos is slow: GitHub tabs, clone/setup, noisy notifications, and AI tools that auto-post comments.
+Managing engineering work is fragmented: GitHub for pull requests, Jira for assigned work, Gmail for requests and alerts, and Calendar for meetings. Keeping all of them open turns a workday into constant context switching.
+
+IM Review brings the daily check-in into one desktop app. It is not meant to replace GitHub, Jira, Gmail, or Google Calendar; it gives you one focused place to triage what needs attention, then opens the source service when you need to go deeper.
 
 IM Review helps you:
 
@@ -34,6 +36,7 @@ IM Review helps you:
 | **Own-PR controls**         | Close or convert your PR to draft from the app                                    |
 | **Scorecard + coaching**    | Last N days Speed / Quality / Throughput / Collaboration + actionable suggestions |
 | **CI health**               | Jenkins/GitHub check summary without leaving the app                              |
+| **One work hub**            | PRs, Jira work, Gmail, and meetings in one daily triage surface                   |
 
 ### Advantages vs “just GitHub + ChatGPT”
 
@@ -47,19 +50,37 @@ IM Review helps you:
 
 ## Features (current)
 
-- GitHub PAT auth on first launch (local storage; no OAuth app setup)
-- PR lists: Assigned, Review requested, My open
-- Favorite repos & branches
-- PR detail: description, files + diffs, CI/Jenkins checks, current reviews
-- Quick approve (LGTM) and full AI draft review with refine chips
-- Submit APPROVE / COMMENT / REQUEST_CHANGES with optional inline comments
-- ⌘K / Ctrl+K command palette to jump to PRs, repos, and pages
-- “New” badges for PRs updated since you last marked seen (+ dock badge, tray tooltip, macOS notification when counts rise)
-- Close window hides to the menu bar tray (Quit from tray exits); auto-refresh keeps running
-- Tray icon + CI failure banner for your authored open PRs
-- Metrics scorecard (Today / 7 / 14 / 30 days) with aggregation (Average, P50–P99)
-- Suggestions tab to raise scores (review / merge / fix CI / split)
-- Close / draft / reopen for PRs you authored
+### GitHub pull requests
+
+- GitHub PAT onboarding; tokens and provider keys stay on the local machine
+- A **Today** view that combines review requests, CI failures, Jira work, Gmail, and upcoming meetings
+- PR queues for favorites, assigned/review-requested work, your open PRs, reviewed history, and favorite people
+- Repository, branch, and GitHub-user favorites; search repositories and inspect their open PRs
+- PR detail with description, changed files and diffs, CI/Jenkins checks, reviews, and conversation
+- Submit **Approve**, **Comment**, or **Request changes**, including optional inline file comments
+- Close, convert to draft, or reopen PRs you authored
+
+### AI-assisted review
+
+- Generate patch-based review drafts without cloning the repository by default
+- Use Cursor, OpenAI, OpenAI Codex-compatible models, Anthropic Claude, or Google Gemini
+- Edit the summary and findings, include or ignore individual findings, and refine a draft before submission
+- Explicit human confirmation gate: AI never posts a review automatically
+
+### Jira, Gmail, and Calendar
+
+- Jira Cloud: view your work, filter by status, assignee, issue type, labels, and JQL; save filters locally or to Jira
+- Jira issue detail with parent work item, status, labels, assignee, description, and a link back to Jira
+- Google Calendar: connect one Google account, browse Today/Upcoming/This week/All-day events, choose a calendar, and search meetings
+- Gmail: Inbox, Unread, Starred, and Sent views; label and search filters; message reading; star, mark read/unread, archive, and open in Gmail
+
+### Productivity and insights
+
+- ⌘K / Ctrl+K command palette for fast navigation to PRs, repositories, people, and work surfaces
+- Auto-refresh, new-item badges, dock/tray indicators, and macOS notifications for new PRs or CI failures
+- Menu-bar tray behavior, light/dark/system themes, review comment templates, and local review history
+- Engineering scorecard for Today / 7 / 14 / 30 days with Average and P50–P99 aggregation
+- Speed, Throughput, Quality, and Collaboration breakdowns, CI health, trend charts, and actionable suggestions
 
 ---
 

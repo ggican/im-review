@@ -238,7 +238,7 @@ async fn wait_for_oauth_code(
     let req = String::from_utf8_lossy(&buf[..n]);
     let first = req.lines().next().unwrap_or("");
     let path = first.split_whitespace().nth(1).unwrap_or("/");
-    let query = path.splitn(2, '?').nth(1).unwrap_or("");
+    let query = path.split_once('?').map(|(_, query)| query).unwrap_or("");
     let html = if query_param(query, "error").is_some() {
         "<!doctype html><html><body><p>Sign-in cancelled. You can close this tab.</p></body></html>"
     } else {
