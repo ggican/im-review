@@ -1,0 +1,23 @@
+package.json
+  s_68a50507005d3e::t_f027d744fac099 4
+src-tauri/Cargo.toml
+  s_68a50507005d3e::t_070bc5f683a166 3
+src-tauri/tauri.conf.json
+  s_68a50507005d3e::t_6c365ff41556ba 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "ad88b8eb1b1cf946c435fbcf3a66ff498897d8c8",
+  "prompts": {},
+  "sessions": {
+    "s_68a50507005d3e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ad3c-4a51-73e3-8208-01d61cf79a52",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "ggican <ikhsan.mahendri@gmail.com>"
+    }
+  }
+}
