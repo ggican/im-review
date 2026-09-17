@@ -1,9 +1,11 @@
 import "./styles/globals.css";
 
+import { check } from "@tauri-apps/plugin-updater";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
 import { Toaster } from "sonner";
+import { toast } from "sonner";
 
 import { hydrateRuntimeSecrets } from "./lib/api";
 import { ensureDesktopTray } from "./lib/desktop-alerts";
@@ -11,6 +13,24 @@ import { applyTheme, getSettings } from "./lib/settings";
 import { router } from "./router";
 
 applyTheme(getSettings().theme);
+
+async function notifyAvailableUpdate() {
+  const update = await check();
+  if (!update) return;
+  toast.message(`IM Review ${update.version} is available`, {
+    description: "Download now, then restart the app to finish updating.",
+    duration: Infinity,
+    action: {
+      label: "Update",
+      onClick: () => {
+        void update
+          .downloadAndInstall()
+          .then(() => toast.success("Update installed — restart IM Review."))
+          .catch(() => toast.error("Could not install the update."));
+      },
+    },
+  });
+}
 
 async function boot() {
   try {
@@ -46,6 +66,7 @@ async function boot() {
       />
     </React.StrictMode>,
   );
+  void notifyAvailableUpdate().catch(() => undefined);
 }
 
 void boot();

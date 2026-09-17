@@ -23,6 +23,7 @@
   },
   "bundle": {
     "active": true,
+    "createUpdaterArtifacts": true,
     "targets": ["app", "dmg"],
     "category": "DeveloperTool",
     "shortDescription": "GitHub PR triage and AI-assisted review for desktop.",
@@ -41,6 +42,14 @@
       "entitlements": "Entitlements.plist",
       "exceptionDomain": "",
       "signingIdentity": "-"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM5MjVGOTQ1RkRCODAwQTMKUldTakFMajlSZmtsT2JHeWNqWHNjOU1vaG5BTUFjK044U3ZudUh2eUJ5L0VWVFpOZFFzMW5IaUMK",
+      "endpoints": [
+        "https://github.com/ggican/im-review/releases/latest/download/latest.json"
+      ]
     }
   }
 }

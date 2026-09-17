@@ -79,6 +79,7 @@ IM Review helps you:
 - ⌘K / Ctrl+K command palette for fast navigation to PRs, repositories, people, and work surfaces
 - Auto-refresh, new-item badges, dock/tray indicators, and macOS notifications for new PRs or CI failures
 - Menu-bar tray behavior, light/dark/system themes, review comment templates, and local review history
+- In-app update notice with a user-approved download and install flow
 - Engineering scorecard for Today / 7 / 14 / 30 days with Average and P50–P99 aggregation
 - Speed, Throughput, Quality, and Collaboration breakdowns, CI health, trend charts, and actionable suggestions
 
@@ -96,7 +97,9 @@ IM Review helps you:
 
 ## Install (end users)
 
-1. Open [Releases](https://github.com/ggican/im-review/releases)
+Download the current release: **[IM Review for macOS](https://github.com/ggican/im-review/releases/latest)**
+
+1. Open [Releases](https://github.com/ggican/im-review/releases) if you need a specific version
 2. Download the latest **`.dmg`**
 3. Open the DMG → drag **IM Review** to Applications
 4. First launch may need **Right-click → Open** (ad-hoc/unsigned builds until Apple notarization is configured)
